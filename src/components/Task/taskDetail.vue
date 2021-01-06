@@ -44,10 +44,14 @@
               ></i-input>
             </i-formItem>
             <i-formItem label="执行计划：">
-              <i-input
+              <i-select
                 style="width:200px"
                 :value="task.plan"
-              ></i-input>
+                placeholder="未计划"
+              >
+                <i-option value="定期">单次</i-option>
+                <i-option value="定点">周期</i-option>
+              </i-select>
             </i-formItem>
             <i-formItem label="类型：">
               <i-select
@@ -60,6 +64,7 @@
               </i-select>
             </i-formItem>
           </i-form>
+          <i-button type="text" style="marginTop:-20px;marginBottom:20px;color:#057009" v-if="task.type=='调用服务'">查看服务详情</i-button>
           <div>
             <i-button
               type="primary"
@@ -220,7 +225,7 @@ export default {
   margin-bottom: 10px;
 }
 .taskDetail-wrap-operation {
-  margin-top: 110px;
+  margin-top: 160px;
   margin-bottom: 10px;
 }
 .taskDetail-configure-plan {
@@ -228,7 +233,7 @@ export default {
 }
 .configure {
   width: 98%;
-  height: 600px;
+  height: 652px;
   border: 1px solid black;
   margin: 0 auto;
   position: relative;
@@ -243,7 +248,7 @@ export default {
 }
 .log {
   width: 100%;
-  height: 600px;
+  height: 652px;
   border: 1px solid black;
   position: relative;
 }
@@ -272,7 +277,7 @@ export default {
 >>> .jsoneditor {
   border: none;
 }
->>> .jsoneditor-poweredBy{
+>>> .jsoneditor-poweredBy {
   display: none !important;
 }
 </style>

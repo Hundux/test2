@@ -2,6 +2,7 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
+import 'element-ui/lib/theme-chalk/icon.css';
 import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup } from 'view-design'
 
 import 'view-design/dist/styles/iview.css'

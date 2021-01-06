@@ -161,7 +161,6 @@ export default {
           width: 30,
           align: 'center',
           resizable: true,
-          fixed: 'left'
         },
         {
           title: '名称',
@@ -169,7 +168,6 @@ export default {
           width: 80,
           align: 'center',
           resizable: true,
-          fixed: 'left'
         },
         {
           title: '配置内容',
@@ -178,7 +176,6 @@ export default {
           align: 'center',
           minWidth: 150,
           resizable: true,
-          fixed: 'left'
         },
         {
           title: '参数',
@@ -186,7 +183,6 @@ export default {
           width: 250,
           align: 'center',
           resizable: true,
-          fixed: 'left'
         },
         {
           title: '状态',
@@ -194,29 +190,60 @@ export default {
           width: 100,
           align: 'center',
           resizable: true,
-          fixed: 'left',
           filters: [
             {
-              label: '运行中',
-              value: 1
+              label: "运行中",
+              value: "运行中"
             },
             {
-              label: '准备就绪',
-              value: 2
+              label: "准备就绪",
+              value: "准备就绪"
             },
             {
-              label: '禁用',
-              value: 3
+              label: "禁用",
+              value: "禁用"
             }
           ],
-          filterMultiple: false,
+          filterMultiple: true,
           filterMethod(value, row) {
-            if (value === 1) {
-              return row.state == '运行中'
-            } else if (value === 2) {
-              return row.state == '准备就绪'
-            } else if (value === 3) {
-              return row.state == '禁用'
+            if (value === "运行中") {
+              return row.state == "运行中"
+            } else if (value === "准备就绪") {
+              return row.state == "准备就绪"
+            } else if (value === "禁用") {
+              return row.state == "禁用"
+            }
+          },
+          renderHeader(h, params) {
+            if (params.index === 4) {
+              if (params.column._filterChecked.length != 0) {
+                let column_Ck = params.column._filterChecked
+                let words = ''
+                let line = 0
+                for (let i = 0; i < column_Ck.length; i++) {
+                  words += column_Ck[i] + ',' + '\xa0\xa0'
+                  if ((i + 1) % 3 == 0 && i != 8) {
+                    words += '\n'
+                    line = line + 1
+                  } else if (line == 2 && i == 8) {
+                    words = words + '...'
+                    break
+                  }
+                }
+                words = words.trim()
+                return h('span', [
+                  h('span', params.column.title),
+                  h('span', {
+                    style: {
+                      'white-space': 'pre-line',
+                      'font-size': '10px',
+                      'color': 'black'
+                    }
+                  }, '\n' + words + '\n')
+                ])
+              } else {
+                return h('span', params.column.title)
+              }
             }
           }
         },
@@ -227,7 +254,6 @@ export default {
           align: 'center',
           minWidth: 200,
           resizable: true,
-          fixed: 'right'
         },
         {
           title: '日志',
@@ -236,7 +262,6 @@ export default {
           align: 'center',
           minWidth: 150,
           resizable: true,
-          fixed: 'right',
         },
       ],
       ServeData: [
