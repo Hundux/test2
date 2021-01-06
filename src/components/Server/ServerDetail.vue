@@ -40,9 +40,6 @@
             <i-formItem label="名称：">
               <i-input style="width:200px"></i-input>
             </i-formItem>
-            <i-formItem label="执行计划：">
-              <i-input style="width:200px"></i-input>
-            </i-formItem>
             <i-formItem label="类型：">
               <i-select
                 style="width:200px"
@@ -55,37 +52,47 @@
           </i-form>
           <i-row class="configure-top" style="width:100%">
             <i-col
-              span="11"
+              span="6"
               class="configure-top-one"
             ><span>参数</span></i-col>
-            <i-col span="13">默认值</i-col>
+            <i-col span="9">默认值</i-col>
+            <i-col span="9">描述</i-col>
           </i-row>
           <i-row class="configure-body">
             <i-col
-              span="11"
+              span="6"
               class="configure-body-one"
             ><span>参数1：</span></i-col>
-            <i-col span="13">
+            <i-col span="9">
               <i-input style="width:60%"></i-input>
             </i-col>
+            <i-col span="9">
+                <i-input type="textarea" style="width:60%"></i-input>
+              </i-col>
           </i-row>
           <i-row class="configure-body">
             <i-col
-              span="11"
+              span="6"
               class="configure-body-one"
             ><span>参数2：</span></i-col>
-            <i-col span="13">
+            <i-col span="9">
               <i-input style="width:60%"></i-input>
             </i-col>
+            <i-col span="9">
+                <i-input type="textarea" style="width:60%"></i-input>
+              </i-col>
           </i-row>
           <i-row class="configure-body">
             <i-col
-              span="11"
+              span="6"
               class="configure-body-one"
             ><span>参数3：</span></i-col>
-            <i-col span="13">
+            <i-col span="9">
               <i-input style="width:60%"></i-input>
             </i-col>
+            <i-col span="9">
+                <i-input type="textarea" style="width:60%"></i-input>
+              </i-col>
           </i-row>
           <div>
             <i-button
@@ -232,7 +239,7 @@ export default {
   margin-bottom: 10px;
 }
 .serverDetail-wrap-operation {
-  margin-top: 85px;
+  margin-top: 150px;
   margin-bottom: 10px;
 }
 .serverDetail-configure-plan {
@@ -240,7 +247,7 @@ export default {
 }
 .configure {
   width: 98%;
-  height: 600px;
+  height: 652px;
   border: 1px solid black;
   margin: 0 auto;
   position: relative;
@@ -255,7 +262,7 @@ export default {
 }
 .log {
   width: 100%;
-  height: 600px;
+  height: 652px;
   border: 1px solid black;
   position: relative;
 }
@@ -307,5 +314,8 @@ export default {
 }
 .configure-top-one span{
   margin-right: 38px;
+}
+>>> textarea.ivu-input{
+  height: 32px;
 }
 </style>

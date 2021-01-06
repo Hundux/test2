@@ -145,6 +145,7 @@
               type="primary"
               size="small"
               style="margin-right: 5px"
+              @click="handleLog"
             >查看任务日志</i-button>
           </div>
         </template>
@@ -166,6 +167,10 @@
         :task="task"
         @cancleTaskDetailModal="handleCancleTaskDetailModal"
       ></i-taskdetail>
+      <i-log
+        :log="log"
+        @cancleLogModal="cancleLogModal"
+      ></i-log>
     </div>
   </div>
 </template>
@@ -173,8 +178,10 @@
 <script>
 import NewTask from './Task/newTask'
 import TaskDetail from './Task/taskDetail'
+import Log from './Log'
 export default {
   data() {
+    var global = this
     return {
       search: '',
       columns1: [
@@ -183,7 +190,6 @@ export default {
           width: 30,
           align: 'center',
           resizable: true,
-          fixed: 'left'
         },
         {
           title: '名称',
@@ -191,30 +197,28 @@ export default {
           width: 80,
           align: 'center',
           resizable: true,
-          fixed: 'left'
         },
         {
-          title: '类型',
+          title: "类型",
           key: 'type',
           width: 100,
           align: 'center',
           resizable: true,
-          fixed: 'left',
           filters: [
             {
-              label: '普通任务',
-              value: 1
+              label: "普通任务",
+              value: "普通任务"
             },
             {
-              label: '服务任务',
-              value: 2
+              label: "服务任务",
+              value: "服务任务"
             }
           ],
-          filterMultiple: false,
+          filterMultiple: true,
           filterMethod(value, row) {
-            if (value === 1) {
+            if (value === "普通任务") {
               return row.type == '执行配置'
-            } else if (value === 2) {
+            } else if (value === "服务任务") {
               return row.type == '调用服务'
             }
           },
@@ -223,6 +227,40 @@ export default {
               return h('i-icon', { props: { type: 'md-list', size: '20' } })
             } else if (params.row.type === '调用服务') {
               return h('i-icon', { props: { type: 'md-cloud', size: '20' } })
+            }
+          },
+          renderHeader(h, params) {
+            console.log(params)
+            global.columns4 = params.column._filterChecked
+            if (params.index === 2) {
+              if (params.column._filterChecked.length != 0) {
+                let column_Ck = params.column._filterChecked
+                let words = ''
+                let line = 0
+                for (let i = 0; i < column_Ck.length; i++) {
+                  words += column_Ck[i] + ',' + '\xa0\xa0'
+                  if ((i + 1) % 3 == 0 && i != 8) {
+                    words += '\n'
+                    line = line + 1
+                  } else if (line == 2 && i == 8) {
+                    words = words + '...'
+                    break
+                  }
+                }
+                words = words.trim()
+                return h('span', [
+                  h('span', params.column.title),
+                  h('span', {
+                    style: {
+                      'white-space': 'pre-line',
+                      'font-size': '10px',
+                      'color': 'black'
+                    }
+                  }, '\n' + words + '\n')
+                ])
+              } else {
+                return h('span', params.column.title)
+              }
             }
           }
         },
@@ -233,7 +271,6 @@ export default {
           align: 'center',
           minWidth: 150,
           resizable: true,
-          fixed: 'left'
         },
         {
           title: '执行计划',
@@ -241,29 +278,61 @@ export default {
           width: 200,
           align: 'center',
           resizable: true,
-          fixed: 'left',
           filters: [
             {
               label: '定期',
-              value: 1
+              value: "定期"
             },
             {
               label: '定点',
-              value: 2
+              value: "定点"
             },
             {
               label: '未计划',
-              value: 3
+              value: "未计划"
             }
           ],
-          filterMultiple: false,
+          filterMultiple: true,
           filterMethod(value, row) {
-            if (value === 1) {
+            if (value === "定期") {
               return row.plan == '定期'
-            } else if (value === 2) {
+            } else if (value === "定点") {
               return row.plan == '定点'
-            } else if (value === 3) {
+            } else if (value === "未计划") {
               return row.plan == '未计划'
+            }
+          },
+          renderHeader(h, params) {
+            global.columns2 = params.column._filterChecked
+            if (params.index === 4) {
+              if (params.column._filterChecked.length != 0) {
+                let column_Ck = params.column._filterChecked
+                let words = ''
+                let line = 0
+                for (let i = 0; i < column_Ck.length; i++) {
+                  words += column_Ck[i] + ',' + '\xa0\xa0'
+                  if ((i + 1) % 3 == 0 && i != 8) {
+                    words += '\n'
+                    line = line + 1
+                  } else if (line == 2 && i == 8) {
+                    words = words + '...'
+                    break
+                  }
+                }
+                words = words.trim()
+                return h('span', [
+                  h('span', params.column.title),
+                  h('span', {
+                    style: {
+                      'white-space': 'pre-line',
+                      'font-size': '10px',
+                      'color': 'black'
+                    }
+                  }, '\n' + words + '\n')
+                ])
+              } else {
+                return h('span', params.column.title)
+              }
             }
           }
         },
@@ -273,22 +342,21 @@ export default {
           width: 100,
           align: 'center',
           resizable: true,
-          fixed: 'left',
           filters: [
             {
               label: '运行中',
-              value: 1
+              value: "运行中"
             },
             {
               label: '准备就绪',
-              value: 2
+              value: "准备就绪"
             },
             {
               label: '禁用',
-              value: 3
+              value: "禁用"
             }
           ],
-          filterMultiple: false,
+          filterMultiple: true,
           filterMethod(value, row) {
             if (value === 1) {
               return row.state == '运行中'
@@ -297,6 +365,39 @@ export default {
             } else if (value === 3) {
               return row.state == '禁用'
             }
+          },
+          renderHeader(h, params) {
+            global.columns3 = params.column._filterChecked
+            if (params.index === 5) {
+              if (params.column._filterChecked.length != 0) {
+                let column_Ck = params.column._filterChecked
+                let words = ''
+                let line = 0
+                for (let i = 0; i < column_Ck.length; i++) {
+                  words += column_Ck[i] + ',' + '\xa0\xa0'
+                  if ((i + 1) % 3 == 0 && i != 8) {
+                    words += '\n'
+                    line = line + 1
+                  } else if (line == 2 && i == 8) {
+                    words = words + '...'
+                    break
+                  }
+                }
+                words = words.trim()
+                return h('span', [
+                  h('span', params.column.title),
+                  h('span', {
+                    style: {
+                      'white-space': 'pre-line',
+                      'font-size': '10px',
+                      'color': 'black'
+                    }
+                  }, '\n' + words + '\n')
+                ])
+              } else {
+                return h('span', params.column.title)
+              }
+            }
           }
         },
         {
@@ -304,9 +405,8 @@ export default {
           key: 'operation',
           slot: 'operation',
           align: 'center',
-          minWidth: 300,
+          width: 300,
           resizable: true,
-          fixed: 'right'
         },
         {
           title: '日志',
@@ -315,7 +415,6 @@ export default {
           align: 'center',
           minWidth: 150,
           resizable: true,
-          fixed: 'right',
         },
       ],
       TaskData: [
@@ -346,12 +445,17 @@ export default {
       ],
       newTask: false,
       taskDetail: false,
-      task: {}
+      task: {},
+      log: false,
+      columns2: [],
+      columns3: [],
+      columns4: []
     }
   },
   components: {
-    'i-newtask': NewTask,
-    'i-taskdetail': TaskDetail
+    "i-newtask": NewTask,
+    "i-taskdetail": TaskDetail,
+    "i-log": Log
   },
   methods: {
     handBanClick(row) {
@@ -373,6 +477,12 @@ export default {
     },
     handleCancleTaskDetailModal() {
       this.taskDetail = false
+    },
+    handleLog() {
+      this.log = true
+    },
+    cancleLogModal() {
+      this.log = false
     }
   },
 }
