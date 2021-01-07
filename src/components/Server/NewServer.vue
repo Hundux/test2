@@ -57,14 +57,14 @@
 
               <i-col span="9">
                 <i-input
-                  style="width:60%"
+                  style="width:85%"
                   value='"1"'
                 ></i-input>
               </i-col>
               <i-col span="9">
                 <i-input
                   type="textarea"
-                  style="width:60%"
+                  style="width:85%"
                 ></i-input>
               </i-col>
             </i-row>
@@ -76,14 +76,14 @@
 
               <i-col span="9">
                 <i-input
-                  style="width:60%"
+                  style="width:85%"
                   value='"1"'
                 ></i-input>
               </i-col>
               <i-col span="9">
                 <i-input
                   type="textarea"
-                  style="width:60%"
+                  style="width:85%"
                 ></i-input>
               </i-col>
             </i-row>
@@ -95,14 +95,14 @@
 
               <i-col span="9">
                 <i-input
-                  style="width:60%"
+                  style="width:85%"
                   value='"1"'
                 ></i-input>
               </i-col>
               <i-col span="9">
                 <i-input
                   type="textarea"
-                  style="width:60%"
+                  style="width:85%"
                 ></i-input>
               </i-col>
             </i-row>

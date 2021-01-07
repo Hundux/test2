@@ -40,15 +40,6 @@
             <i-formItem label="名称：">
               <i-input style="width:200px"></i-input>
             </i-formItem>
-            <i-formItem label="类型：">
-              <i-select
-                style="width:200px"
-                disabled
-              >
-                <i-option value="执行配置">执行配置</i-option>
-                <i-option value="调用服务">调用服务</i-option>
-              </i-select>
-            </i-formItem>
           </i-form>
           <i-row class="configure-top" style="width:100%">
             <i-col
@@ -64,10 +55,10 @@
               class="configure-body-one"
             ><span>参数1：</span></i-col>
             <i-col span="9">
-              <i-input style="width:60%"></i-input>
+              <i-input style="width:85%"></i-input>
             </i-col>
             <i-col span="9">
-                <i-input type="textarea" style="width:60%"></i-input>
+                <i-input type="textarea" style="width:85%"></i-input>
               </i-col>
           </i-row>
           <i-row class="configure-body">
@@ -76,10 +67,10 @@
               class="configure-body-one"
             ><span>参数2：</span></i-col>
             <i-col span="9">
-              <i-input style="width:60%"></i-input>
+              <i-input style="width:85%"></i-input>
             </i-col>
             <i-col span="9">
-                <i-input type="textarea" style="width:60%"></i-input>
+                <i-input type="textarea" style="width:85%"></i-input>
               </i-col>
           </i-row>
           <i-row class="configure-body">
@@ -88,10 +79,10 @@
               class="configure-body-one"
             ><span>参数3：</span></i-col>
             <i-col span="9">
-              <i-input style="width:60%"></i-input>
+              <i-input style="width:85%"></i-input>
             </i-col>
             <i-col span="9">
-                <i-input type="textarea" style="width:60%"></i-input>
+                <i-input type="textarea" style="width:85%"></i-input>
               </i-col>
           </i-row>
           <div>
