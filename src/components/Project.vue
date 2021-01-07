@@ -7,8 +7,9 @@
           class="layout-sider"
           hide-trigger
           collapsible
-          :collapsed-width="50"
+          :collapsed-width="71"
           v-model="isCollapsed"
+          ref="side1"
         >
           <i-menu
             class="layout-sider-menu"
@@ -23,10 +24,18 @@
               to="/task"
             >
               <i-icon
+                v-show="!collpsed"
                 type="md-list"
                 name="icon"
+                size="22"
               ></i-icon>
-              <span>任务管理</span>
+              <div v-show="collpsed">
+                <i-icon
+                  type="md-list"
+                  name="icon"
+                ></i-icon>
+                <span>任务管理</span>
+              </div>
             </i-menuItem>
             <i-menuItem
               name="2"
@@ -36,35 +45,84 @@
               <i-icon
                 type="md-cloud"
                 name="icon"
+                size="22"
+                v-show="!collpsed"
               ></i-icon>
-              <span>服务管理</span>
+              <div v-show="collpsed">
+                <i-icon
+                  type="md-cloud"
+                  name="icon"
+                ></i-icon>
+                <span>服务管理</span>
+              </div>
             </i-menuItem>
             <i-menuItem
               name="3"
               class="sidebar-item sidebar-title sidebar-item-bao"
             >
               <i-icon
+                v-show="!collpsed"
                 type="md-settings"
                 name="icon"
+                size="22"
               ></i-icon>
-              <span>executor包管理</span>
-              <!-- <p><span>executor</span></p>
-            <p><span>包管理</span></p> -->
-            </i-menuItem>
-            <i-submenu name="4">
-              <template slot="title">
+              <div v-show="collpsed">
                 <i-icon
-                  type="md-cube"
+                  type="md-settings"
                   name="icon"
                 ></i-icon>
-                <span>
-                  系统管理
-                </span>
+                <span>executor包管理</span>
+              </div>
+            </i-menuItem>
+            <i-submenu
+              name="4"
+              :class="!collpsed ? 'collapsed-menu':''"
+            >
+              <template slot="title">
+                  <i-poptip
+                    class="mypiptip"
+                    v-show="!collpsed"
+                    trigger="hover"
+                    :transfer="true"
+                    placement="right-start"
+                  >
+                  <i-icon
+                    type="md-cube"
+                    name="icon"
+                    size="22"
+                  ></i-icon>
+                    <div slot="content">
+                      <i-menuItem
+                        class="sidebar-item"
+                        v-show="!collpsed"
+                        name="4-1"
+                      >
+                      爬虫
+                      </i-menuItem>
+                      <i-menuItem
+                        class="sidebar-item"
+                        v-show="!collpsed"
+                        name="4-2"
+                      >
+                        查重db
+                      </i-menuItem>
+                    </div>
+                  </i-poptip>
+                <div v-show="collpsed">
+                  <i-icon
+                    type="md-cube"
+                    name="icon"
+                  ></i-icon>
+                  <span>
+                    系统管理
+                  </span>
+                </div>
               </template>
               <i-menuItem
                 name="4-1"
                 class="sidebar-item"
                 style="fontSize:13px"
+                v-show="collpsed"
               >
                 爬虫
               </i-menuItem>
@@ -72,6 +130,7 @@
                 name="4-2"
                 class="sidebar-item"
                 style="fontSize:13px"
+                v-show="collpsed"
               >
                 查重db
               </i-menuItem>
@@ -89,6 +148,9 @@
 </template>
 
 <script>
+import {
+  mapState
+} from 'vuex'
 import MyHead from './MyHead'
 export default {
   data() {
@@ -100,6 +162,19 @@ export default {
   components: {
     "i-myHead": MyHead
   },
+  computed: {
+    ...mapState(['collpsed']),
+  },
+  watch: {
+    collpsed: function () {
+      this.collapsedSider()
+    }
+  },
+  methods: {
+    collapsedSider() {
+      this.$refs.side1.toggleCollapse();
+    },
+  },
 }
 </script>
 
@@ -108,11 +183,10 @@ export default {
   height: 100%;
 }
 .layout-sider {
-  height: 100vh;
+  height: calc(100vh - 60px);
   background: #fff;
   width: 150px !important;
-  min-width: 150px !important;
-  max-width: 150px !important;
+  min-width: 0px !important;
   flex: 0 0 150px !important;
   font-weight: bold;
 }
@@ -120,15 +194,14 @@ export default {
   color: white !important;
   background-color: #212990;
 }
+.sidebar-item {
+  color: #212990;
+}
 .sidebar-item.ivu-menu-item.ivu-menu-item-active.ivu-menu-item-selected a,
 .sidebar-item.ivu-menu-item.ivu-menu-item-active.ivu-menu-item-selected i,
 .sidebar-item span {
   color: white;
 }
-/* .sidebar-item.ivu-menu-item {
-  padding-left: 30px !important;
-} */
-
 .sidebar-item.ivu-menu-item.ivu-menu-item-active.ivu-menu-item-selected {
   color: white !important;
   background-color: #212990;
@@ -192,5 +265,8 @@ li.sidebar-item.ivu-menu-item:hover span {
 }
 >>> .ivu-menu-vertical .ivu-menu-submenu-title-icon {
   right: 20px;
+}
+.collapsed-menu >>> .ivu-menu-submenu-title-icon {
+  display: none;
 }
 </style>

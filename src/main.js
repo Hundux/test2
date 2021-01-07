@@ -2,6 +2,8 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
+import VueAxios from 'vue-axios'
+import axios from 'axios'
 import 'element-ui/lib/theme-chalk/icon.css';
 import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup } from 'view-design'
 
@@ -53,6 +55,7 @@ Vue.prototype.$Message.config({
 });
 
 Vue.prototype.$Modal = Modal
+Vue.use(VueAxios, axios)
 Vue.config.productionTip = false;
 
 new Vue({

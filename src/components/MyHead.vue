@@ -2,29 +2,14 @@
   <div class="Myhead">
     <div class="head-part1">
       <h1 class="Mymenu-title">爬虫管理平台</h1>
-      <div
-        class="Mymenu-collpse"
-        name="collpse"
-      >
-        <span
-          class="Mymenu-collpse-collpse"
-          title="隐藏侧边栏"
-        >
-          <el-icon class="el-icon-s-fold"></el-icon>
-        </span>
-        <!-- <span
-          class="Mymenu-collpse-collpse"
-          title="展开侧边栏"
-        >
-          <el-icon class="el-icon-s-unfold"></el-icon>
-        </span> -->
-      </div>
-      <span class="Mymenu-collpse-refresh">
-        <i-icon
-          type="md-refresh"
-          title="刷新列表"
-        ></i-icon>
-      </span>
+      <div class="Mymenu-collpse" name="collpse" >
+            <span class="Mymenu-collpse-collpse" title="隐藏侧边栏" v-if="collpsed" @click="changeCollpsed(false)">
+                <el-icon class="el-icon-s-fold"></el-icon>
+            </span>
+            <span class="Mymenu-collpse-collpse" title="展开侧边栏" v-else @click="changeCollpsed(true)">
+                <el-icon class="el-icon-s-unfold"></el-icon>
+            </span>
+        </div>
     </div>
     <i-menu
       class="Mymenu"
@@ -59,10 +44,20 @@
 </template>
 
 <script>
+import {
+    mapState,
+    mapMutations
+} from 'vuex'
 import { Icon } from 'element-ui';
 export default {
   components: {
     'el-icon': Icon
+  },
+  computed: {
+    ...mapState(['collpsed']),
+  },
+  methods: {
+    ...mapMutations(['changeCollpsed',])
   },
 }
 </script>

@@ -321,12 +321,14 @@ export default {
   margin-bottom: 10px;
 }
 .server-button-group {
+  min-width: 715px;
   margin-left: 35px;
 }
 .server-button {
   margin-right: 5px;
 }
 .server-search {
+  min-width: 302px;
   margin-left: 75px;
 }
 .server-search .search {

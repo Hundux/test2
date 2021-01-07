@@ -29,7 +29,7 @@
           </div>
         </i-col>
         <i-col
-          span="5"
+          span="7"
           class="taskDetail-task"
         >
           <i-form
@@ -47,12 +47,105 @@
               <i-select
                 style="width:200px"
                 :value="task.plan"
-                placeholder="未计划"
+                @on-change="planChange"
               >
-                <i-option value="定期">单次</i-option>
-                <i-option value="定点">周期</i-option>
+                <i-option value="定点">定点</i-option>
+                <i-option value="定期">定期</i-option>
               </i-select>
             </i-formItem>
+            <i-row
+              class="form-item"
+              v-if="task.plan==='定点'"
+              style="marginBottom:10px"
+            >
+                <i-col span="12">
+                  <i-datePicker
+                    type="date"
+                    placeholder="Select date"
+                  ></i-datePicker>
+                </i-col>
+                <i-col span="12">
+                  <i-timePicker
+                    type="time"
+                    placeholder="Select time"
+                  ></i-timePicker>
+                </i-col>
+            </i-row>
+            <i-row
+              v-if="task.plan==='定期'"
+              class="period form-item"
+              style="margin-left:20px"
+            >
+              <i-col
+                span="3"
+                class="time-col"
+              ><span class="time">秒</span></i-col>
+              <i-col
+                span="3"
+                class="time-col"
+              ><span class="time">分钟</span></i-col>
+              <i-col
+                span="3"
+                class="time-col"
+              ><span class="time">小时</span></i-col>
+              <i-col
+                span="3"
+                class="time-col"
+              ><span class="time">天</span></i-col>
+              <i-col
+                span="5"
+                class="time-col"
+              ><span class="time">星期几</span></i-col>
+              <i-col
+                span="3"
+                class="time-col"
+              ><span class="time">月</span></i-col>
+              <i-col
+                span="3"
+                class="time-col"
+              ><span class="time">年</span></i-col>
+            </i-row>
+            <i-row
+              v-if="task.plan==='定期'"
+              class="form-item"
+              style="margin-bottom:10px;margin-left:20px"
+            >
+              <i-col span="3"><input
+                  type="number"
+                  min="0"
+                  style="width:46px"
+                /></i-col>
+              <i-col span="3"><input
+                  type="number"
+                  min="0"
+                  style="width:46px"
+                /></i-col>
+              <i-col span="3"><input
+                  type="number"
+                  min="0"
+                  style="width:46px"
+                /></i-col>
+              <i-col span="3"><input
+                  type="number"
+                  min="0"
+                  style="width:46px"
+                /></i-col>
+              <i-col span="5"><input
+                  type="number"
+                  min="0"
+                  style="width:73px"
+                /></i-col>
+              <i-col span="3"><input
+                  type="number"
+                  min="0"
+                  style="width:46px"
+                /></i-col>
+              <i-col span="3"><input
+                  type="number"
+                  min="0"
+                  style="width:46px"
+                /></i-col>
+            </i-row>
             <i-formItem label="类型：">
               <i-select
                 style="width:200px"
@@ -64,7 +157,18 @@
               </i-select>
             </i-formItem>
           </i-form>
-          <i-button type="text" style="marginTop:-20px;marginBottom:20px;color:#057009" v-if="task.type=='调用服务'">查看服务详情</i-button>
+          <i-button
+            type="text"
+            style="marginTop:-20px;marginBottom:20px;color:#057009"
+            v-if="task.type=='调用服务'"
+            @click="handleServerDetail()"
+          >查看服务详情</i-button>
+          <!-- 服务详情模态框 -->
+          <i-serverDetail
+            :serverDetail="serverDetail"
+            @cancleServerDetailModal="handleCancleServerDetailModal"
+          ></i-serverDetail>
+
           <div>
             <i-button
               type="primary"
@@ -98,7 +202,7 @@
             >终止</i-button>
           </i-buttongroup>
         </i-col>
-        <i-col span="9">
+        <i-col span="7">
           <div class="log">
             <div class="noLog">
               暂无日志
@@ -114,6 +218,7 @@
 </template>
 
 <script>
+import ServerDetail from '../Server/ServerDetail'
 export default {
   data() {
     return {
@@ -183,6 +288,7 @@ export default {
           }
         },
       },
+      serverDetail: false,
     }
   },
   props: {
@@ -197,7 +303,19 @@ export default {
   methods: {
     cancle() {
       this.$emit('cancleTaskDetailModal')
+    },
+    handleServerDetail() {
+      this.serverDetail = true
+    },
+    handleCancleServerDetailModal() {
+      this.serverDetail = false
+    },
+    planChange(newValue) {
+      this.$emit('changePlan', newValue)
     }
+  },
+  components: {
+    "i-serverDetail": ServerDetail,
   },
 }
 </script>
@@ -218,6 +336,9 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+.taskDetail-form{
+  min-width: 352px;
 }
 .taskitem {
   display: flex;
@@ -265,9 +386,6 @@ export default {
   right: 10px;
   bottom: 10px;
 }
-.taskDetail-form {
-  margin-left: -50px;
-}
 .vueJsonEditor {
   height: 100%;
 }
@@ -279,5 +397,11 @@ export default {
 }
 >>> .jsoneditor-poweredBy {
   display: none !important;
+}
+.time-col {
+  text-align: center;
+}
+>>> .ivu-form-item-content {
+  margin-left: 0px !important;
 }
 </style>

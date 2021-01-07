@@ -164,8 +164,9 @@
       ></i-newtask>
       <i-taskdetail
         :taskDetail="taskDetail"
-        :task="task"
+        :task.sync="task"
         @cancleTaskDetailModal="handleCancleTaskDetailModal"
+        @changePlan="hangleChangePlan"
       ></i-taskdetail>
       <i-log
         :log="log"
@@ -230,7 +231,6 @@ export default {
             }
           },
           renderHeader(h, params) {
-            console.log(params)
             global.columns4 = params.column._filterChecked
             if (params.index === 2) {
               if (params.column._filterChecked.length != 0) {
@@ -471,7 +471,6 @@ export default {
       this.newTask = false
     },
     handleTaskDetail(task) {
-      console.log(task);
       this.task = task
       this.taskDetail = true
     },
@@ -483,7 +482,18 @@ export default {
     },
     cancleLogModal() {
       this.log = false
+    },
+    hangleChangePlan(newPlan) {
+      this.task.plan = newPlan
     }
+  },
+  async mounted() {
+    const self = this
+    const res = await self.axios({
+      methods: "get",
+      url: self.$store.state.baseurl + "/api/job/list"
+    })
+    console.log(res)
   },
 }
 </script>
@@ -495,12 +505,14 @@ export default {
   margin-bottom: 10px;
 }
 .task-button-group {
+  min-width: 715px;
   margin-left: 35px;
 }
 .task-button {
   margin-right: 5px;
 }
 .task-search {
+  min-width: 302px;
   margin-left: 75px;
 }
 .task-search .search {
