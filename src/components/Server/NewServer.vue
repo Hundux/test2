@@ -4,12 +4,12 @@
       title="新建服务"
       :value="newServer"
       @on-cancel="cancle"
-      width="1000px"
+      width="100%"
       footer-hide
     >
 
       <i-row style="height:100%">
-        <i-col span="15" style="height:100%">
+        <i-col span="18" style="height:100%">
           <div
             class="configure"
             v-if="taskForm.type==='执行配置'"
@@ -24,7 +24,7 @@
             ></i-vueJsonEditor>
           </div>
         </i-col>
-        <i-col span="9">
+        <i-col span="6">
           <i-form
             label-position="right"
             :label-width="60"
@@ -148,8 +148,8 @@ export default {
 
 <style scoped>
 >>> .ivu-modal {
-  top: 15px !important;
-  height: 95%;
+  top: 0px !important;
+  height: 100%;
   overflow: hidden;
 }
 >>> .ivu-modal-content {
@@ -165,7 +165,7 @@ export default {
   text-align: center;
 }
 .configure {
-  width: 600px;
+  width: 100%;
   height: 94%;
   border: 1px solid black;
   margin: 0 auto;

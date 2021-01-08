@@ -276,7 +276,7 @@ export default {
         {
           title: '执行计划',
           key: 'plan',
-          width: 200,
+          width: 210,
           align: 'center',
           resizable: true,
           filters: [
@@ -301,6 +301,15 @@ export default {
               return row.plan == '定点'
             } else if (value === "未计划") {
               return row.plan == '未计划'
+            }
+          },
+          render: (h, params) => {
+            if (params.row.plan === "定点") {
+              return h('span', params.row.schedule.at)
+            } else if (params.row.plan === "定期") {
+              return h('i-icon', { props: { type: 'md-cloud', size: '20' } })
+            } else if (params.row.plan === "未计划") {
+              return h("span", "未计划")
             }
           },
           renderHeader(h, params) {
@@ -362,7 +371,7 @@ export default {
             if (value === 1) {
               return row.status == "运行中"
             } else if (value === "READY") {
-              return row.status == "READY"
+              return row.status == "运行中"
             } else if (value === 3) {
               return row.status == '禁用'
             }
@@ -475,14 +484,25 @@ export default {
     const self = this
     try {
       const res = await self.axios({
-        methods: "get",
+        method: "get",
         url: self.$store.state.baseurl + "api/job/list",
       })
       if (res.data.code == 0) {
         self.TaskData = res.data.data
+        self.TaskData.forEach(item => {
+          if (item.schedule.at) {
+            item.plan = "定点"
+            item.schedule.at = "定点：" + self.$moment().format('YYYY-MM-DD HH:mm:ss ddd')
+          } else if (item.schedule.cron) {
+            item.plan = "定期"
+          } else {
+            item.plan = "未计划"
+          }
+        })
+        console.log(self.TaskData)
       }
-    } catch (error) {
-      self.$message.error(error)
+    } catch (err) {
+      self.$Message.error(err)
     }
   },
 }
