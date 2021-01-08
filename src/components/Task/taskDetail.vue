@@ -12,6 +12,7 @@
         <i-col
           span="10"
           class="taskDetail-configure"
+          style="height:100%"
         >
           <div class="configure">
             <i-vueJsonEditor
@@ -202,7 +203,7 @@
             >终止</i-button>
           </i-buttongroup>
         </i-col>
-        <i-col span="7">
+        <i-col span="7" style="height:100%">
           <div class="log">
             <div class="noLog">
               暂无日志
@@ -332,6 +333,9 @@ export default {
 >>> .ivu-modal-content {
   height: 100%;
 }
+>>> .ivu-modal-body{
+  height: 100%;
+}
 .taskDetail-task {
   display: flex;
   flex-direction: column;
@@ -345,6 +349,9 @@ export default {
   justify-content: center;
   margin-bottom: 10px;
 }
+.taskDetail-wrap{
+  height: 100%;
+}
 .taskDetail-wrap-operation {
   margin-top: 160px;
   margin-bottom: 10px;
@@ -354,7 +361,7 @@ export default {
 }
 .configure {
   width: 98%;
-  height: 652px;
+  height: 94%;
   border: 1px solid black;
   margin: 0 auto;
   position: relative;
@@ -369,7 +376,7 @@ export default {
 }
 .log {
   width: 100%;
-  height: 652px;
+  height: 94%;
   border: 1px solid black;
   position: relative;
 }

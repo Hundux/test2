@@ -181,6 +181,7 @@ import NewTask from './Task/newTask'
 import TaskDetail from './Task/taskDetail'
 import Log from './Log'
 export default {
+  name: "Task",
   data() {
     var global = this
     return {
@@ -194,39 +195,39 @@ export default {
         },
         {
           title: '名称',
-          key: 'name',
+          key: 'title',
           width: 80,
           align: 'center',
           resizable: true,
         },
         {
           title: "类型",
-          key: 'type',
+          key: 'category',
           width: 100,
           align: 'center',
           resizable: true,
           filters: [
             {
               label: "普通任务",
-              value: "普通任务"
+              value: "TASK"
             },
             {
               label: "服务任务",
-              value: "服务任务"
+              value: "SERVICE"
             }
           ],
           filterMultiple: true,
           filterMethod(value, row) {
-            if (value === "普通任务") {
-              return row.type == '执行配置'
-            } else if (value === "服务任务") {
-              return row.type == '调用服务'
+            if (value === "TASK") {
+              return row.category == "TASK"
+            } else if (value === "SERVICE") {
+              return row.category == "SERVICE"
             }
           },
           render: (h, params) => {
-            if (params.row.type === '执行配置') {
+            if (params.row.category === "TASK") {
               return h('i-icon', { props: { type: 'md-list', size: '20' } })
-            } else if (params.row.type === '调用服务') {
+            } else if (params.row.category === "SERVICE") {
               return h('i-icon', { props: { type: 'md-cloud', size: '20' } })
             }
           },
@@ -338,7 +339,7 @@ export default {
         },
         {
           title: '状态',
-          key: 'state',
+          key: 'status',
           width: 100,
           align: 'center',
           resizable: true,
@@ -349,7 +350,7 @@ export default {
             },
             {
               label: '准备就绪',
-              value: "准备就绪"
+              value: "READY"
             },
             {
               label: '禁用',
@@ -359,11 +360,18 @@ export default {
           filterMultiple: true,
           filterMethod(value, row) {
             if (value === 1) {
-              return row.state == '运行中'
-            } else if (value === 2) {
-              return row.state == '准备就绪'
+              return row.status == "运行中"
+            } else if (value === "READY") {
+              return row.status == "READY"
             } else if (value === 3) {
-              return row.state == '禁用'
+              return row.status == '禁用'
+            }
+          },
+          render: (h, params) => {
+            if (params.row.category === "TASK") {
+              return h('span', "准备就绪")
+            } else if (params.row.category === "SERVICE") {
+              return h('i-icon', { props: { type: 'md-cloud', size: '20' } })
             }
           },
           renderHeader(h, params) {
@@ -418,30 +426,6 @@ export default {
         },
       ],
       TaskData: [
-        {
-          name: '名称1',
-          type: '执行配置',
-          plan: '定期',
-          state: '运行中',
-          isSuspend: true,
-          isban: false
-        },
-        {
-          name: "名称2",
-          type: "调用服务",
-          plan: "定点",
-          state: "准备就绪",
-          isSuspend: false,
-          isban: false
-        },
-        {
-          name: "名称3",
-          type: "执行配置",
-          plan: "未计划",
-          state: "禁用",
-          isSuspend: true,
-          isban: true
-        }
       ],
       newTask: false,
       taskDetail: false,
@@ -489,11 +473,17 @@ export default {
   },
   async mounted() {
     const self = this
-    const res = await self.axios({
-      methods: "get",
-      url: self.$store.state.baseurl + "/api/job/list"
-    })
-    console.log(res)
+    try {
+      const res = await self.axios({
+        methods: "get",
+        url: self.$store.state.baseurl + "api/job/list",
+      })
+      if (res.data.code == 0) {
+        self.TaskData = res.data.data
+      }
+    } catch (error) {
+      self.$message.error(error)
+    }
   },
 }
 </script>
