@@ -4,12 +4,12 @@
       title="新建任务"
       :value="newTask"
       @on-cancel="cancle"
-      width="1000px"
+      width="100%"
       footer-hide
     >
 
       <i-row style="height:100%">
-        <i-col span="15" style="height:100%">
+        <i-col span="18" style="height:100%">
           <div
             class="configure"
             v-if="taskForm.category==='TASK'"
@@ -92,7 +92,7 @@
             </i-row>
           </div>
         </i-col>
-        <i-col span="9">
+        <i-col span="6">
           <i-form
             label-position="right"
             :label-width="100"
@@ -261,8 +261,8 @@ export default {
   data() {
     return {
       taskForm: {
-        plan: '',
-        title: '',
+        plan: "",
+        title: "",
         category: "TASK",
         spec: {
           "@vue/cli-plugin-babel": "~4.5.0",
@@ -294,8 +294,9 @@ export default {
         spec: self.taskForm.spec,
         schedule_at: self.taskForm.date + self.taskForm.time
       }
+      console.log(xData)
       const res = await self.axios({
-        methods: "options",
+        method: "post",
         url: self.$store.state.baseurl + "api/job/create",
         data: xData
       })
@@ -316,8 +317,8 @@ export default {
   margin-left: 0 !important;
 }
 >>> .ivu-modal {
-  top: 15px !important;
-  height: 95%;
+  top: 0px !important;
+  height: 100%;
   overflow: hidden;
 }
 >>> .ivu-modal-content {
@@ -330,7 +331,7 @@ export default {
   text-align: center;
 }
 .configure {
-  width: 600px;
+  width: 100%;
   height: 94%;
   border: 1px solid black;
   margin: 0 auto;

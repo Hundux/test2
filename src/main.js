@@ -4,6 +4,7 @@ import router from "./router";
 import store from "./store";
 import VueAxios from 'vue-axios'
 import axios from 'axios'
+import moment from "moment"
 import 'element-ui/lib/theme-chalk/icon.css';
 import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup } from 'view-design'
 
@@ -48,6 +49,7 @@ Vue.component('i-spin', Spin)
 Vue.component('i-drawer', Drawer)
 Vue.component('i-backTop', BackTop)
 
+Vue.prototype.$moment = moment
 Vue.prototype.$Message = Message
 Vue.prototype.$Message.config({
   top: 50,
