@@ -8,24 +8,24 @@
       footer-hide
     >
 
-      <i-row>
-        <i-col span="15">
+      <i-row style="height:100%">
+        <i-col span="15" style="height:100%">
           <div
             class="configure"
-            v-if="taskForm.type==='执行配置'"
+            v-if="taskForm.category==='TASK'"
           >
             <i-vueJsonEditor
               name="jsonData"
-              v-model="jsonData"
+              v-model="taskForm.spec"
               :mode="'code'"
               lang="zh"
-              v-if="jsonData"
+              v-if="taskForm.spec"
               class="vueJsonEditor"
             ></i-vueJsonEditor>
           </div>
           <div
             class="configure"
-            v-if="taskForm.type==='调用服务'"
+            v-if="taskForm.category==='SERVICE'"
           >
             <i-row class="configure-top">
               <i-col
@@ -45,7 +45,10 @@
                 <i-input style="width:60%"></i-input>
               </i-col>
               <i-col span="8">
-                <i-input type="textarea"  style="width:60%"></i-input>
+                <i-input
+                  type="textarea"
+                  style="width:60%"
+                ></i-input>
               </i-col>
               <i-col span="4">
                 <i-input style="width:60%"></i-input>
@@ -57,10 +60,13 @@
                 class="configure-body-one"
               ><span>参数2：</span></i-col>
               <i-col span="8">
-                <i-input  style="width:60%"></i-input>
+                <i-input style="width:60%"></i-input>
               </i-col>
               <i-col span="8">
-                <i-input type="textarea" style="width:60%"></i-input>
+                <i-input
+                  type="textarea"
+                  style="width:60%"
+                ></i-input>
               </i-col>
               <i-col span="4">
                 <i-input style="width:60%"></i-input>
@@ -75,7 +81,10 @@
                 <i-input style="width:60%"></i-input>
               </i-col>
               <i-col span="8">
-                <i-input type="textarea" style="width:60%"></i-input>
+                <i-input
+                  type="textarea"
+                  style="width:60%"
+                ></i-input>
               </i-col>
               <i-col span="4">
                 <i-input style="width:60%"></i-input>
@@ -205,7 +214,7 @@
               class="form-item"
             >
               <i-input
-                v-model="taskForm.name"
+                v-model="taskForm.title"
                 style="width:250px"
               ></i-input>
             </i-formItem>
@@ -214,11 +223,11 @@
               class="form-item"
             >
               <i-select
-                v-model="taskForm.type"
+                v-model="taskForm.category"
                 style="width:250px"
               >
-                <i-option value="执行配置">执行配置</i-option>
-                <i-option value="调用服务">调用服务</i-option>
+                <i-option value="TASK">执行配置</i-option>
+                <i-option value="SERVICE">调用服务</i-option>
               </i-select>
             </i-formItem>
             <i-formItem
@@ -236,7 +245,10 @@
             </i-formItem>
           </i-form>
           <div class="determine">
-            <i-button type="primary">确定</i-button>
+            <i-button
+              type="primary"
+              @click="createTask"
+            >确定</i-button>
           </div>
         </i-col>
       </i-row>
@@ -249,14 +261,19 @@ export default {
   data() {
     return {
       taskForm: {
-        plan: '未计划',
-        name: '',
-        type: '执行配置',
+        plan: '',
+        title: '',
+        category: "TASK",
+        spec: {
+          "@vue/cli-plugin-babel": "~4.5.0",
+          "@vue/cli-plugin-eslint": "~4.5.0",
+          "@vue/cli-plugin-router": "~4.5.0",
+          "@vue/cli-plugin-vuex": "~4.5.0",
+        },
         date: '',
         time: '',
         service: ''
       },
-      jsonData: {}
     }
   },
   props: {
@@ -268,6 +285,21 @@ export default {
   methods: {
     cancle() {
       this.$emit("cancleNewTaskModal")
+    },
+    async createTask() {
+      const self = this
+      const xData = {
+        title: self.taskForm.title,
+        category: self.taskForm.category,
+        spec: self.taskForm.spec,
+        schedule_at: self.taskForm.date + self.taskForm.time
+      }
+      const res = await self.axios({
+        methods: "options",
+        url: self.$store.state.baseurl + "api/job/create",
+        data: xData
+      })
+      console.log(res)
     }
   }
 }
@@ -285,13 +317,21 @@ export default {
 }
 >>> .ivu-modal {
   top: 15px !important;
+  height: 95%;
+  overflow: hidden;
+}
+>>> .ivu-modal-content {
+  height: 100%;
+}
+>>> .ivu-modal-body{
+  height: 100%;
 }
 .time-col {
   text-align: center;
 }
 .configure {
   width: 600px;
-  height: 610px;
+  height: 94%;
   border: 1px solid black;
   margin: 0 auto;
 }
@@ -329,7 +369,7 @@ export default {
 >>> .jsoneditor-poweredBy {
   display: none !important;
 }
->>> textarea.ivu-input{
+>>> textarea.ivu-input {
   height: 32px;
 }
 </style>

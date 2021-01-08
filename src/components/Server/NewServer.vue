@@ -8,8 +8,8 @@
       footer-hide
     >
 
-      <i-row>
-        <i-col span="15">
+      <i-row style="height:100%">
+        <i-col span="15" style="height:100%">
           <div
             class="configure"
             v-if="taskForm.type==='执行配置'"
@@ -28,6 +28,7 @@
           <i-form
             label-position="right"
             :label-width="60"
+            class="titleForm"
           >
             <i-formItem
               label="名称："
@@ -46,8 +47,8 @@
                 class="configure-top-one"
               ><span>参数</span></i-col>
 
-              <i-col span="9">默认值</i-col>
-              <i-col span="9">描述</i-col>
+              <i-col span="6">默认值</i-col>
+              <i-col span="12">描述</i-col>
             </i-row>
             <i-row class="configure-body">
               <i-col
@@ -55,13 +56,13 @@
                 class="configure-body-one"
               ><span>参数1：</span></i-col>
 
-              <i-col span="9">
+              <i-col span="6">
                 <i-input
                   style="width:85%"
                   value='"1"'
                 ></i-input>
               </i-col>
-              <i-col span="9">
+              <i-col span="12">
                 <i-input
                   type="textarea"
                   style="width:85%"
@@ -74,13 +75,13 @@
                 class="configure-body-one"
               ><span>参数2：</span></i-col>
 
-              <i-col span="9">
+              <i-col span="6">
                 <i-input
                   style="width:85%"
                   value='"1"'
                 ></i-input>
               </i-col>
-              <i-col span="9">
+              <i-col span="12">
                 <i-input
                   type="textarea"
                   style="width:85%"
@@ -93,13 +94,13 @@
                 class="configure-body-one"
               ><span>参数3：</span></i-col>
 
-              <i-col span="9">
+              <i-col span="6">
                 <i-input
                   style="width:85%"
                   value='"1"'
                 ></i-input>
               </i-col>
-              <i-col span="9">
+              <i-col span="12">
                 <i-input
                   type="textarea"
                   style="width:85%"
@@ -157,15 +158,15 @@ export default {
 >>> .ivu-modal-header {
   text-align: center;
 }
->>> .ivu-form-item-content {
-  margin-left: 0 !important;
+>>> .ivu-modal-body{
+  height: 100%;
 }
 .time-col {
   text-align: center;
 }
 .configure {
   width: 600px;
-  height: 619px;
+  height: 94%;
   border: 1px solid black;
   margin: 0 auto;
 }
@@ -209,5 +210,11 @@ export default {
 }
 >>> textarea.ivu-input{
   height: 32px;
+}
+.titleForm{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: -12px;
 }
 </style>

@@ -12,6 +12,7 @@
         <i-col
           span="10"
           class="serverDetail-configure"
+          style="height:100%"
         >
           <div class="configure">
             <i-vueJsonEditor
@@ -46,19 +47,19 @@
               span="6"
               class="configure-top-one"
             ><span>参数</span></i-col>
-            <i-col span="9">默认值</i-col>
-            <i-col span="9">描述</i-col>
+            <i-col span="6">默认值</i-col>
+            <i-col span="12">描述</i-col>
           </i-row>
           <i-row class="configure-body">
             <i-col
               span="6"
               class="configure-body-one"
             ><span>参数1：</span></i-col>
-            <i-col span="9">
+            <i-col span="6">
               <i-input style="width:85%"></i-input>
             </i-col>
-            <i-col span="9">
-                <i-input type="textarea" style="width:85%"></i-input>
+            <i-col span="12">
+                <i-input type="textarea" style="width:95%"></i-input>
               </i-col>
           </i-row>
           <i-row class="configure-body">
@@ -66,11 +67,11 @@
               span="6"
               class="configure-body-one"
             ><span>参数2：</span></i-col>
-            <i-col span="9">
+            <i-col span="6">
               <i-input style="width:85%"></i-input>
             </i-col>
-            <i-col span="9">
-                <i-input type="textarea" style="width:85%"></i-input>
+            <i-col span="12">
+                <i-input type="textarea" style="width:95%"></i-input>
               </i-col>
           </i-row>
           <i-row class="configure-body">
@@ -78,11 +79,11 @@
               span="6"
               class="configure-body-one"
             ><span>参数3：</span></i-col>
-            <i-col span="9">
+            <i-col span="6">
               <i-input style="width:85%"></i-input>
             </i-col>
-            <i-col span="9">
-                <i-input type="textarea" style="width:85%"></i-input>
+            <i-col span="12">
+                <i-input type="textarea" style="width:95%"></i-input>
               </i-col>
           </i-row>
           <div>
@@ -106,7 +107,7 @@
             >复制</i-button>
           </i-buttongroup>
         </i-col>
-        <i-col span="9">
+        <i-col span="9" style="height:100%">
           <div class="log">
             <div class="noLog">
               暂无日志
@@ -229,6 +230,12 @@ export default {
   justify-content: center;
   margin-bottom: 10px;
 }
+>>> .ivu-modal-body{
+  height: 100%;
+}
+.serverDetail-wrap{
+  height: 100%;
+}
 .serverDetail-wrap-operation {
   margin-top: 150px;
   margin-bottom: 10px;
@@ -238,7 +245,7 @@ export default {
 }
 .configure {
   width: 98%;
-  height: 652px;
+  height: 94%;
   border: 1px solid black;
   margin: 0 auto;
   position: relative;
@@ -253,7 +260,7 @@ export default {
 }
 .log {
   width: 100%;
-  height: 652px;
+  height: 94%;
   border: 1px solid black;
   position: relative;
 }
