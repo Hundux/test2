@@ -165,7 +165,7 @@ export default {
         {
           title: '名称',
           key: 'name',
-          width: 80,
+          width: 230,
           align: 'center',
           resizable: true,
         },
@@ -174,7 +174,7 @@ export default {
           key: 'configuration',
           slot: 'configuration',
           align: 'center',
-          minWidth: 150,
+          minWidth: 100,
           resizable: true,
         },
         {
@@ -252,7 +252,7 @@ export default {
           key: 'operation',
           slot: 'operation',
           align: 'center',
-          minWidth: 200,
+          minWidth: 150,
           resizable: true,
         },
         {
@@ -260,7 +260,7 @@ export default {
           key: 'log',
           slot: 'log',
           align: 'center',
-          minWidth: 150,
+          minWidth: 120,
           resizable: true,
         },
       ],

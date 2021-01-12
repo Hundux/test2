@@ -3,7 +3,7 @@
     <i-modal
       title="任务详情"
       :value="taskDetail"
-      @on-cancel="cancle"
+      @on-cancel="cancle(true)"
       width="100%"
       class="taskDetailModal"
       footer-hide
@@ -15,14 +15,16 @@
           style="height:100%"
         >
           <div class="configure">
-            <i-vueJsonEditor
-              name="jsonData"
-              v-model="jsonData"
-              :mode="'code'"
-              lang="zh"
-              v-if="jsonData"
-              class="vueJsonEditor"
-            ></i-vueJsonEditor>
+            <div v-if="task.content" style="height:100%">
+              <i-vueJsonEditor
+                name="jsonData"
+                :mode="'code'"
+                lang="zh"
+                v-model="task.content.spec"
+                v-if="task.content.spec"
+                class="vueJsonEditor"
+              ></i-vueJsonEditor>
+            </div>
             <p
               class="noConfigure"
               v-else
@@ -40,40 +42,54 @@
           >
             <i-formItem label="名称：">
               <i-input
-                style="width:200px"
-                :value="task.name"
+                style="width:250px"
+                v-model="task.title"
               ></i-input>
             </i-formItem>
             <i-formItem label="执行计划：">
+              <i-input
+                style="width:250px"
+                :value="task.date ? task.date : '未计划'"
+                disabled
+              ></i-input>
+            </i-formItem>
+            <i-formItem label="修改计划：">
               <i-select
                 style="width:200px"
-                :value="task.plan"
-                @on-change="planChange"
+                v-model="updateTask.plan"
               >
                 <i-option value="定点">定点</i-option>
                 <i-option value="定期">定期</i-option>
               </i-select>
             </i-formItem>
             <i-row
-              class="form-item"
-              v-if="task.plan==='定点'"
+              class="dataRow"
+              v-if="updateTask.plan==='定点'"
               style="marginBottom:10px"
             >
-                <i-col span="12">
-                  <i-datePicker
-                    type="date"
-                    placeholder="Select date"
-                  ></i-datePicker>
-                </i-col>
-                <i-col span="12">
-                  <i-timePicker
-                    type="time"
-                    placeholder="Select time"
-                  ></i-timePicker>
-                </i-col>
+              <i-col>
+                <i-datePicker
+                  type="date"
+                  placeholder="Select date"
+                  @on-change="dataChange"
+                ></i-datePicker>
+              </i-col>
             </i-row>
             <i-row
-              v-if="task.plan==='定期'"
+              class="dataRow"
+              v-if="updateTask.plan==='定点'"
+              style="marginBottom:10px"
+            >
+              <i-col>
+                <i-timePicker
+                  type="time"
+                  placeholder="Select time"
+                  @on-change="timeChange"
+                ></i-timePicker>
+              </i-col>
+            </i-row>
+            <i-row
+              v-if="updateTask.plan==='定期'"
               class="period form-item"
               style="margin-left:20px"
             >
@@ -101,13 +117,9 @@
                 span="3"
                 class="time-col"
               ><span class="time">月</span></i-col>
-              <i-col
-                span="3"
-                class="time-col"
-              ><span class="time">年</span></i-col>
             </i-row>
             <i-row
-              v-if="task.plan==='定期'"
+              v-if="updateTask.plan==='定期'"
               class="form-item"
               style="margin-bottom:10px;margin-left:20px"
             >
@@ -115,43 +127,44 @@
                   type="number"
                   min="0"
                   style="width:46px"
+                  v-model="undateTask.second"
                 /></i-col>
               <i-col span="3"><input
                   type="number"
                   min="0"
                   style="width:46px"
+                  v-model="undateTask.minute"
                 /></i-col>
               <i-col span="3"><input
                   type="number"
                   min="0"
                   style="width:46px"
+                  v-model="undateTask.hour"
                 /></i-col>
               <i-col span="3"><input
                   type="number"
                   min="0"
                   style="width:46px"
+                  v-model="undateTask.day"
                 /></i-col>
               <i-col span="5"><input
                   type="number"
                   min="0"
                   style="width:73px"
+                  v-model="undateTask.month"
                 /></i-col>
               <i-col span="3"><input
                   type="number"
                   min="0"
                   style="width:46px"
-                /></i-col>
-              <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
+                  v-model="undateTask.week"
                 /></i-col>
             </i-row>
             <i-formItem label="类型：">
               <i-select
                 style="width:200px"
                 disabled
-                :value="task.type"
+                :placeholder="task.category"
               >
                 <i-option value="执行配置">执行配置</i-option>
                 <i-option value="调用服务">调用服务</i-option>
@@ -174,6 +187,7 @@
             <i-button
               type="primary"
               class="task-determine"
+              @click="undateTask"
             >确定</i-button>
           </div>
           <p class="taskDetail-wrap-operation">操作栏</p>
@@ -184,26 +198,48 @@
             <i-button
               type="success"
               icon="md-play"
+              @click="runTask"
             >立即执行</i-button>
+            <i-button
+              type="success"
+              iicon="md-checkmark"
+              v-if="task.enabled === false"
+              @click="handBanClick(1)"
+            >启用</i-button>
             <i-button
               type="error"
               icon="md-trash"
+              @click="handBanClick()"
+              v-else
             >禁用</i-button>
             <i-button
               type="primary"
               icon="md-copy"
+              @click="handleCopy(task)"
             >复制</i-button>
             <i-button
               type="warning"
               icon="md-pause"
+              v-if="task.status=='RUNNING'"
+              @click="handPausedClick"
             >暂停</i-button>
+            <i-button
+              type="success"
+              icon="md-refresh"
+              v-else
+              @click="runTask"
+            >恢复</i-button>
             <i-button
               type="error"
               icon="md-close"
+              @click="handStoppedClick()"
             >终止</i-button>
           </i-buttongroup>
         </i-col>
-        <i-col span="7" style="height:100%">
+        <i-col
+          span="7"
+          style="height:100%"
+        >
           <div class="log">
             <div class="noLog">
               暂无日志
@@ -223,73 +259,18 @@ import ServerDetail from '../Server/ServerDetail'
 export default {
   data() {
     return {
-      jsonData: {
-        "name": "sccm",
-        "version": "0.1.0",
-        "lockfileVersion": 1,
-        "requires": true,
-        "dependencies": {
-          "@babel/code-frame": {
-            "version": "7.12.11",
-            "resolved": "https://registry.npm.taobao.org/@babel/code-frame/download/@babel/code-frame-7.12.11.tgz?cache=0&sync_timestamp=1608076875397&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40babel%2Fcode-frame%2Fdownload%2F%40babel%2Fcode-frame-7.12.11.tgz",
-            "integrity": "sha1-9K1DWqJj25NbjxDyxVLSP7cWpj8=",
-            "dev": true,
-            "requires": {
-              "@babel/highlight": "^7.10.4"
-            }
-          },
-        },
-        "@babel/compat-data": {
-          "version": "7.12.7",
-          "resolved": "https://registry.npm.taobao.org/@babel/compat-data/download/@babel/compat-data-7.12.7.tgz",
-          "integrity": "sha1-kym0eCp9a71+71fhGt35HuPvHkE=",
-          "dev": true
-        },
-        "@babel/core": {
-          "version": "7.12.10",
-          "resolved": "https://registry.npm.taobao.org/@babel/core/download/@babel/core-7.12.10.tgz?cache=0&sync_timestamp=1607568968691&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40babel%2Fcore%2Fdownload%2F%40babel%2Fcore-7.12.10.tgz",
-          "integrity": "sha1-t5ouG59w7T2Eu/ttjE74JfYGvM0=",
-          "dev": true,
-          "requires": {
-            "@babel/code-frame": "^7.10.4",
-            "@babel/generator": "^7.12.10",
-            "@babel/helper-module-transforms": "^7.12.1",
-            "@babel/helpers": "^7.12.5",
-            "@babel/parser": "^7.12.10",
-            "@babel/template": "^7.12.7",
-            "@babel/traverse": "^7.12.10",
-            "@babel/types": "^7.12.10",
-            "convert-source-map": "^1.7.0",
-            "debug": "^4.1.0",
-            "gensync": "^1.0.0-beta.1",
-            "json5": "^2.1.2",
-            "lodash": "^4.17.19",
-            "semver": "^5.4.1",
-            "source-map": "^0.5.0"
-          }
-        },
-        "@babel/generator": {
-          "version": "7.12.11",
-          "resolved": "https://registry.npm.taobao.org/@babel/generator/download/@babel/generator-7.12.11.tgz?cache=0&sync_timestamp=1608076880719&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40babel%2Fgenerator%2Fdownload%2F%40babel%2Fgenerator-7.12.11.tgz",
-          "integrity": "sha1-mKffe4w1jJo3qweiQFaFMBaro68=",
-          "dev": true,
-          "requires": {
-            "@babel/types": "^7.12.11",
-            "jsesc": "^2.5.1",
-            "source-map": "^0.5.0"
-          }
-        },
-        "@babel/helper-annotate-as-pure": {
-          "version": "7.12.10",
-          "resolved": "https://registry.npm.taobao.org/@babel/helper-annotate-as-pure/download/@babel/helper-annotate-as-pure-7.12.10.tgz?cache=0&sync_timestamp=1607584028947&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40babel%2Fhelper-annotate-as-pure%2Fdownload%2F%40babel%2Fhelper-annotate-as-pure-7.12.10.tgz",
-          "integrity": "sha1-VKubAA5gqTZEzhez830xOq8dEV0=",
-          "dev": true,
-          "requires": {
-            "@babel/types": "^7.12.10"
-          }
-        },
-      },
       serverDetail: false,
+      updateTask: {
+        plan: "",
+        date: "",
+        time: "",
+        second: "0",
+        minute: "0",
+        hour: "0",
+        day: "0",
+        month: "0",
+        week: "0",
+      },
     }
   },
   props: {
@@ -302,8 +283,9 @@ export default {
     }
   },
   methods: {
-    cancle() {
-      this.$emit('cancleTaskDetailModal')
+    cancle(isOperation, task) {
+      this.taskPlan = ""
+      this.$emit("cancleTaskDetailModal", isOperation, task)
     },
     handleServerDetail() {
       this.serverDetail = true
@@ -311,8 +293,140 @@ export default {
     handleCancleServerDetailModal() {
       this.serverDetail = false
     },
-    planChange(newValue) {
-      this.$emit('changePlan', newValue)
+    async runTask() {
+      console.log(this.task)
+      const self = this
+      let xData = {
+        id: self.task.id,
+        crawler_count: 1
+      }
+      try {
+        const res = await self.axios({
+          method: "post",
+          url: self.$store.state.baseurl + "api/job/run",
+          params: xData
+        })
+        if (res.data.code === 0) {
+          self.cancle(true)
+        }
+      } catch (err) {
+        self.$Message.error("运行任务错误")
+      }
+    },
+    async handBanClick(isBan) {
+      const self = this
+      let xData = {
+        id: self.task.id,
+        enabled: isBan
+      }
+      try {
+        const res = await self.axios({
+          method: "post",
+          url: self.$store.state.baseurl + "api/job/enable",
+          params: xData
+        })
+        if (res.data.code == 0) {
+          self.cancle(true)
+        }
+      } catch (err) {
+        self.$Message.error("启用或禁用任务错误")
+      }
+    },
+    // 终止任务
+    async handStoppedClick() {
+      const self = this
+      let xData = {
+        id: self.task.id,
+      }
+      try {
+        const res = await self.axios({
+          method: "post",
+          url: self.$store.state.baseurl + "api/job/stop",
+          params: xData
+        })
+        if (res.data.code === 0) {
+          self.cancle(true)
+        }
+      } catch (err) {
+        self.$Message.error("终止任务错误")
+      }
+    },
+    // 暂停任务
+    async handPausedClick() {
+      const self = this
+      let xData = {
+        id: self.task.id,
+      }
+      try {
+        const res = await self.axios({
+          method: "post",
+          url: self.$store.state.baseurl + "api/job/pause",
+          params: xData
+        })
+        if (res.data.code === 0) {
+          self.cancle(true)
+        }
+      } catch (err) {
+        self.$Message.error("运行任务错误")
+      }
+    },
+    // 修改任务
+    async undateTask() {
+      const self = this
+      let xData = {
+        id: self.task.id,
+        title: self.task.title,
+        spec: self.task.content.spec,
+      }
+      try {
+        if (self.updateTask.plan == "定点") {
+          const scheduleAt = self.updateTask.date + " " + self.updateTask.time
+          xData = {
+            id: self.task.id,
+            title: self.task.title,
+            spec: self.task.content.spec,
+            category: self.task.category,
+            schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
+          }
+        } else if (self.updateTask.plan == "定期") {
+          xData = {
+            id: self.task.id,
+            title: self.task.title,
+            category: self.task.category,
+            spec: self.task.content.spec,
+            schedule_cron_second: self.undateTask.second,
+            schedule_cron_minute: self.undateTask.minute,
+            schedule_cron_hour: self.undateTask.hour,
+            schedule_cron_day_of_month: self.undateTask.day,
+            schedule_cron_month: self.undateTask.day,
+            schedule_cron_day_of_week: self.undateTask.week
+          }
+        }
+        console.log(xData);
+        const res = await self.axios({
+          method: "patch",
+          url: self.$store.state.baseurl + "api/job/update",
+          params: xData
+        })
+        console.log(res)
+        if (res.data.code !== 0) {
+          self.$Message.error(res.data.code.error_message)
+        } else {
+          self.cancle(true)
+        }
+      } catch (error) {
+        self.$Message.error("修改任务错误")
+      }
+    },
+    handleCopy(task) {
+      // console.log(task);
+      this.cancle("copy", task)
+    },
+    dataChange(date) {
+      this.updateTask.date = date
+    },
+    timeChange(time) {
+      this.updateTask.time = time
     }
   },
   components: {
@@ -333,7 +447,7 @@ export default {
 >>> .ivu-modal-content {
   height: 100%;
 }
->>> .ivu-modal-body{
+>>> .ivu-modal-body {
   height: 100%;
 }
 .taskDetail-task {
@@ -341,7 +455,7 @@ export default {
   flex-direction: column;
   align-items: center;
 }
-.taskDetail-form{
+.taskDetail-form {
   min-width: 352px;
 }
 .taskitem {
@@ -349,11 +463,11 @@ export default {
   justify-content: center;
   margin-bottom: 10px;
 }
-.taskDetail-wrap{
+.taskDetail-wrap {
   height: 100%;
 }
 .taskDetail-wrap-operation {
-  margin-top: 160px;
+  margin-top: 100px;
   margin-bottom: 10px;
 }
 .taskDetail-configure-plan {
@@ -410,5 +524,10 @@ export default {
 }
 >>> .ivu-form-item-content {
   margin-left: 0px !important;
+}
+.dataRow {
+  display: flex;
+  justify-content: center;
+  margin-left: 50px;
 }
 </style>

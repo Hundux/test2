@@ -9,17 +9,19 @@
     >
 
       <i-row style="height:100%">
-        <i-col span="18" style="height:100%">
+        <i-col
+          span="18"
+          style="height:100%"
+        >
           <div
             class="configure"
             v-if="taskForm.category==='TASK'"
           >
             <i-vueJsonEditor
               name="jsonData"
-              v-model="taskForm.spec"
+              v-model="taskForm.content.spec"
               :mode="'code'"
               lang="zh"
-              v-if="taskForm.spec"
               class="vueJsonEditor"
             ></i-vueJsonEditor>
           </div>
@@ -106,36 +108,37 @@
                 style="width:250px"
                 placeholder="未计划"
               >
-                <i-option value="单次">单次</i-option>
-                <i-option value="周期">周期</i-option>
+                <i-option value="定点">单次</i-option>
+                <i-option value="定期">周期</i-option>
               </i-select>
             </i-formItem>
 
-            <i-row>
-              <i-formItem
-                class="form-item"
-                label="定时："
-                v-if="taskForm.plan==='单次'"
-              >
-                <i-col span="12">
-                  <i-datePicker
-                    type="date"
-                    placeholder="Select date"
-                    v-model="taskForm.date"
-                  ></i-datePicker>
-                </i-col>
-                <i-col span="12">
-                  <i-timePicker
-                    type="time"
-                    placeholder="Select time"
-                    v-model="taskForm.time"
-                  ></i-timePicker>
-                </i-col>
-              </i-formItem>
-            </i-row>
-
             <i-row
-              v-if="taskForm.plan==='周期'"
+              v-if="taskForm.plan==='定点'"
+              class="dataRow"
+            >
+              <i-col span="12">
+                <i-datePicker
+                  type="date"
+                  placeholder="Select date"
+                  @on-change="dataChange"
+                ></i-datePicker>
+              </i-col>
+            </i-row>
+            <i-row
+              v-if="taskForm.plan==='定点'"
+              class="dataRow"
+            >
+              <i-col span="12">
+                <i-timePicker
+                  type="time"
+                  placeholder="Select time"
+                  @on-change="timeChange"
+                ></i-timePicker>
+              </i-col>
+            </i-row>
+            <i-row
+              v-if="taskForm.plan==='定期'"
               class="period form-item"
               style="margin-left:20px"
             >
@@ -144,11 +147,11 @@
                 class="time-col"
               ><span class="time">秒</span></i-col>
               <i-col
-                span="3"
+                span="4"
                 class="time-col"
               ><span class="time">分钟</span></i-col>
               <i-col
-                span="3"
+                span="4"
                 class="time-col"
               ><span class="time">小时</span></i-col>
               <i-col
@@ -163,13 +166,9 @@
                 span="3"
                 class="time-col"
               ><span class="time">月</span></i-col>
-              <i-col
-                span="3"
-                class="time-col"
-              ><span class="time">年</span></i-col>
             </i-row>
             <i-row
-              v-if="taskForm.plan==='周期'"
+              v-if="taskForm.plan==='定期'"
               class="form-item"
               style="margin-bottom:10px;margin-left:20px"
             >
@@ -177,36 +176,37 @@
                   type="number"
                   min="0"
                   style="width:46px"
+                  v-model="taskForm.schedule.cron.second"
+                /></i-col>
+              <i-col span="4"><input
+                  type="number"
+                  min="0"
+                  style="width:61px"
+                  v-model="taskForm.schedule.cron.minute"
+                /></i-col>
+              <i-col span="4"><input
+                  type="number"
+                  min="0"
+                  style="width:61px"
+                  v-model="taskForm.schedule.cron.hour"
                 /></i-col>
               <i-col span="3"><input
                   type="number"
                   min="0"
                   style="width:46px"
-                /></i-col>
-              <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
-                /></i-col>
-              <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
+                  v-model="taskForm.schedule.cron.day_of_month"
                 /></i-col>
               <i-col span="5"><input
                   type="number"
                   min="0"
-                  style="width:73px"
+                  style="width:76px"
+                  v-model="taskForm.schedule.cron.day_of_week"
                 /></i-col>
               <i-col span="3"><input
                   type="number"
                   min="0"
                   style="width:46px"
-                /></i-col>
-              <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
+                  v-model="taskForm.schedule.cron.month"
                 /></i-col>
             </i-row>
             <i-formItem
@@ -264,15 +264,27 @@ export default {
         plan: "",
         title: "",
         category: "TASK",
-        spec: {
-          "@vue/cli-plugin-babel": "~4.5.0",
-          "@vue/cli-plugin-eslint": "~4.5.0",
-          "@vue/cli-plugin-router": "~4.5.0",
-          "@vue/cli-plugin-vuex": "~4.5.0",
+        content: {
+          spec: {
+            "appid": "~4.5.0",
+            "crawlid": "~4.5.0",
+            "url": "~4.5.0",
+            "spiderid": "~4.5.0",
+          },
         },
-        date: '',
-        time: '',
-        service: ''
+        schedule: {
+          cron: {
+            "day_of_month": "0",
+            "day_of_week": "0",
+            "hour": "0",
+            "minute": "0",
+            "month": "0",
+            "second": "0"
+          }
+        },
+        date: "",
+        time: "",
+        service: '',
       },
     }
   },
@@ -281,27 +293,123 @@ export default {
       type: Boolean,
       default: false
     },
+    copyTask: {
+      type: Object
+    }
+  },
+  watch: {
+    copyTask(newValue) {
+      if (newValue) {
+        if (newValue.id) {
+          this.taskForm = newValue
+        }
+      }
+    }
   },
   methods: {
-    cancle() {
-      this.$emit("cancleNewTaskModal")
+    cancle(isCreate) {
+      this.taskForm = {
+        plan: "",
+        title: "",
+        category: "TASK",
+        content: {
+          spec: {
+            "appid": "~4.5.0",
+            "crawlid": "~4.5.0",
+            "url": "~4.5.0",
+            "spiderid": "~4.5.0",
+          },
+        },
+        schedule: {
+          cron: {
+            "day_of_month": "0",
+            "day_of_week": "0",
+            "hour": "0",
+            "minute": "0",
+            "month": "0",
+            "second": "0"
+          }
+        },
+        date: "",
+        time: "",
+        service: '',
+      }
+      this.$emit("cancleNewTaskModal", isCreate)
     },
     async createTask() {
       const self = this
-      const xData = {
-        title: self.taskForm.title,
-        category: self.taskForm.category,
-        spec: self.taskForm.spec,
-        schedule_at: self.taskForm.date + self.taskForm.time
+      try {
+        let xData = {}
+        if (self.taskForm.plan == "定点") {
+          const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+          if (self.copyTask.id) {
+            xData = {
+              title: self.taskForm.title,
+              category: self.taskForm.category,
+              spec: self.taskForm.content.spec,
+              schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
+              is_copy: 1
+            }
+          } else {
+            xData = {
+              title: self.taskForm.title,
+              category: self.taskForm.category,
+              spec: self.taskForm.content.spec,
+              schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
+            }
+          }
+
+        } else if (self.taskForm.plan == "定期") {
+          if (self.copyTask.id) {
+            xData = {
+              title: self.taskForm.title,
+              category: self.taskForm.category,
+              spec: self.taskForm.content.spec,
+              schedule_cron_second: self.taskForm.schedule.cron.second,
+              schedule_cron_minute: self.taskForm.schedule.cron.minute,
+              schedule_cron_hour: self.taskForm.schedule.cron.hour,
+              schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
+              schedule_cron_month: self.taskForm.schedule.cron.month,
+              schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
+              is_copy: 1
+            }
+          } else {
+            xData = {
+              title: self.taskForm.title,
+              category: self.taskForm.category,
+              spec: self.taskForm.content.spec,
+              schedule_cron_second: self.taskForm.schedule.cron.second,
+              schedule_cron_minute: self.taskForm.schedule.cron.minute,
+              schedule_cron_hour: self.taskForm.schedule.cron.hour,
+              schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
+              schedule_cron_month: self.taskForm.schedule.cron.month,
+              schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
+            }
+          }
+
+        }
+        console.log(xData);
+        const res = await self.axios({
+          method: "post",
+          url: self.$store.state.baseurl + "api/job/create",
+          params: xData
+        })
+        console.log(res);
+        if (res.data.code !== 0) {
+          self.$Message.error(res.data.error_message)
+        } else {
+          self.cancle(true)
+        }
+      } catch (err) {
+        self.$Message.error("新建任务失败")
       }
-      console.log(xData)
-      const res = await self.axios({
-        method: "post",
-        url: self.$store.state.baseurl + "api/job/create",
-        data: xData
-      })
-      console.log(res)
-    }
+    },
+    dataChange(date) {
+      this.taskForm.date = date
+    },
+    timeChange(time) {
+      this.taskForm.time = time
+    },
   }
 }
 </script>
@@ -324,7 +432,7 @@ export default {
 >>> .ivu-modal-content {
   height: 100%;
 }
->>> .ivu-modal-body{
+>>> .ivu-modal-body {
   height: 100%;
 }
 .time-col {
@@ -372,5 +480,11 @@ export default {
 }
 >>> textarea.ivu-input {
   height: 32px;
+}
+.dataRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+  margin-left: 10px;
 }
 </style>

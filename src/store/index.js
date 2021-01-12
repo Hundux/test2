@@ -6,7 +6,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     collpsed: true,
-    baseurl: 'http://106.12.9.121:8082/',
+    baseurl: 'http://106.12.94.159:8082/',
   },
   mutations: {
     changeCollpsed(state, newvalue) {
