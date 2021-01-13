@@ -164,7 +164,7 @@ export default {
         },
         {
           title: '名称',
-          key: 'name',
+          key: 'title',
           width: 230,
           align: 'center',
           resizable: true,
@@ -186,7 +186,7 @@ export default {
         },
         {
           title: '状态',
-          key: 'state',
+          key: 'status',
           width: 100,
           align: 'center',
           resizable: true,
@@ -207,11 +207,11 @@ export default {
           filterMultiple: true,
           filterMethod(value, row) {
             if (value === "运行中") {
-              return row.state == "运行中"
+              return row.status == "RUNNING"
             } else if (value === "准备就绪") {
-              return row.state == "准备就绪"
+              return row.status == "READY"
             } else if (value === "禁用") {
-              return row.state == "禁用"
+              return row.status == "DISABLED"
             }
           },
           renderHeader(h, params) {
@@ -265,18 +265,6 @@ export default {
         },
       ],
       ServeData: [
-        {
-          name: "id1",
-          params: "参数1",
-          state: '运行中',
-          isban: false
-        },
-        {
-          name: "id2",
-          params: "参数1,参数3,参数4",
-          state: '运行中',
-          isban: true
-        }
       ],
       newServer: false,
       serverDetail: false,
@@ -304,12 +292,33 @@ export default {
     },
     cancleTestServerModal() {
       this.testServer = false
+    },
+    // 获取服务列表
+    async getServe() {
+      const self = this
+      try {
+        const res = await self.axios({
+          method: "get",
+          url: self.$store.state.baseurl + "api/service/list",
+          params: {
+          }
+        })
+        console.log(res)
+        if (res.data.code == 0) {
+          self.ServeData = res.data.data
+        }
+      } catch (error) {
+        self.$Message.error("获取服务列表错误")
+      }
     }
   },
   components: {
     "i-newServer": NewServe,
     "i-serverDetail": ServerDetail,
     "i-testServer": TestServer
+  },
+  mounted() {
+    this.getServe()
   },
 }
 </script>

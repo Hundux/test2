@@ -9,15 +9,18 @@
       @on-visible-change="modalShow()"
     >
       <i-row style="margin:15px 0 30px 0">
-        <i-col span="4">
-          <i-button type="primary">任务名/爬虫名</i-button>
+        <i-col span="4" style="marginTop:-8px">
+          <span class="title">任务名/爬虫名</span>
         </i-col>
         <i-col span="8">
-          <i-select
-            style="width:400px"
-            :value="time"
-          >
-          </i-select>
+          <i-datePicker
+            type="date"
+            placeholder="Select date"
+          ></i-datePicker>
+          <i-timePicker
+            type="time"
+            placeholder="Select time"
+          ></i-timePicker>
         </i-col>
         <i-col
           span="7"
@@ -75,6 +78,19 @@
           </div>
         </template>
       </i-table>
+      <div class="page">
+        <i-page
+          :total="LogData.length"
+          :page-size-opts=[10,20,30,40,50,100]
+          size="small"
+          show-elevator
+          show-sizer
+          show-total
+          placement="top"
+          :current="current"
+          :page-size="pageSize"
+        />
+      </div>
     </i-modal>
   </div>
 </template>
@@ -163,7 +179,9 @@ export default {
       ],
       time: "",
       reptile: "",
-      level: ""
+      level: "",
+      current: 1,
+      pageSize: 10
     }
   },
   props: {
@@ -209,7 +227,19 @@ export default {
 >>> .ivu-modal-body {
   height: 100%;
 }
+>>> .ivu-table-column-center {
+  height: 24px !important;
+}
+.title {
+  color: #212891;
+  font-size: 1.7rem;
+}
 .search {
   margin-left: 50px;
+}
+.page {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
 }
 </style>

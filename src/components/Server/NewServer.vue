@@ -9,10 +9,13 @@
     >
 
       <i-row style="height:100%">
-        <i-col span="18" style="height:100%">
+        <i-col
+          span="18"
+          style="height:100%"
+        >
           <div
             class="configure"
-            v-if="taskForm.type==='执行配置'"
+            v-if="newServe.type==='执行配置'"
           >
             <i-vueJsonEditor
               name="jsonData"
@@ -35,7 +38,7 @@
               class="form-item"
             >
               <i-input
-                v-model="taskForm.name"
+                v-model="newServe.title"
                 style="width:250px"
               ></i-input>
             </i-formItem>
@@ -109,7 +112,10 @@
             </i-row>
           </div>
           <div class="determine">
-            <i-button type="primary">确定</i-button>
+            <i-button
+              type="primary"
+              @click="creatServer"
+            >确定</i-button>
           </div>
         </i-col>
       </i-row>
@@ -121,15 +127,17 @@
 export default {
   data() {
     return {
-      taskForm: {
-        plan: '',
-        name: '',
+      newServe: {
+        title: '',
         type: '执行配置',
-        date: '',
-        time: '',
-        service: ''
+        service: '',
       },
-      jsonData: {}
+      jsonData: {
+        "appid": "~4.5.0",
+        "crawlid": "~4.5.0",
+        "url": "~4.5.0",
+        "spiderid": "~4.5.0",
+      }
     }
   },
   props: {
@@ -141,6 +149,25 @@ export default {
   methods: {
     cancle() {
       this.$emit("cancleNewServerModal")
+    },
+    async creatServer() {
+      const self = this
+      try {
+        const res = await self.axios({
+          method: "post",
+          url: self.$store.state.baseurl + "api/service/create",
+          params: {
+            title: self.newServe.title,
+            spec: self.jsonData,
+            // service_params_spec: "service_params-0-name=参数1&service_params-0-value=2",
+            "service_params-0-name": "参数1",
+            "service_params-0-value": "1"
+          }
+        })
+        console.log(res)
+      } catch (error) {
+        self.$Message.error("创建任务错误")
+      }
     }
   }
 }
@@ -158,7 +185,7 @@ export default {
 >>> .ivu-modal-header {
   text-align: center;
 }
->>> .ivu-modal-body{
+>>> .ivu-modal-body {
   height: 100%;
 }
 .time-col {
@@ -208,10 +235,10 @@ export default {
 >>> .jsoneditor-poweredBy {
   display: none !important;
 }
->>> textarea.ivu-input{
+>>> textarea.ivu-input {
   height: 32px;
 }
-.titleForm{
+.titleForm {
   display: flex;
   justify-content: center;
   align-items: center;

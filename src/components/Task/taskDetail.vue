@@ -15,7 +15,10 @@
           style="height:100%"
         >
           <div class="configure">
-            <div v-if="task.content" style="height:100%">
+            <div
+              v-if="task.content"
+              style="height:100%"
+            >
               <i-vueJsonEditor
                 name="jsonData"
                 :mode="'code'"
@@ -127,37 +130,37 @@
                   type="number"
                   min="0"
                   style="width:46px"
-                  v-model="undateTask.second"
+                  v-model="updateTask.second"
                 /></i-col>
               <i-col span="3"><input
                   type="number"
                   min="0"
                   style="width:46px"
-                  v-model="undateTask.minute"
+                  v-model="updateTask.minute"
                 /></i-col>
               <i-col span="3"><input
                   type="number"
                   min="0"
                   style="width:46px"
-                  v-model="undateTask.hour"
+                  v-model="updateTask.hour"
                 /></i-col>
               <i-col span="3"><input
                   type="number"
                   min="0"
                   style="width:46px"
-                  v-model="undateTask.day"
+                  v-model="updateTask.day"
                 /></i-col>
               <i-col span="5"><input
                   type="number"
                   min="0"
                   style="width:73px"
-                  v-model="undateTask.month"
+                  v-model="updateTask.month"
                 /></i-col>
               <i-col span="3"><input
                   type="number"
                   min="0"
                   style="width:46px"
-                  v-model="undateTask.week"
+                  v-model="updateTask.week"
                 /></i-col>
             </i-row>
             <i-formItem label="类型：">
@@ -284,7 +287,17 @@ export default {
   },
   methods: {
     cancle(isOperation, task) {
-      this.taskPlan = ""
+      this.updateTask = {
+        plan: "",
+        date: "",
+        time: "",
+        second: "0",
+        minute: "0",
+        hour: "0",
+        day: "0",
+        month: "0",
+        week: "0",
+      }
       this.$emit("cancleTaskDetailModal", isOperation, task)
     },
     handleServerDetail() {
@@ -380,13 +393,15 @@ export default {
       }
       try {
         if (self.updateTask.plan == "定点") {
-          const scheduleAt = self.updateTask.date + " " + self.updateTask.time
-          xData = {
-            id: self.task.id,
-            title: self.task.title,
-            spec: self.task.content.spec,
-            category: self.task.category,
-            schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
+          if (self.updateTask.date !== "" && self.updateTask.time !== "") {
+            const scheduleAt = self.updateTask.date + " " + self.updateTask.time
+            xData = {
+              id: self.task.id,
+              title: self.task.title,
+              spec: self.task.content.spec,
+              category: self.task.category,
+              schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
+            }
           }
         } else if (self.updateTask.plan == "定期") {
           xData = {
@@ -394,25 +409,33 @@ export default {
             title: self.task.title,
             category: self.task.category,
             spec: self.task.content.spec,
-            schedule_cron_second: self.undateTask.second,
-            schedule_cron_minute: self.undateTask.minute,
-            schedule_cron_hour: self.undateTask.hour,
-            schedule_cron_day_of_month: self.undateTask.day,
-            schedule_cron_month: self.undateTask.day,
-            schedule_cron_day_of_week: self.undateTask.week
+            schedule_cron_second: self.updateTask.second,
+            schedule_cron_minute: self.updateTask.minute,
+            schedule_cron_hour: self.updateTask.hour,
+            schedule_cron_day_of_month: self.updateTask.day,
+            schedule_cron_month: self.updateTask.day,
+            schedule_cron_day_of_week: self.updateTask.week
           }
         }
         console.log(xData);
-        const res = await self.axios({
-          method: "patch",
-          url: self.$store.state.baseurl + "api/job/update",
-          params: xData
-        })
-        console.log(res)
-        if (res.data.code !== 0) {
-          self.$Message.error(res.data.code.error_message)
+        if (xData.title == "") {
+          self.$Message.error("请输入任务名称")
         } else {
-          self.cancle(true)
+          const res = await self.axios({
+            method: "patch",
+            url: self.$store.state.baseurl + "api/job/update",
+            params: xData
+          })
+          console.log(res)
+          if (res.data.code !== 0) {
+            if (res.data.data == -2) {
+              self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+            } else if (res.data.code == -96) {
+              self.$Message.error("以下字段不能为空: ['appid', 'crawlid', 'url']")
+            }
+          } else {
+            self.cancle(true)
+          }
         }
       } catch (error) {
         self.$Message.error("修改任务错误")
