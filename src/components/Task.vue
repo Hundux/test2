@@ -57,7 +57,7 @@
     </div>
     <div class="task-main">
       <i-page
-        :total="TaskData.length"
+        :total="total"
         :page-size-opts=[10,20,30,40,50,100]
         size="small"
         show-elevator
@@ -74,6 +74,7 @@
         :data="TaskData"
         stripe
         border
+        @on-filter-change="filter"
       >
         <template
           slot="configuration"
@@ -108,7 +109,7 @@
               style="margin-right: 5px"
               v-if="row.enabled === false"
               icon="md-checkmark"
-              @click="handBanClick(row,1)"
+              @click="handBanClick(row,'yes')"
             ></i-button>
             <!-- 禁止 -->
             <i-button
@@ -117,7 +118,7 @@
               icon="md-trash"
               style="margin-right: 5px"
               v-else
-              @click="handBanClick(row)"
+              @click="handBanClick(row,'no')"
             ></i-button>
             <!-- 复制 -->
             <i-button
@@ -167,7 +168,7 @@
         </template>
       </i-table>
       <i-page
-        :total="TaskData.length"
+        :total="total"
         :page-size-opts=[10,20,30,40,50,100]
         size="small"
         show-elevator
@@ -206,9 +207,10 @@ export default {
   data() {
     var global = this
     return {
-      search: '',
+      search: "",
       current: 1,
       pageSize: 10,
+      total: 0,
       columns1: [
         {
           type: 'selection',
@@ -399,6 +401,7 @@ export default {
           filterMultiple: true,
           filterMethod(value, row) {
             if (value === "运行中") {
+            
               return row.status == "RUNNING"
             } else if (value === "暂停中") {
               return row.status == "PAUSED"
@@ -497,19 +500,26 @@ export default {
     // 获取任务列表
     async getTASKList(search) {
       const self = this
+      let searchKey = ""
+      if (search) {
+        searchKey = search
+      }
       try {
+        const xData = {
+          p: self.current,
+          psize: self.pageSize,
+          search_key: searchKey
+        }
         const res = await self.axios({
           method: "get",
           url: self.$store.state.baseurl + "api/job/list",
-          params: {
-            p: self.current,
-            psize: self.pageSize,
-            search_key: search
-          }
+          params: xData
         })
-        console.log(res.data);
+        console.log(xData)
+        console.log(res);
         if (res.data.code == 0) {
-          self.TaskData = res.data.data
+          self.TaskData = res.data.data.page
+          self.total = res.data.data.total
           self.TaskData.forEach(item => {
             if (item.schedule.at) {
               item.plan = "定点"
@@ -543,6 +553,7 @@ export default {
           url: self.$store.state.baseurl + "api/job/enable",
           params: xData
         })
+        console.log(res);
         if (res.data.code == 0) {
           this.getTASKList()
         }
@@ -612,6 +623,9 @@ export default {
     // 搜索任务
     async searchTask() {
       this.getTASKList(this.search)
+    },
+    filter(col){
+      console.log(col);
     },
     handleCopyTask(row) {
       this.copyTask = row

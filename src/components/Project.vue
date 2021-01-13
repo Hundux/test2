@@ -15,11 +15,11 @@
             class="layout-sider-menu"
             theme="light"
             width="auto"
-            :open-names="['1','2','3','4']"
+            :open-names="['task','server','3','4']"
             :active-name="selected"
           >
             <i-menuItem
-              name="1"
+              name="task"
               class="sidebar-item sidebar-title"
               to="/task"
             >
@@ -38,7 +38,7 @@
               </div>
             </i-menuItem>
             <i-menuItem
-              name="2"
+              name="server"
               class="sidebar-item sidebar-title"
               to="/server"
             >
@@ -79,35 +79,35 @@
               :class="!collpsed ? 'collapsed-menu':''"
             >
               <template slot="title">
-                  <i-poptip
-                    class="mypiptip"
-                    v-show="!collpsed"
-                    trigger="hover"
-                    :transfer="true"
-                    placement="right-start"
-                  >
+                <i-poptip
+                  class="mypiptip"
+                  v-show="!collpsed"
+                  trigger="hover"
+                  :transfer="true"
+                  placement="right-start"
+                >
                   <i-icon
                     type="md-cube"
                     name="icon"
                     size="22"
                   ></i-icon>
-                    <div slot="content">
-                      <i-menuItem
-                        class="sidebar-item"
-                        v-show="!collpsed"
-                        name="4-1"
-                      >
+                  <div slot="content">
+                    <i-menuItem
+                      class="sidebar-item"
+                      v-show="!collpsed"
+                      name="4-1"
+                    >
                       爬虫
-                      </i-menuItem>
-                      <i-menuItem
-                        class="sidebar-item"
-                        v-show="!collpsed"
-                        name="4-2"
-                      >
-                        查重db
-                      </i-menuItem>
-                    </div>
-                  </i-poptip>
+                    </i-menuItem>
+                    <i-menuItem
+                      class="sidebar-item"
+                      v-show="!collpsed"
+                      name="4-2"
+                    >
+                      查重db
+                    </i-menuItem>
+                  </div>
+                </i-poptip>
                 <div v-show="collpsed">
                   <i-icon
                     type="md-cube"
@@ -156,7 +156,7 @@ export default {
   data() {
     return {
       isCollapsed: false,
-      selected: "1"
+      selected: "task"
     }
   },
   components: {
@@ -174,6 +174,12 @@ export default {
     collapsedSider() {
       this.$refs.side1.toggleCollapse();
     },
+  },
+  mounted() {
+    window.addEventListener("load", () => {
+      const route = this.$route.path.substring(1)
+      this.selected = route
+    })
   },
 }
 </script>

@@ -3,7 +3,7 @@
     <i-modal
       title="新建任务"
       :value="newTask"
-      @on-cancel="cancle"
+      @on-cancel="cancle(true)"
       width="100%"
       footer-hide
     >
@@ -233,7 +233,7 @@
             <i-formItem
               label="服务："
               class="form-item"
-              v-if="taskForm.type==='调用服务'"
+              v-if="taskForm.category==='SERVICE'"
             >
               <i-select
                 v-model="taskForm.service"
@@ -284,7 +284,7 @@ export default {
         },
         date: "",
         time: "",
-        service: '',
+        service: "",
       },
     }
   },
@@ -302,6 +302,7 @@ export default {
       if (newValue) {
         if (newValue.id) {
           this.taskForm = newValue
+          this.taskForm.title = this.taskForm.title + "(copy)"
         }
       }
     }
@@ -339,67 +340,72 @@ export default {
     async createTask() {
       const self = this
       try {
-        let xData = {}
+        let xData = {
+          title: self.taskForm.title,
+          category: self.taskForm.category,
+          spec: self.taskForm.content.spec,
+        }
         if (self.taskForm.plan == "定点") {
-          const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-          if (self.copyTask.id) {
-            xData = {
-              title: self.taskForm.title,
-              category: self.taskForm.category,
-              spec: self.taskForm.content.spec,
-              schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
-              is_copy: 1
-            }
-          } else {
-            xData = {
-              title: self.taskForm.title,
-              category: self.taskForm.category,
-              spec: self.taskForm.content.spec,
-              schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
+          if (self.taskForm.date !== "" && self.taskForm.time !== "") {
+            if (self.copyTask.id) {
+              // console.log(self.taskForm.date)
+              // console.log(self.taskForm.time)
+              // console.log('copy');
+              let schedule_at = null
+              if (self.taskForm.date != undefined && self.taskForm.time != undefined) {
+                const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+                schedule_at = self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
+              }
+              xData = {
+                title: self.taskForm.title,
+                category: self.taskForm.category,
+                spec: self.taskForm.content.spec,
+                schedule_at: schedule_at,
+              }
+            } else {
+              const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+              xData = {
+                title: self.taskForm.title,
+                category: self.taskForm.category,
+                spec: self.taskForm.content.spec,
+                schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
+              }
             }
           }
-
         } else if (self.taskForm.plan == "定期") {
-          if (self.copyTask.id) {
-            xData = {
-              title: self.taskForm.title,
-              category: self.taskForm.category,
-              spec: self.taskForm.content.spec,
-              schedule_cron_second: self.taskForm.schedule.cron.second,
-              schedule_cron_minute: self.taskForm.schedule.cron.minute,
-              schedule_cron_hour: self.taskForm.schedule.cron.hour,
-              schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
-              schedule_cron_month: self.taskForm.schedule.cron.month,
-              schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
-              is_copy: 1
-            }
-          } else {
-            xData = {
-              title: self.taskForm.title,
-              category: self.taskForm.category,
-              spec: self.taskForm.content.spec,
-              schedule_cron_second: self.taskForm.schedule.cron.second,
-              schedule_cron_minute: self.taskForm.schedule.cron.minute,
-              schedule_cron_hour: self.taskForm.schedule.cron.hour,
-              schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
-              schedule_cron_month: self.taskForm.schedule.cron.month,
-              schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
-            }
+          xData = {
+            title: self.taskForm.title,
+            category: self.taskForm.category,
+            spec: self.taskForm.content.spec,
+            schedule_cron_second: self.taskForm.schedule.cron.second,
+            schedule_cron_minute: self.taskForm.schedule.cron.minute,
+            schedule_cron_hour: self.taskForm.schedule.cron.hour,
+            schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
+            schedule_cron_month: self.taskForm.schedule.cron.month,
+            schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
           }
-
         }
         console.log(xData);
-        const res = await self.axios({
-          method: "post",
-          url: self.$store.state.baseurl + "api/job/create",
-          params: xData
-        })
-        console.log(res);
-        if (res.data.code !== 0) {
-          self.$Message.error(res.data.error_message)
+        if (xData.title == "") {
+          self.$Message.error("请输入任务名称")
         } else {
-          self.cancle(true)
+          const res = await self.axios({
+            method: "post",
+            url: self.$store.state.baseurl + "api/job/create",
+            params: xData
+          })
+          console.log(res);
+          if (res.data.code !== 0) {
+            if (res.data.data == -2) {
+              self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+            } else if (res.data.code == -96) {
+              self.$Message.error("以下字段不能为空: ['appid', 'crawlid', 'url']")
+            }
+          } else {
+            self.cancle(true)
+          }
         }
+
       } catch (err) {
         self.$Message.error("新建任务失败")
       }
