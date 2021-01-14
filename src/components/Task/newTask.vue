@@ -173,38 +173,26 @@
               style="margin-bottom:10px;margin-left:20px"
             >
               <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
+                  style="width:40px"
                   v-model="taskForm.schedule.cron.second"
                 /></i-col>
               <i-col span="4"><input
-                  type="number"
-                  min="0"
-                  style="width:61px"
+                  style="width:55px"
                   v-model="taskForm.schedule.cron.minute"
                 /></i-col>
               <i-col span="4"><input
-                  type="number"
-                  min="0"
-                  style="width:61px"
+                  style="width:55px"
                   v-model="taskForm.schedule.cron.hour"
                 /></i-col>
               <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
+                  style="width:40px"
                   v-model="taskForm.schedule.cron.day_of_month"
                 /></i-col>
               <i-col span="5"><input
-                  type="number"
-                  min="0"
-                  style="width:76px"
+                  style="width:68px"
                   v-model="taskForm.schedule.cron.day_of_week"
                 /></i-col>
               <i-col span="3"><input
-                  type="number"
-                  min="0"
                   style="width:46px"
                   v-model="taskForm.schedule.cron.month"
                 /></i-col>
@@ -274,12 +262,12 @@ export default {
         },
         schedule: {
           cron: {
-            "day_of_month": "0",
-            "day_of_week": "0",
-            "hour": "0",
-            "minute": "0",
-            "month": "0",
-            "second": "0"
+            "day_of_month": "",
+            "day_of_week": "",
+            "hour": "",
+            "minute": "",
+            "month": "",
+            "second": ""
           }
         },
         date: "",
@@ -323,12 +311,12 @@ export default {
         },
         schedule: {
           cron: {
-            "day_of_month": "0",
-            "day_of_week": "0",
-            "hour": "0",
-            "minute": "0",
-            "month": "0",
-            "second": "0"
+            "day_of_month": "",
+            "day_of_week": "",
+            "hour": "",
+            "minute": "",
+            "month": "",
+            "second": ""
           }
         },
         date: "",
@@ -398,8 +386,8 @@ export default {
           if (res.data.code !== 0) {
             if (res.data.data == -2) {
               self.$Message.error("任务名不可重复。有相同名称的任务已存在")
-            } else if (res.data.code == -96) {
-              self.$Message.error("以下字段不能为空: ['appid', 'crawlid', 'url']")
+            } else{
+              self.$Message.error(res.data.error_message)
             }
           } else {
             self.cancle(true)

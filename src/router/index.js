@@ -8,7 +8,7 @@ const routes = [
   { path: '/task', component: Task },
   { path: '/server', component: Server },
   //可以配置重定向
-  { path: '', redirect: "Task" }
+  { path: '', redirect: "/task" }
 ];
 
 const router = new VueRouter({

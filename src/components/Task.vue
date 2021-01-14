@@ -38,6 +38,7 @@
           v-model="search"
           placeholder="关键词搜索"
           style="width: 200px"
+          clearable
         />
         <i-button
           type="info"
@@ -84,7 +85,7 @@
             <i-button
               type="primary"
               size="small"
-              style="margin-right: 5px;width:150px"
+              style="margin-right: 5px;minWidth:95px"
               @click="handleTaskDetail(row)"
             >预览配置</i-button>
           </div>
@@ -401,7 +402,7 @@ export default {
           filterMultiple: true,
           filterMethod(value, row) {
             if (value === "运行中") {
-            
+
               return row.status == "RUNNING"
             } else if (value === "暂停中") {
               return row.status == "PAUSED"
@@ -524,7 +525,7 @@ export default {
             if (item.schedule.at) {
               item.plan = "定点"
               item.date = item.schedule.at.$date
-              item.date = "定点:" + self.$moment(item.date).format("MMMM Do YYYY, h:mm:ss")
+              item.date = "定点:" + self.$moment(item.date).format("llll")
             } else if (item.schedule.cron) {
               item.plan = "定期"
               item.date = "定期:" + item.schedule.cron.month + "月" + item.schedule.cron.day_of_month + "日" + item.schedule.cron.hour + "时" + item.schedule.cron.minute + "分" + item.schedule.cron.second + "秒" + "  星期" + item.schedule.cron.day_of_week
@@ -544,8 +545,8 @@ export default {
     async handBanClick(row, isBan) {
       const self = this
       let xData = {
-        id: row.id,
-        enabled: isBan
+        ids: [row.id],
+        enable: isBan
       }
       try {
         const res = await self.axios({
@@ -622,9 +623,10 @@ export default {
     },
     // 搜索任务
     async searchTask() {
+      this.current = 1
       this.getTASKList(this.search)
     },
-    filter(col){
+    filter(col) {
       console.log(col);
     },
     handleCopyTask(row) {
@@ -682,8 +684,7 @@ export default {
   margin-bottom: 10px;
 }
 .task-button-group {
-  min-width: 715px;
-  margin-left: 35px;
+  margin-left: 5px;
 }
 .task-button {
   margin-right: 5px;
