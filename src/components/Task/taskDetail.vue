@@ -50,11 +50,7 @@
               ></i-input>
             </i-formItem>
             <i-formItem label="执行计划：">
-              <i-input
-                style="width:250px"
-                :value="task.date ? task.date : '未计划'"
-                disabled
-              ></i-input>
+              <span>{{task.date ? task.date : '未计划'}}</span>
             </i-formItem>
             <i-formItem label="修改计划：">
               <i-select
@@ -127,39 +123,27 @@
               style="margin-bottom:10px;margin-left:20px"
             >
               <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
+                  style="width:40px"
                   v-model="updateTask.second"
                 /></i-col>
               <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
+                  style="width:40px"
                   v-model="updateTask.minute"
                 /></i-col>
               <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
+                  style="width:40px"
                   v-model="updateTask.hour"
                 /></i-col>
               <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
+                  style="width:40px"
                   v-model="updateTask.day"
                 /></i-col>
               <i-col span="5"><input
-                  type="number"
-                  min="0"
-                  style="width:73px"
+                  style="width:68px"
                   v-model="updateTask.month"
                 /></i-col>
               <i-col span="3"><input
-                  type="number"
-                  min="0"
-                  style="width:46px"
+                  style="width:40px"
                   v-model="updateTask.week"
                 /></i-col>
             </i-row>
@@ -267,12 +251,12 @@ export default {
         plan: "",
         date: "",
         time: "",
-        second: "0",
-        minute: "0",
-        hour: "0",
-        day: "0",
-        month: "0",
-        week: "0",
+        second: "",
+        minute: "",
+        hour: "",
+        day: "",
+        month: "",
+        week: "",
       },
     }
   },
@@ -291,12 +275,12 @@ export default {
         plan: "",
         date: "",
         time: "",
-        second: "0",
-        minute: "0",
-        hour: "0",
-        day: "0",
-        month: "0",
-        week: "0",
+        second: "",
+        minute: "",
+        hour: "",
+        day: "",
+        month: "",
+        week: "",
       }
       this.$emit("cancleTaskDetailModal", isOperation, task)
     },
@@ -430,8 +414,8 @@ export default {
           if (res.data.code !== 0) {
             if (res.data.data == -2) {
               self.$Message.error("任务名不可重复。有相同名称的任务已存在")
-            } else if (res.data.code == -96) {
-              self.$Message.error("以下字段不能为空: ['appid', 'crawlid', 'url']")
+            } else {
+              self.$Message.error(res.data.error_message)
             }
           } else {
             self.cancle(true)

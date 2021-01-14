@@ -49,6 +49,11 @@ Vue.component('i-spin', Spin)
 Vue.component('i-drawer', Drawer)
 Vue.component('i-backTop', BackTop)
 
+moment.locale('zh-cn', {
+  longDateFormat: {
+    llll: 'YYYY年M月D日 HH:mm:ss'
+  }
+})
 Vue.prototype.$moment = moment
 Vue.prototype.$Message = Message
 Vue.prototype.$Message.config({
