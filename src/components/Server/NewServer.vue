@@ -160,8 +160,15 @@ export default {
             title: self.newServe.title,
             spec: self.jsonData,
             // service_params_spec: "service_params-0-name=参数1&service_params-0-value=2",
-            "service_params-0-name": "参数1",
-            "service_params-0-value": "1"
+            "service_params_spec-0-name": "参数1",
+            "service_params_spec-0-default": "1",
+            "service_params_spec-0-desc": "cceeeesssssssss",
+             "service_params_spec-1-name": "参数2",
+            "service_params_spec-1-default": "22",
+            "service_params_spec-1-desc": "222wwww",
+             "service_params_spec-2-name": "参数13",
+            "service_params_spec-2-default": "13",
+            "service_params_spec-2-desc": "dddddddddddd"
           }
         })
         console.log(res)

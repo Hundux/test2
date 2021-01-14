@@ -330,8 +330,7 @@ export default {
   margin-bottom: 10px;
 }
 .server-button-group {
-  min-width: 715px;
-  margin-left: 35px;
+  margin-left: 5px;
 }
 .server-button {
   margin-right: 5px;
