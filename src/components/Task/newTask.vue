@@ -29,7 +29,10 @@
             class="configure"
             v-if="taskForm.category==='SERVICE'"
           >
-            <i-row class="configure-top">
+            <i-row
+              class="configure-top"
+              v-if="server.id"
+            >
               <i-col
                 span="4"
                 class="configure-top-one"
@@ -38,58 +41,33 @@
               <i-col span="8">描述</i-col>
               <i-col span="4">默认值</i-col>
             </i-row>
-            <i-row class="configure-body">
+            <i-row
+              class="configure-body"
+              v-for="(item,index) in server.params"
+              :key="index"
+            >
               <i-col
                 span="4"
                 class="configure-body-one"
-              ><span>参数1：</span></i-col>
+              ><span>{{item.name}}</span></i-col>
               <i-col span="8">
-                <i-input style="width:60%"></i-input>
+                <i-input
+                  style="width:60%"
+                  v-model="item.input"
+                ></i-input>
               </i-col>
               <i-col span="8">
                 <i-input
                   type="textarea"
                   style="width:60%"
+                  v-model="item.description"
                 ></i-input>
               </i-col>
               <i-col span="4">
-                <i-input style="width:60%"></i-input>
-              </i-col>
-            </i-row>
-            <i-row class="configure-body">
-              <i-col
-                span="4"
-                class="configure-body-one"
-              ><span>参数2：</span></i-col>
-              <i-col span="8">
-                <i-input style="width:60%"></i-input>
-              </i-col>
-              <i-col span="8">
                 <i-input
-                  type="textarea"
                   style="width:60%"
+                  v-model="item.default"
                 ></i-input>
-              </i-col>
-              <i-col span="4">
-                <i-input style="width:60%"></i-input>
-              </i-col>
-            </i-row>
-            <i-row class="configure-body">
-              <i-col
-                span="4"
-                class="configure-body-one"
-              ><span>参数3：</span></i-col>
-              <i-col span="8">
-                <i-input style="width:60%"></i-input>
-              </i-col>
-              <i-col span="8">
-                <i-input
-                  type="textarea"
-                  style="width:60%"
-                ></i-input>
-              </i-col>
-              <i-col span="4">
-                <i-input style="width:60%"></i-input>
               </i-col>
             </i-row>
           </div>
@@ -223,13 +201,18 @@
               class="form-item"
               v-if="taskForm.category==='SERVICE'"
             >
-              <i-select
-                v-model="taskForm.service"
-                style="width:250px"
-              >
-                <i-option value="服务1">服务1</i-option>
-                <i-option value="服务2">服务2</i-option>
-              </i-select>
+              <i-input
+                placeholder="服务搜索"
+                style="width: 150px;marginRight:20px"
+                v-model="searchServiceKey"
+                clearable
+              />
+              <i-button
+                type="info"
+                icon="md-search"
+                class="search"
+                @click="searchService"
+              >搜索</i-button>
             </i-formItem>
           </i-form>
           <div class="determine">
@@ -272,8 +255,9 @@ export default {
         },
         date: "",
         time: "",
-        service: "",
       },
+      searchServiceKey: "",
+      server: {},
     }
   },
   props: {
@@ -293,7 +277,7 @@ export default {
           this.taskForm.title = this.taskForm.title + "(copy)"
         }
       }
-    }
+    },
   },
   methods: {
     cancle(isCreate) {
@@ -321,79 +305,154 @@ export default {
         },
         date: "",
         time: "",
-        service: '',
       }
+      this.searchServiceKey = ""
+      this.server = {}
       this.$emit("cancleNewTaskModal", isCreate)
     },
     async createTask() {
       const self = this
       try {
-        let xData = {
-          title: self.taskForm.title,
-          category: self.taskForm.category,
-          spec: self.taskForm.content.spec,
-        }
-        if (self.taskForm.plan == "定点") {
-          if (self.taskForm.date !== "" && self.taskForm.time !== "") {
-            if (self.copyTask.id) {
-              // console.log(self.taskForm.date)
-              // console.log(self.taskForm.time)
-              // console.log('copy');
-              let schedule_at = null
-              if (self.taskForm.date != undefined && self.taskForm.time != undefined) {
-                const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-                schedule_at = self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
-              }
-              xData = {
-                title: self.taskForm.title,
-                category: self.taskForm.category,
-                spec: self.taskForm.content.spec,
-                schedule_at: schedule_at,
-              }
-            } else {
-              const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-              xData = {
-                title: self.taskForm.title,
-                category: self.taskForm.category,
-                spec: self.taskForm.content.spec,
-                schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
-              }
-            }
-          }
-        } else if (self.taskForm.plan == "定期") {
-          xData = {
+        if (self.taskForm.category == "TASK") {
+          let xData = {
             title: self.taskForm.title,
             category: self.taskForm.category,
             spec: self.taskForm.content.spec,
-            schedule_cron_second: self.taskForm.schedule.cron.second,
-            schedule_cron_minute: self.taskForm.schedule.cron.minute,
-            schedule_cron_hour: self.taskForm.schedule.cron.hour,
-            schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
-            schedule_cron_month: self.taskForm.schedule.cron.month,
-            schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
           }
-        }
-        console.log(xData);
-        if (xData.title == "") {
-          self.$Message.error("请输入任务名称")
-        } else {
-          const res = await self.axios({
-            method: "post",
-            url: self.$store.state.baseurl + "api/job/create",
-            params: xData
-          })
-          console.log(res);
-          if (res.data.code !== 0) {
-            if (res.data.data == -2) {
-              self.$Message.error("任务名不可重复。有相同名称的任务已存在")
-            } else{
-              self.$Message.error(res.data.error_message)
+          if (self.taskForm.plan == "定点") {
+            if (self.taskForm.date !== "" && self.taskForm.time !== "") {
+              if (self.copyTask.id) {
+                // console.log(self.taskForm.date)
+                // console.log(self.taskForm.time)
+                // console.log('copy');
+                let schedule_at = null
+                if (self.taskForm.date != undefined && self.taskForm.time != undefined) {
+                  const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+                  schedule_at = self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
+                }
+                xData = {
+                  title: self.taskForm.title,
+                  category: self.taskForm.category,
+                  spec: self.taskForm.content.spec,
+                  schedule_at: schedule_at,
+                }
+              } else {
+                const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+                xData = {
+                  title: self.taskForm.title,
+                  category: self.taskForm.category,
+                  spec: self.taskForm.content.spec,
+                  schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
+                }
+              }
+            }
+          } else if (self.taskForm.plan == "定期") {
+            xData = {
+              title: self.taskForm.title,
+              category: self.taskForm.category,
+              spec: self.taskForm.content.spec,
+              schedule_cron_second: self.taskForm.schedule.cron.second,
+              schedule_cron_minute: self.taskForm.schedule.cron.minute,
+              schedule_cron_hour: self.taskForm.schedule.cron.hour,
+              schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
+              schedule_cron_month: self.taskForm.schedule.cron.month,
+              schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
+            }
+          }
+          console.log(xData);
+          if (xData.title == "") {
+            self.$Message.error("请输入任务名称")
+          } else {
+            const res = await self.axios({
+              method: "post",
+              url: self.$store.state.baseurl + "api/job/create",
+              params: xData
+            })
+            console.log(res);
+            if (res.data.code !== 0) {
+              if (res.data.data == -2) {
+                self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+              } else {
+                self.$Message.error(res.data.error_message)
+              }
+            } else {
+              self.cancle(true)
+            }
+          }
+        } else if (self.taskForm.category == "SERVICE") {
+          if (self.server.id) {
+            const l = self.server.params.length
+            let service_params = {}
+            for (let i = 0; i < l; i++) {
+              service_params[`service_params-${i}-name`] = self.server.params[i].name
+              service_params[`service_params-${i}-value`] = self.server.params[i].input
+            }
+            let xData = {
+              title: self.taskForm.title,
+              category: self.taskForm.category,
+              service_id: self.server.id
+            }
+            if (self.taskForm.plan == "定点") {
+              if (self.taskForm.date !== "" && self.taskForm.time !== "") {
+                if (self.copyTask.id) {
+                  let schedule_at = null
+                  if (self.taskForm.date != undefined && self.taskForm.time != undefined) {
+                    const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+                    schedule_at = self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
+                  }
+                  xData = {
+                    title: self.taskForm.title,
+                    category: self.taskForm.category,
+                    schedule_at: schedule_at,
+                    service_id: self.server.id
+                  }
+                } else {
+                  const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+                  xData = {
+                    title: self.taskForm.title,
+                    category: self.taskForm.category,
+                    schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
+                    service_id: self.server.id
+                  }
+                }
+              }
+            } else if (self.taskForm.plan == "定期") {
+              xData = {
+                title: self.taskForm.title,
+                category: self.taskForm.category,
+                service_id: self.server.id,
+                schedule_cron_second: self.taskForm.schedule.cron.second,
+                schedule_cron_minute: self.taskForm.schedule.cron.minute,
+                schedule_cron_hour: self.taskForm.schedule.cron.hour,
+                schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
+                schedule_cron_month: self.taskForm.schedule.cron.month,
+                schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
+              }
+            }
+            console.log(xData);
+            if (xData.title == "") {
+              self.$Message.error("请输入任务名称")
+            } else {
+              const res = await self.axios({
+                method: "post",
+                url: self.$store.state.baseurl + "api/job/create",
+                params: { ...xData, ...service_params }
+              })
+              console.log(res);
+              if (res.data.code !== 0) {
+                if (res.data.data == -2) {
+                  self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+                } else {
+                  self.$Message.error(res.data.error_message)
+                }
+              } else {
+                self.cancle(true)
+              }
             }
           } else {
-            self.cancle(true)
+            self.$Message.warning("请选择服务")
           }
         }
-
       } catch (err) {
         self.$Message.error("新建任务失败")
       }
@@ -404,6 +463,29 @@ export default {
     timeChange(time) {
       this.taskForm.time = time
     },
+    async searchService() {
+      // console.log(this.searchServiceKey);
+      const self = this
+      try {
+        const res = await self.axios({
+          method: "get",
+          url: self.$store.state.baseurl + "api/service/list",
+          params: {
+            search_key: this.searchServiceKey
+          }
+        })
+        console.log(res);
+        if (res.data.code == 0) {
+          self.server = res.data.data[0]
+          self.server.params.forEach(item => {
+            item["input"] = ""
+          })
+          console.log(self.server)
+        }
+      } catch (error) {
+        self.$Message.error("获取服务列表错误")
+      }
+    }
   }
 }
 </script>

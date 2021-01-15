@@ -161,7 +161,7 @@
           <i-button
             type="text"
             style="marginTop:-20px;marginBottom:20px;color:#057009"
-            v-if="task.type=='调用服务'"
+            v-if="task.category=='SERVICE'"
             @click="handleServerDetail()"
           >查看服务详情</i-button>
           <!-- 服务详情模态框 -->

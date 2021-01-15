@@ -242,7 +242,7 @@ export default {
               value: "服务任务"
             }
           ],
-          filterMultiple: true,
+          filterMultiple: false,
           filterMethod(value, row) {
             if (value === "普通任务") {
               return row.category == "TASK"
@@ -319,7 +319,7 @@ export default {
               value: "未计划"
             }
           ],
-          filterMultiple: true,
+          filterMultiple: false,
           filterMethod(value, row) {
             if (value === "定期") {
               return row.plan == '定期'
@@ -489,7 +489,9 @@ export default {
       columns2: [],
       columns3: [],
       columns4: [],
-      copyTask: {}
+      copyTask: {},
+      isFilter: false,
+      fData: {}
     }
   },
   components: {
@@ -545,7 +547,7 @@ export default {
     async handBanClick(row, isBan) {
       const self = this
       let xData = {
-        ids: [row.id],
+        "ids-0": row.id,
         enable: isBan
       }
       try {
@@ -627,20 +629,160 @@ export default {
       this.getTASKList(this.search)
     },
     filter(col) {
+      const self = this
+      self.isFilter = true
       console.log(col);
+      if (col.title == "类型") {
+        self.current = 1
+        if (col._filterChecked.length == 2 || col._filterChecked.length == 0) {
+          self.isFilter = false
+          self.getTASKList()
+        } else if (col._filterChecked[0] == "普通任务") {
+          let xData = {
+            p: self.current,
+            psize: self.pageSize,
+            category: "TASK"
+          }
+          self.fData = xData
+          self.filterTASKList(xData)
+        } else if (col._filterChecked[0] == "服务任务") {
+          let xData = {
+            p: self.current,
+            psize: self.pageSize,
+            category: "SERVICE"
+          }
+          self.fData = xData
+          self.filterTASKList(xData)
+        }
+      } else if (col.title == "执行计划") {
+        self.current = 1
+        if (col._filterChecked.length == 3 || col._filterChecked.length == 0) {
+          self.isFilter = false
+          self.getTASKList()
+        } else if (col._filterChecked.length == 1) {
+          if (col._filterChecked[0] == "定点") {
+            let xData = {
+              p: self.current,
+              psize: self.pageSize,
+              schedule: "at"
+            }
+            self.fData = xData
+            self.filterTASKList(xData)
+          } else if (col._filterChecked[0] == "定期") {
+            let xData = {
+              p: self.current,
+              psize: self.pageSize,
+              schedule: "cron"
+            }
+            self.fData = xData
+            self.filterTASKList(xData)
+          } else if (col._filterChecked[0] == "未计划") {
+            let xData = {
+              p: self.current,
+              psize: self.pageSize,
+              schedule: "unknown"
+            }
+            self.fData = xData
+            self.filterTASKList(xData)
+          }
+        }
+      } else if (col.title == "状态") {
+        self.current = 1
+        if (col._filterChecked.length == 0 || col._filterChecked.length == 5) {
+          self.getTASKList()
+          self.isFilter = false
+        } else {
+          const l = col._filterChecked.length
+          let paramsF = {}
+          const ban = col._filterChecked.indexOf("禁用")
+          if (ban !== -1) {
+            paramsF["enabled"] = "no"
+          }
+          let j = 0
+          for (let i = 0; i < l; i++) {
+            if (col._filterChecked[i] == "运行中") {
+              paramsF[`status-${j}`] = "RUNNING"
+              j++
+            } else if (col._filterChecked[i] == "准备就绪") {
+              paramsF[`status-${j}`] = "READY"
+              j++
+            } else if (col._filterChecked[i] == "已终止") {
+              paramsF[`status-${j}`] = "STOPPED"
+              j++
+            } else if (col._filterChecked[i] == "暂停中") {
+              paramsF[`status-${j}`] = "PAUSED"
+              j++
+            }
+          }
+          let xData = {
+            p: self.current,
+            psize: self.pageSize,
+            ...paramsF
+          }
+          self.fData = xData
+          self.filterTASKList(xData)
+        }
+      }
+    },
+    // 筛选任务列表
+    async filterTASKList(paramsF) {
+      const self = this
+      try {
+        const xData = paramsF
+        const res = await self.axios({
+          method: "get",
+          url: self.$store.state.baseurl + "api/job/list",
+          params: xData
+        })
+        console.log(xData)
+        console.log(res);
+        if (res.data.code == 0) {
+          self.TaskData = res.data.data.page
+          self.total = res.data.data.total
+          self.TaskData.forEach(item => {
+            if (item.schedule.at) {
+              item.plan = "定点"
+              item.date = item.schedule.at.$date
+              item.date = "定点:" + self.$moment(item.date).format("llll")
+            } else if (item.schedule.cron) {
+              item.plan = "定期"
+              item.date = "定期:" + item.schedule.cron.month + "月" + item.schedule.cron.day_of_month + "日" + item.schedule.cron.hour + "时" + item.schedule.cron.minute + "分" + item.schedule.cron.second + "秒" + "  星期" + item.schedule.cron.day_of_week
+            } else {
+              item.plan = "未计划"
+            }
+            if (item.enabled == false) {
+              item.status = "unenabled"
+            }
+          })
+        }
+      } catch (err) {
+        self.$Message.error("获取任务列表错误")
+      }
     },
     handleCopyTask(row) {
       this.copyTask = row
       this.newTask = true
     },
+    // page改变
     pageChange(index) {
       this.current = index
-      this.getTASKList()
+      if (this.isFilter) {
+        this.fData.p = this.current
+        this.filterTASKList(this.fData)
+      } else {
+        this.getTASKList()
+      }
     },
     pageSizeChange(size) {
       this.pageSize = size
-      this.getTASKList()
+      if (this.isFilter) {
+        this.fData.psize = this.pageSize
+        this.filterTASKList(this.fData)
+      } else {
+        this.getTASKList()
+      }
     },
+    // 模态框相关
     handleNewTask() {
       this.newTask = true
     },
@@ -658,7 +800,12 @@ export default {
     handleCancleTaskDetailModal(isOperation, copyTask) {
       this.taskDetail = false
       if (isOperation == true) {
-        this.getTASKList()
+        if (this.isFilter) {
+          this.fData.p = this.current
+          this.filterTASKList(this.fData)
+        } else {
+          this.getTASKList()
+        }
       } else if (isOperation == "copy") {
         this.handleCopyTask(copyTask)
       }
