@@ -13,16 +13,14 @@
           span="18"
           style="height:100%"
         >
-          <div
-            class="configure"
-            v-if="newServe.type==='执行配置'"
-          >
+          <div class="configure">
             <i-vueJsonEditor
               name="jsonData"
               v-model="jsonData"
               :mode="'code'"
               lang="zh"
               v-if="jsonData"
+              @json-change="onJsonChange"
               class="vueJsonEditor"
             ></i-vueJsonEditor>
           </div>
@@ -43,7 +41,7 @@
               ></i-input>
             </i-formItem>
           </i-form>
-          <div>
+          <div v-if="paramsData.length">
             <i-row class="configure-top">
               <i-col
                 span="6"
@@ -53,60 +51,27 @@
               <i-col span="6">默认值</i-col>
               <i-col span="12">描述</i-col>
             </i-row>
-            <i-row class="configure-body">
+            <i-row
+              class="configure-body"
+              :key="index"
+              v-for="(item,index) in paramsData"
+            >
               <i-col
                 span="6"
                 class="configure-body-one"
-              ><span>参数1：</span></i-col>
+              ><span>{{item.name}}：</span></i-col>
 
               <i-col span="6">
                 <i-input
                   style="width:85%"
-                  value='"1"'
+                  v-model="item.default"
                 ></i-input>
               </i-col>
               <i-col span="12">
                 <i-input
                   type="textarea"
                   style="width:85%"
-                ></i-input>
-              </i-col>
-            </i-row>
-            <i-row class="configure-body">
-              <i-col
-                span="6"
-                class="configure-body-one"
-              ><span>参数2：</span></i-col>
-
-              <i-col span="6">
-                <i-input
-                  style="width:85%"
-                  value='"1"'
-                ></i-input>
-              </i-col>
-              <i-col span="12">
-                <i-input
-                  type="textarea"
-                  style="width:85%"
-                ></i-input>
-              </i-col>
-            </i-row>
-            <i-row class="configure-body">
-              <i-col
-                span="6"
-                class="configure-body-one"
-              ><span>参数3：</span></i-col>
-
-              <i-col span="6">
-                <i-input
-                  style="width:85%"
-                  value='"1"'
-                ></i-input>
-              </i-col>
-              <i-col span="12">
-                <i-input
-                  type="textarea"
-                  style="width:85%"
+                  v-model="item.desc"
                 ></i-input>
               </i-col>
             </i-row>
@@ -129,7 +94,6 @@ export default {
     return {
       newServe: {
         title: '',
-        type: '执行配置',
         service: '',
       },
       jsonData: {
@@ -137,7 +101,14 @@ export default {
         "crawlid": "~4.5.0",
         "url": "~4.5.0",
         "spiderid": "~4.5.0",
-      }
+        "a": "$参数1$",
+        "b": "$参数2$",
+        "c": "$参数3$",
+        "D": "$参数1$",
+        "f": "$参数2$",
+        "改变数据": "出现参数栏"
+      },
+      paramsData: []
     }
   },
   props: {
@@ -153,28 +124,54 @@ export default {
     async creatServer() {
       const self = this
       try {
-        const res = await self.axios({
-          method: "post",
-          url: self.$store.state.baseurl + "api/service/create",
-          params: {
-            title: self.newServe.title,
-            spec: self.jsonData,
-            // service_params_spec: "service_params-0-name=参数1&service_params-0-value=2",
-            "service_params_spec-0-name": "参数1",
-            "service_params_spec-0-default": "1",
-            "service_params_spec-0-desc": "cceeeesssssssss",
-             "service_params_spec-1-name": "参数2",
-            "service_params_spec-1-default": "22",
-            "service_params_spec-1-desc": "222wwww",
-             "service_params_spec-2-name": "参数13",
-            "service_params_spec-2-default": "13",
-            "service_params_spec-2-desc": "dddddddddddd"
+        if (self.newServe.title == "") {
+          self.$Message.error("请输入服务名称")
+        } else {
+          const l = self.paramsData.length
+          let service_params = {}
+          for (let i = 0; i < l; i++) {
+            service_params[`service_params_spec-${i}-name`] = self.paramsData[i].name
+            service_params[`service_params_spec-${i}-default`] = self.paramsData[i].default
+            service_params[`service_params_spec-${i}-desc`] = self.paramsData[i].desc
           }
-        })
-        console.log(res)
+          const res = await self.axios({
+            method: "post",
+            url: self.$store.state.baseurl + "api/service/create",
+            params: {
+              title: self.newServe.title,
+              spec: self.jsonData,
+              ...service_params
+            }
+          })
+          console.log(res)
+          if (res.data.code == 0) {
+            self.cancle()
+          } else if (res.data.data == -1) {
+            self.$Message.error(res.data.code)
+          } else {
+            self.$Message.error(res.data.error_message)
+          }
+        }
       } catch (error) {
         self.$Message.error("创建任务错误")
       }
+    },
+    onJsonChange(value) {
+      // console.log(value)
+      let jsonData = value
+      jsonData = JSON.stringify(jsonData)
+      let res = jsonData.match(/\$.*?\$/g)
+      let params = Array.from(new Set(res))
+      for (let i = 0; i < params.length; i++) {
+        let name = params[i].substr(1, params[i].length - 2)
+        params[i] = {
+          name: name,
+          default: "1",
+          desc: ""
+        }
+      }
+      console.log(params)
+      this.paramsData = params
     }
   }
 }
