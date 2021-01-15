@@ -37,11 +37,14 @@
         <i-input
           placeholder="关键词搜索"
           style="width: 200px"
+          v-model="search_key"
+          clearable
         />
         <i-button
           type="info"
           icon="md-search"
           class="search"
+          @click="searchService"
         >搜索</i-button>
       </div>
       <i-button
@@ -55,27 +58,51 @@
     </div>
     <div class="server-main">
       <i-page
-        :total="ServeData.length"
+        :total="total"
         :page-size-opts=[10,20,30,40,50,100]
         size="small"
         show-elevator
         show-sizer
         show-total
+        :current="current"
+        :page-size="pageSize"
+        @on-change="pageChange"
+        @on-page-size-change="pageSizeChange"
       />
       <i-table
         :columns="columns1"
         :data="ServeData"
         stripe
         border
+        @on-filter-change="filter"
       >
-        <template slot="configuration">
+        <template
+          slot="configuration"
+          slot-scope="{ row }"
+        >
           <div>
             <i-button
               type="primary"
               size="small"
-              style="margin-right: 5px;width:150px"
-              @click="handleServerDetail()"
+              style="margin-right: 5px;width:95px"
+              @click="handleServerDetail(row)"
             >预览配置</i-button>
+          </div>
+        </template>
+        <template
+          slot="params"
+          slot-scope="{ row }"
+        >
+          <div>
+            <div
+              v-for="(item,index) in row.params"
+              :key="index"
+              class="params"
+            >
+              <span>{{item.name}}:</span>
+              <span>{{item.default}}</span>
+              <span> 参数描述：{{item.description}}</span>
+            </div>
           </div>
         </template>
         <template
@@ -124,12 +151,16 @@
         </template>
       </i-table>
       <i-page
-        :total="ServeData.length"
+        :total="total"
         :page-size-opts=[10,20,30,40,50,100]
         size="small"
         show-elevator
         show-sizer
         show-total
+        :current="current"
+        :page-size="pageSize"
+        @on-change="pageChange"
+        @on-page-size-change="pageSizeChange"
       />
     </div>
 
@@ -139,6 +170,7 @@
     ></i-newServer>
     <i-serverDetail
       :serverDetail="serverDetail"
+      :serveDetailData="serveDetailData"
       @cancleServerDetailModal="handleCancleServerDetailModal"
     ></i-serverDetail>
     <i-testServer
@@ -165,7 +197,7 @@ export default {
         {
           title: '名称',
           key: 'title',
-          width: 230,
+          minWidth: 230,
           align: 'center',
           resizable: true,
         },
@@ -174,13 +206,14 @@ export default {
           key: 'configuration',
           slot: 'configuration',
           align: 'center',
-          minWidth: 100,
+          width: 120,
           resizable: true,
         },
         {
           title: '参数',
           key: 'params',
-          width: 250,
+          slot: 'params',
+          minWidth: 250,
           align: 'center',
           resizable: true,
         },
@@ -204,7 +237,7 @@ export default {
               value: "禁用"
             }
           ],
-          filterMultiple: true,
+          filterMultiple: false,
           filterMethod(value, row) {
             if (value === "运行中") {
               return row.status == "RUNNING"
@@ -252,7 +285,7 @@ export default {
           key: 'operation',
           slot: 'operation',
           align: 'center',
-          minWidth: 150,
+          width: 150,
           resizable: true,
         },
         {
@@ -268,10 +301,17 @@ export default {
       ],
       newServer: false,
       serverDetail: false,
-      testServer: false
+      testServer: false,
+      serveDetailData: {},
+      current: 1,
+      pageSize: 10,
+      isFilter: false,
+      total: 0,
+      search_key: ""
     }
   },
   methods: {
+    // 模态框相关
     handBanClick(row) {
       row.isban = !row.isban
     },
@@ -279,9 +319,11 @@ export default {
       this.newServer = true
     },
     handleCancleNewServerModal() {
+      this.getServe()
       this.newServer = false
     },
-    handleServerDetail() {
+    handleServerDetail(row) {
+      this.serveDetailData = row
       this.serverDetail = true
     },
     handleCancleServerDetailModal() {
@@ -294,21 +336,67 @@ export default {
       this.testServer = false
     },
     // 获取服务列表
-    async getServe() {
+    async getServe(search, filter) {
       const self = this
+      let searchKey = ""
+      if (search) {
+        searchKey = search
+      }
+      let filterKey = ""
+      if (filter) {
+        filterKey = filter
+      }
       try {
         const res = await self.axios({
           method: "get",
           url: self.$store.state.baseurl + "api/service/list",
           params: {
+            p: self.current,
+            psize: self.pageSize,
+            search_key: searchKey,
+            status: filterKey
           }
         })
         console.log(res)
         if (res.data.code == 0) {
-          self.ServeData = res.data.data
+          self.total = res.data.data.total
+          self.ServeData = res.data.data.page
         }
       } catch (error) {
         self.$Message.error("获取服务列表错误")
+      }
+    },
+    // page改变
+    pageChange(index) {
+      this.current = index
+      this.getServe()
+    },
+    pageSizeChange(size) {
+      this.pageSize = size
+      this.getServe()
+    },
+    // 搜索任务
+    async searchService() {
+      this.current = 1
+      this.getServe(this.search_key)
+    },
+    // 筛选功能
+    filter(col) {
+      // console.log(col)
+      const self = this
+      self.current = 1
+      if (col._filterChecked.length == 0) {
+        self.getServe()
+        self.isFilter = false
+      } else {
+        let filterChecked = col._filterChecked[0]
+        if (filterChecked == "运行中") {
+          self.getServe("", "RUNNING")
+        } else if (filterChecked == "准备就绪") {
+          self.getServe("", "READY")
+        } else if (filterChecked == "禁用") {
+          self.getServe("", "DISABLED")
+        }
       }
     }
   },
@@ -353,5 +441,9 @@ export default {
 }
 >>> .ivu-table-overflowX {
   overflow-x: unset !important;
+}
+.params {
+  text-align: left;
+  padding-left: 20px;
 }
 </style>

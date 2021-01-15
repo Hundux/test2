@@ -17,11 +17,12 @@
           <div class="configure">
             <i-vueJsonEditor
               name="jsonData"
-              v-model="jsonData"
+              v-model="serveDetailData.spec"
               :mode="'code'"
               lang="zh"
-              v-if="jsonData"
+              v-if="serveDetailData"
               class="vueJsonEditor"
+              @json-change="onJsonChange"
             ></i-vueJsonEditor>
             <p
               class="noConfigure"
@@ -37,59 +38,58 @@
             label-position="right"
             :label-width="100"
             class="serverDetail-form"
+            v-if="serveDetailData"
           >
             <i-formItem label="名称：">
-              <i-input style="width:200px"></i-input>
+              <i-input
+                style="width:200px"
+                v-model="serveDetailData.title"
+              ></i-input>
             </i-formItem>
           </i-form>
-          <i-row class="configure-top" style="width:100%">
-            <i-col
-              span="6"
-              class="configure-top-one"
-            ><span>参数</span></i-col>
-            <i-col span="6">默认值</i-col>
-            <i-col span="12">描述</i-col>
-          </i-row>
-          <i-row class="configure-body">
-            <i-col
-              span="6"
-              class="configure-body-one"
-            ><span>参数1：</span></i-col>
-            <i-col span="6">
-              <i-input style="width:85%"></i-input>
-            </i-col>
-            <i-col span="12">
-                <i-input type="textarea" style="width:95%"></i-input>
-              </i-col>
-          </i-row>
-          <i-row class="configure-body">
-            <i-col
-              span="6"
-              class="configure-body-one"
-            ><span>参数2：</span></i-col>
-            <i-col span="6">
-              <i-input style="width:85%"></i-input>
-            </i-col>
-            <i-col span="12">
-                <i-input type="textarea" style="width:95%"></i-input>
-              </i-col>
-          </i-row>
-          <i-row class="configure-body">
+          <div v-if="serveDetailData.params" style="width:100%">
+            <i-row
+              class="configure-top"
+              style="width:100%"
+              v-if="serveDetailData.params.length"
+            >
+              <i-col
+                span="6"
+                class="configure-top-one"
+              ><span>参数</span></i-col>
+              <i-col span="6">默认值</i-col>
+              <i-col span="12">描述</i-col>
+            </i-row>
+          </div>
+          <i-row
+            class="configure-body"
+            :key="index"
+            v-for="(item,index) in serveDetailData.params"
+          >
             <i-col
               span="6"
               class="configure-body-one"
-            ><span>参数3：</span></i-col>
+            ><span>{{item.name}}：</span>
+            </i-col>
             <i-col span="6">
-              <i-input style="width:85%"></i-input>
+              <i-input
+                style="width:85%"
+                v-model="item.default"
+              ></i-input>
             </i-col>
             <i-col span="12">
-                <i-input type="textarea" style="width:95%"></i-input>
-              </i-col>
+              <i-input
+                type="textarea"
+                style="width:95%"
+                v-model="item.description"
+              ></i-input>
+            </i-col>
           </i-row>
           <div>
             <i-button
               type="primary"
               class="server-determine"
+              @click="updateServer"
             >确定</i-button>
           </div>
           <p class="serverDetail-wrap-operation">操作栏</p>
@@ -107,7 +107,10 @@
             >复制</i-button>
           </i-buttongroup>
         </i-col>
-        <i-col span="9" style="height:100%">
+        <i-col
+          span="9"
+          style="height:100%"
+        >
           <div class="log">
             <div class="noLog">
               暂无日志
@@ -126,72 +129,6 @@
 export default {
   data() {
     return {
-      jsonData: {
-        "name": "sccm",
-        "version": "0.1.0",
-        "lockfileVersion": 1,
-        "requires": true,
-        "dependencies": {
-          "@babel/code-frame": {
-            "version": "7.12.11",
-            "resolved": "https://registry.npm.taobao.org/@babel/code-frame/download/@babel/code-frame-7.12.11.tgz?cache=0&sync_timestamp=1608076875397&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40babel%2Fcode-frame%2Fdownload%2F%40babel%2Fcode-frame-7.12.11.tgz",
-            "integrity": "sha1-9K1DWqJj25NbjxDyxVLSP7cWpj8=",
-            "dev": true,
-            "requires": {
-              "@babel/highlight": "^7.10.4"
-            }
-          },
-        },
-        "@babel/compat-data": {
-          "version": "7.12.7",
-          "resolved": "https://registry.npm.taobao.org/@babel/compat-data/download/@babel/compat-data-7.12.7.tgz",
-          "integrity": "sha1-kym0eCp9a71+71fhGt35HuPvHkE=",
-          "dev": true
-        },
-        "@babel/core": {
-          "version": "7.12.10",
-          "resolved": "https://registry.npm.taobao.org/@babel/core/download/@babel/core-7.12.10.tgz?cache=0&sync_timestamp=1607568968691&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40babel%2Fcore%2Fdownload%2F%40babel%2Fcore-7.12.10.tgz",
-          "integrity": "sha1-t5ouG59w7T2Eu/ttjE74JfYGvM0=",
-          "dev": true,
-          "requires": {
-            "@babel/code-frame": "^7.10.4",
-            "@babel/generator": "^7.12.10",
-            "@babel/helper-module-transforms": "^7.12.1",
-            "@babel/helpers": "^7.12.5",
-            "@babel/parser": "^7.12.10",
-            "@babel/template": "^7.12.7",
-            "@babel/traverse": "^7.12.10",
-            "@babel/types": "^7.12.10",
-            "convert-source-map": "^1.7.0",
-            "debug": "^4.1.0",
-            "gensync": "^1.0.0-beta.1",
-            "json5": "^2.1.2",
-            "lodash": "^4.17.19",
-            "semver": "^5.4.1",
-            "source-map": "^0.5.0"
-          }
-        },
-        "@babel/generator": {
-          "version": "7.12.11",
-          "resolved": "https://registry.npm.taobao.org/@babel/generator/download/@babel/generator-7.12.11.tgz?cache=0&sync_timestamp=1608076880719&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40babel%2Fgenerator%2Fdownload%2F%40babel%2Fgenerator-7.12.11.tgz",
-          "integrity": "sha1-mKffe4w1jJo3qweiQFaFMBaro68=",
-          "dev": true,
-          "requires": {
-            "@babel/types": "^7.12.11",
-            "jsesc": "^2.5.1",
-            "source-map": "^0.5.0"
-          }
-        },
-        "@babel/helper-annotate-as-pure": {
-          "version": "7.12.10",
-          "resolved": "https://registry.npm.taobao.org/@babel/helper-annotate-as-pure/download/@babel/helper-annotate-as-pure-7.12.10.tgz?cache=0&sync_timestamp=1607584028947&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40babel%2Fhelper-annotate-as-pure%2Fdownload%2F%40babel%2Fhelper-annotate-as-pure-7.12.10.tgz",
-          "integrity": "sha1-VKubAA5gqTZEzhez830xOq8dEV0=",
-          "dev": true,
-          "requires": {
-            "@babel/types": "^7.12.10"
-          }
-        },
-      },
     }
   },
   props: {
@@ -199,10 +136,65 @@ export default {
       type: Boolean,
       default: false
     },
+    serveDetailData: {
+      type: Object
+    }
   },
   methods: {
     cancle() {
       this.$emit('cancleServerDetailModal')
+    },
+    onJsonChange(value) {
+      console.log(value);
+      // let jsonData = value
+      // jsonData = JSON.stringify(jsonData)
+      // let res = jsonData.match(/\$.*?\$/g)
+      // let params = Array.from(new Set(res))
+      // for (let i = 0; i < params.length; i++) {
+      //   let name = params[i].substr(1, params[i].length - 2)
+      //   params[i] = {
+      //     name: name,
+      //     default: "1",
+      //     desc: ""
+      //   }
+      // }
+    },
+    async updateServer() {
+      const self = this
+      try {
+        if (self.serveDetailData.title == "") {
+          self.$Message.error("请输入服务名称")
+        } else {
+          console.log(self.serveDetailData)
+          const l = self.serveDetailData.params.length
+          let service_params = {}
+          for (let i = 0; i < l; i++) {
+            service_params[`service_params_spec-${i}-name`] = self.serveDetailData.params[i].name
+            service_params[`service_params_spec-${i}-default`] = self.serveDetailData.params[i].default
+            service_params[`service_params_spec-${i}-desc`] = self.serveDetailData.params[i].description
+          }
+          const res = await self.axios({
+            method: "patch",
+            url: self.$store.state.baseurl + "api/service/update",
+            params: {
+              title: self.serveDetailData.title,
+              id: self.serveDetailData.id,
+              spec: self.serveDetailData.spec,
+              ...service_params
+            }
+          })
+          console.log(res)
+          if (res.data.code == 0) {
+            self.cancle()
+          } else if (res.data.data == -1) {
+            self.$Message.error(res.data.code)
+          } else {
+            self.$Message.error(res.data.error_message)
+          }
+        }
+      } catch (error) {
+        self.$Message.error("创建任务错误")
+      }
     }
   },
 }
@@ -230,10 +222,10 @@ export default {
   justify-content: center;
   margin-bottom: 10px;
 }
->>> .ivu-modal-body{
+>>> .ivu-modal-body {
   height: 100%;
 }
-.serverDetail-wrap{
+.serverDetail-wrap {
   height: 100%;
 }
 .serverDetail-wrap-operation {
@@ -304,16 +296,16 @@ export default {
   justify-content: center;
   align-items: center;
 }
-.server-determine{
-    margin-top: 25px;
+.server-determine {
+  margin-top: 25px;
 }
-.configure-top-one{
+.configure-top-one {
   text-align: right;
 }
-.configure-top-one span{
+.configure-top-one span {
   margin-right: 38px;
 }
->>> textarea.ivu-input{
+>>> textarea.ivu-input {
   height: 32px;
 }
 </style>

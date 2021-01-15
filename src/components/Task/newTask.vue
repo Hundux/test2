@@ -237,10 +237,7 @@ export default {
         category: "TASK",
         content: {
           spec: {
-            "appid": "~4.5.0",
-            "crawlid": "~4.5.0",
-            "url": "~4.5.0",
-            "spiderid": "~4.5.0",
+
           },
         },
         schedule: {

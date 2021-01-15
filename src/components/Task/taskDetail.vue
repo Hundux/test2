@@ -23,8 +23,16 @@
                 name="jsonData"
                 :mode="'code'"
                 lang="zh"
-                v-model="task.content.spec"
                 v-if="task.content.spec"
+                v-model="task.content.spec"
+                class="vueJsonEditor"
+              ></i-vueJsonEditor>
+              <i-vueJsonEditor
+                name="jsonData"
+                :mode="'code'"
+                lang="zh"
+                v-model="task.content.service_inst.service.spec"
+                v-else-if="task.content.service_inst.service.spec"
                 class="vueJsonEditor"
               ></i-vueJsonEditor>
             </div>
@@ -158,15 +166,21 @@
               </i-select>
             </i-formItem>
           </i-form>
-          <i-button
-            type="text"
-            style="marginTop:-20px;marginBottom:20px;color:#057009"
+          <div
             v-if="task.category=='SERVICE'"
-            @click="handleServerDetail()"
-          >查看服务详情</i-button>
+            style="marginBottom:20px"
+          >
+            <span>服务名称：{{task.content.service_inst.service.title}}</span>
+            <i-button
+              type="text"
+              style="color:#057009"
+              @click="handleServerDetail()"
+            >查看服务详情</i-button>
+          </div>
           <!-- 服务详情模态框 -->
           <i-serverDetail
             :serverDetail="serverDetail"
+            :serveDetailData="serveDetailData"
             @cancleServerDetailModal="handleCancleServerDetailModal"
           ></i-serverDetail>
 
@@ -258,6 +272,8 @@ export default {
         month: "",
         week: "",
       },
+      serverTaskDetail: {},
+      serveDetailData: {}
     }
   },
   props: {
@@ -267,6 +283,11 @@ export default {
     },
     task: {
       type: Object,
+    }
+  },
+  watch: {
+    task(newValue) {
+      console.log(newValue)
     }
   },
   methods: {
@@ -282,9 +303,11 @@ export default {
         month: "",
         week: "",
       }
+      this.serverTaskDetail = {}
       this.$emit("cancleTaskDetailModal", isOperation, task)
     },
     handleServerDetail() {
+      this.serveDetailData = this.task.content.service_inst.service
       this.serverDetail = true
     },
     handleCancleServerDetailModal() {
@@ -423,6 +446,22 @@ export default {
         }
       } catch (error) {
         self.$Message.error("修改任务错误")
+      }
+    },
+    // 通过id获取服务
+    async getServeByID(ID) {
+      const self = this
+      try {
+        const res = await self.axios({
+          method: "get",
+          url: self.$store.state.baseurl + "api/service/list",
+          params: {
+            search_key: ID
+          }
+        })
+        console.log(res)
+      } catch (error) {
+        self.$Message.error("获取服务列表错误")
       }
     },
     handleCopy(task) {

@@ -85,7 +85,7 @@
             <i-button
               type="primary"
               size="small"
-              style="margin-right: 5px;minWidth:95px"
+              style="margin-right: 5px;width:95px"
               @click="handleTaskDetail(row)"
             >预览配置</i-button>
           </div>
@@ -222,7 +222,7 @@ export default {
         {
           title: '名称',
           key: 'title',
-          width: 230,
+          minWidth: 230,
           align: 'center',
           resizable: true,
         },
@@ -296,13 +296,13 @@ export default {
           key: 'configuration',
           slot: 'configuration',
           align: 'center',
-          minWidth: 100,
+          width:120,
           resizable: true,
         },
         {
           title: '执行计划',
           key: 'plan',
-          minWidth: 200,
+          width: 200,
           align: 'center',
           resizable: true,
           filters: [
@@ -477,6 +477,7 @@ export default {
           slot: 'log',
           align: 'center',
           minWidth: 120,
+          maxWidth: 140,
           resizable: true,
         },
       ],
