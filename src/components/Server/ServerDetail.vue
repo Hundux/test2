@@ -10,7 +10,7 @@
     >
       <i-row class="serverDetail-wrap">
         <i-col
-          span="10"
+          span="18"
           class="serverDetail-configure"
           style="height:100%"
         >
@@ -31,7 +31,7 @@
           </div>
         </i-col>
         <i-col
-          span="5"
+          span="6"
           class="serverDetail-server"
         >
           <i-form
@@ -46,12 +46,25 @@
                 v-model="serveDetailData.title"
               ></i-input>
             </i-formItem>
+            <i-formItem
+              label="所需爬虫数："
+              class="form-item"
+            >
+              <i-input
+                v-model="serveDetailData.crawler_count"
+                style="width:200px"
+                type="number"
+              ></i-input>
+            </i-formItem>
           </i-form>
-          <div v-if="serveDetailData.params" style="width:100%">
+          <div
+            v-if="serveDetailData.params"
+            style="width:100%"
+          >
             <i-row
               class="configure-top"
               style="width:100%"
-              v-if="serveDetailData.params.length"
+              v-if="serveDetailDataParams.length"
             >
               <i-col
                 span="6"
@@ -64,7 +77,7 @@
           <i-row
             class="configure-body"
             :key="index"
-            v-for="(item,index) in serveDetailData.params"
+            v-for="(item,index) in serveDetailDataParams"
           >
             <i-col
               span="6"
@@ -104,21 +117,9 @@
             <i-button
               type="primary"
               icon="md-copy"
+              @click="handleCopyServer"
             >复制</i-button>
           </i-buttongroup>
-        </i-col>
-        <i-col
-          span="9"
-          style="height:100%"
-        >
-          <div class="log">
-            <div class="noLog">
-              暂无日志
-            </div>
-            <div class="log-button">
-              <i-button type="primary">查看完整日志</i-button>
-            </div>
-          </div>
         </i-col>
       </i-row>
     </i-modal>
@@ -129,6 +130,7 @@
 export default {
   data() {
     return {
+      serveDetailDataParams: []
     }
   },
   props: {
@@ -140,24 +142,39 @@ export default {
       type: Object
     }
   },
+  watch: {
+    serveDetailData(newValue) {
+      console.log(newValue)
+      this.serveDetailDataParams = newValue.params
+    }
+  },
   methods: {
     cancle() {
       this.$emit('cancleServerDetailModal')
     },
     onJsonChange(value) {
-      console.log(value);
-      // let jsonData = value
-      // jsonData = JSON.stringify(jsonData)
-      // let res = jsonData.match(/\$.*?\$/g)
-      // let params = Array.from(new Set(res))
-      // for (let i = 0; i < params.length; i++) {
-      //   let name = params[i].substr(1, params[i].length - 2)
-      //   params[i] = {
-      //     name: name,
-      //     default: "1",
-      //     desc: ""
-      //   }
-      // }
+      let jsonData = value
+      jsonData = JSON.stringify(jsonData)
+      let res = jsonData.match(/\$.*?\$/g)
+      let params = Array.from(new Set(res))
+      let paramsDefault = this.serveDetailData.params
+      for (let i = 0; i < params.length; i++) {
+        let name = params[i].substr(1, params[i].length - 2)
+        params[i] = {
+          name: name,
+          default: "1",
+          description: ""
+        }
+        paramsDefault.forEach((item) => {
+          if (item.name == params[i].name) {
+            params[i].default = item.default
+            params[i].description = item.description
+          }
+        })
+      }
+
+      console.log(params);
+      this.serveDetailDataParams = params
     },
     async updateServer() {
       const self = this
@@ -166,12 +183,12 @@ export default {
           self.$Message.error("请输入服务名称")
         } else {
           console.log(self.serveDetailData)
-          const l = self.serveDetailData.params.length
+          const l = self.serveDetailDataParams.length
           let service_params = {}
           for (let i = 0; i < l; i++) {
-            service_params[`service_params_spec-${i}-name`] = self.serveDetailData.params[i].name
-            service_params[`service_params_spec-${i}-default`] = self.serveDetailData.params[i].default
-            service_params[`service_params_spec-${i}-desc`] = self.serveDetailData.params[i].description
+            service_params[`service_params_spec-${i}-name`] = self.serveDetailDataParams[i].name
+            service_params[`service_params_spec-${i}-default`] = self.serveDetailDataParams[i].default
+            service_params[`service_params_spec-${i}-desc`] = self.serveDetailDataParams[i].description
           }
           const res = await self.axios({
             method: "patch",
@@ -179,6 +196,7 @@ export default {
             params: {
               title: self.serveDetailData.title,
               id: self.serveDetailData.id,
+              crawler_count: self.serveDetailData.crawler_count,
               spec: self.serveDetailData.spec,
               ...service_params
             }
@@ -195,6 +213,9 @@ export default {
       } catch (error) {
         self.$Message.error("创建任务错误")
       }
+    },
+    handleCopyServer() {
+      this.$emit("handleCopy", this.serveDetailData)
     }
   },
 }
@@ -249,25 +270,6 @@ export default {
   font-size: 28px;
   color: #ccc;
   transform: translate(-50%, -50%);
-}
-.log {
-  width: 100%;
-  height: 94%;
-  border: 1px solid black;
-  position: relative;
-}
-.noLog {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  font-size: 28px;
-  color: #ccc;
-  transform: translate(-50%, -50%);
-}
-.log-button {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
 }
 .serverDetail-form {
   margin-left: -50px;

@@ -155,6 +155,16 @@
                   v-model="updateTask.week"
                 /></i-col>
             </i-row>
+            <i-formItem
+              label="所需爬虫数："
+              class="form-item"
+            >
+              <i-input
+                v-model="task.crawler_count"
+                style="width:250px"
+                type="number"
+              ></i-input>
+            </i-formItem>
             <i-formItem label="类型：">
               <i-select
                 style="width:200px"
@@ -397,6 +407,7 @@ export default {
         id: self.task.id,
         title: self.task.title,
         spec: self.task.content.spec,
+        crawler_count: self.task.crawler_count
       }
       try {
         if (self.updateTask.plan == "定点") {
@@ -407,7 +418,8 @@ export default {
               title: self.task.title,
               spec: self.task.content.spec,
               category: self.task.category,
-              schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
+              schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
+              crawler_count: self.task.crawler_count
             }
           }
         } else if (self.updateTask.plan == "定期") {
@@ -421,7 +433,8 @@ export default {
             schedule_cron_hour: self.updateTask.hour,
             schedule_cron_day_of_month: self.updateTask.day,
             schedule_cron_month: self.updateTask.day,
-            schedule_cron_day_of_week: self.updateTask.week
+            schedule_cron_day_of_week: self.updateTask.week,
+            crawler_count: self.task.crawler_count
           }
         }
         console.log(xData);
