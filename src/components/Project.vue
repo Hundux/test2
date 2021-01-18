@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="project">
     <i-myHead></i-myHead>
     <div class="Management-projects-i-layout layout">
       <i-layout :default-collapsed="false">

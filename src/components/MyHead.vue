@@ -67,7 +67,7 @@ export default {
   position: sticky;
   margin: 0;
   top: 0px;
-  z-index: 6 !important;
+  z-index: 999 !important;
   display: flex;
   height: 60px;
   background-color: #fff;

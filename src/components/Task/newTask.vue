@@ -185,6 +185,16 @@
               ></i-input>
             </i-formItem>
             <i-formItem
+              label="所需爬虫数："
+              class="form-item"
+            >
+              <i-input
+                v-model="taskForm.crawler_count"
+                style="width:250px"
+                type="number"
+              ></i-input>
+            </i-formItem>
+            <i-formItem
               label="类型："
               class="form-item"
             >
@@ -203,18 +213,25 @@
             >
               <i-input
                 placeholder="服务搜索"
-                style="width: 150px;marginRight:20px"
+                style="width: 250px;marginRight:20px"
                 v-model="searchServiceKey"
+                @on-focus="handleSearch"
+                @on-change="handleChange"
                 clearable
+                search
               />
-              <i-button
-                type="info"
-                icon="md-search"
-                class="search"
-                @click="searchService"
-              >搜索</i-button>
             </i-formItem>
           </i-form>
+          <div class="serverListWrap">
+            <div
+              v-for="(item,index) in  serverList"
+              :key="index"
+              class="serverListDiv"
+              @click="selectServer($event,item)"
+            >
+              {{item.title}}
+            </div>
+          </div>
           <div class="determine">
             <i-button
               type="primary"
@@ -252,9 +269,11 @@ export default {
         },
         date: "",
         time: "",
+        crawler_count: 1
       },
       searchServiceKey: "",
       server: {},
+      serverList: []
     }
   },
   props: {
@@ -274,7 +293,7 @@ export default {
           this.taskForm.title = this.taskForm.title + "(copy)"
         }
       }
-    },
+    }
   },
   methods: {
     cancle(isCreate) {
@@ -315,6 +334,7 @@ export default {
             title: self.taskForm.title,
             category: self.taskForm.category,
             spec: self.taskForm.content.spec,
+            crawler_count: self.taskForm.crawler_count
           }
           if (self.taskForm.plan == "定点") {
             if (self.taskForm.date !== "" && self.taskForm.time !== "") {
@@ -332,6 +352,7 @@ export default {
                   category: self.taskForm.category,
                   spec: self.taskForm.content.spec,
                   schedule_at: schedule_at,
+                  crawler_count: self.taskForm.crawler_count
                 }
               } else {
                 const scheduleAt = self.taskForm.date + " " + self.taskForm.time
@@ -340,6 +361,7 @@ export default {
                   category: self.taskForm.category,
                   spec: self.taskForm.content.spec,
                   schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
+                  crawler_count: self.taskForm.crawler_count
                 }
               }
             }
@@ -354,6 +376,7 @@ export default {
               schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
               schedule_cron_month: self.taskForm.schedule.cron.month,
               schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
+              crawler_count: self.taskForm.crawler_count
             }
           }
           console.log(xData);
@@ -482,8 +505,38 @@ export default {
       } catch (error) {
         self.$Message.error("获取服务列表错误")
       }
+    },
+    async handleSearch() {
+      const self = this
+      try {
+        const res = await self.axios({
+          method: "get",
+          url: self.$store.state.baseurl + "api/service/list",
+          params: {
+            search_key: self.searchServiceKey,
+          }
+        })
+        console.log(res)
+        if (res.data.code == 0) {
+          self.serverList = res.data.data.page
+        }
+      } catch (error) {
+        self.$Message.error("获取服务列表错误")
+      }
+    },
+    selectServer(e, server) {
+      let parentNode = e.target.parentNode.children
+      parentNode.forEach(item => {
+        item.classList.remove("selected")
+      })
+      e.target.classList.add("selected")
+      this.server = server
+    },
+    handleChange() {
+      this.handleSearch()
     }
-  }
+  },
+
 }
 </script>
 
@@ -559,5 +612,22 @@ export default {
   justify-content: center;
   margin-bottom: 24px;
   margin-left: 10px;
+}
+.serverListWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+  margin-top: -24px;
+  transform: translateX(37px);
+  cursor: pointer;
+}
+.serverListDiv {
+  border: 1px solid black;
+  width: 250px;
+}
+.selected {
+  background: red;
+  color: #fff;
 }
 </style>

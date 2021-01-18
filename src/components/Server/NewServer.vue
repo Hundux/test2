@@ -28,7 +28,7 @@
         <i-col span="6">
           <i-form
             label-position="right"
-            :label-width="60"
+            :label-width="100"
             class="titleForm"
           >
             <i-formItem
@@ -38,6 +38,16 @@
               <i-input
                 v-model="newServe.title"
                 style="width:250px"
+              ></i-input>
+            </i-formItem>
+            <i-formItem
+              label="所需爬虫数："
+              class="form-item"
+            >
+              <i-input
+                v-model="newServe.crawler_count"
+                style="width:250px"
+                type="number"
               ></i-input>
             </i-formItem>
           </i-form>
@@ -71,7 +81,7 @@
                 <i-input
                   type="textarea"
                   style="width:85%"
-                  v-model="item.desc"
+                  v-model="item.description"
                 ></i-input>
               </i-col>
             </i-row>
@@ -95,18 +105,13 @@ export default {
       newServe: {
         title: '',
         service: '',
+        crawler_count: 1
       },
       jsonData: {
-        "appid": "~4.5.0",
-        "crawlid": "~4.5.0",
-        "url": "~4.5.0",
-        "spiderid": "~4.5.0",
-        "a": "$参数1$",
-        "b": "$参数2$",
-        "c": "$参数3$",
-        "D": "$参数1$",
-        "f": "$参数2$",
-        "改变数据": "出现参数栏"
+        // "appid": "$参数1$",
+        // "crawlid": "$参数2$",
+        // "url": "$参数3$",
+        // "spiderid": "$参数1$",
       },
       paramsData: []
     }
@@ -116,6 +121,18 @@ export default {
       type: Boolean,
       default: false
     },
+    copyServe: {
+      type: Object
+    }
+  },
+  watch: {
+    copyServe(newValue) {
+      if (newValue.id) {
+        this.newServe.title = newValue.title + "(copy)"
+        this.jsonData = newValue.spec
+        this.paramsData = newValue.params
+      }
+    }
   },
   methods: {
     cancle() {
@@ -132,7 +149,7 @@ export default {
           for (let i = 0; i < l; i++) {
             service_params[`service_params_spec-${i}-name`] = self.paramsData[i].name
             service_params[`service_params_spec-${i}-default`] = self.paramsData[i].default
-            service_params[`service_params_spec-${i}-desc`] = self.paramsData[i].desc
+            service_params[`service_params_spec-${i}-desc`] = self.paramsData[i].description
           }
           const res = await self.axios({
             method: "post",
@@ -140,10 +157,11 @@ export default {
             params: {
               title: self.newServe.title,
               spec: self.jsonData,
+              crawler_count: self.newServe.crawler_count,
               ...service_params
             }
           })
-          console.log(res)
+          // console.log(res)
           if (res.data.code == 0) {
             self.cancle()
           } else if (res.data.data == -1) {
@@ -167,10 +185,9 @@ export default {
         params[i] = {
           name: name,
           default: "1",
-          desc: ""
+          description: ""
         }
       }
-      console.log(params)
       this.paramsData = params
     }
   }
@@ -244,6 +261,7 @@ export default {
 }
 .titleForm {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   margin-bottom: -12px;

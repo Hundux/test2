@@ -38,6 +38,7 @@
           placeholder="关键词搜索"
           style="width: 200px"
           v-model="search_key"
+          @on-clear="getServe"
           clearable
         />
         <i-button
@@ -70,6 +71,7 @@
         @on-page-size-change="pageSizeChange"
       />
       <i-table
+        class="Servel-table"
         :columns="columns1"
         :data="ServeData"
         stripe
@@ -100,8 +102,7 @@
               class="params"
             >
               <span>{{item.name}}:</span>
-              <span>{{item.default}}</span>
-              <span> 参数描述：{{item.description}}</span>
+              <span>{{item.description}}</span>
             </div>
           </div>
         </template>
@@ -137,6 +138,7 @@
               type="primary"
               size="small"
               icon="md-copy"
+              @click="handCopyClick(row)"
             ></i-button>
           </div>
         </template>
@@ -166,17 +168,35 @@
 
     <i-newServer
       :newServer="newServer"
+      :copyServe="copyServer"
       @cancleNewServerModal="handleCancleNewServerModal"
     ></i-newServer>
     <i-serverDetail
       :serverDetail="serverDetail"
       :serveDetailData="serveDetailData"
+      @handleCopy="handCopyClick"
       @cancleServerDetailModal="handleCancleServerDetailModal"
     ></i-serverDetail>
     <i-testServer
       :testServer="testServer"
       @cancleTestServerModal="cancleTestServerModal"
     ></i-testServer>
+
+    <!-- loading-->
+    <div
+      v-if="showLoading"
+      class="demo-spin-col"
+      span="8"
+    >
+      <i-spin fix>
+        <i-icon
+          type="ios-loading"
+          size=18
+          class="demo-spin-icon-load"
+        ></i-icon>
+        <div>Loading</div>
+      </i-spin>
+    </div>
   </div>
 </template>
 
@@ -197,30 +217,23 @@ export default {
         {
           title: '名称',
           key: 'title',
-          minWidth: 230,
+          minWidth: 400,
           align: 'center',
-          resizable: true,
-        },
-        {
-          title: '配置内容',
-          key: 'configuration',
-          slot: 'configuration',
-          align: 'center',
-          width: 120,
           resizable: true,
         },
         {
           title: '参数',
           key: 'params',
           slot: 'params',
-          minWidth: 250,
+          minWidth: 385,
           align: 'center',
           resizable: true,
         },
         {
           title: '状态',
           key: 'status',
-          width: 100,
+          minWidth: 120,
+          maxWidth: 140,
           align: 'center',
           resizable: true,
           filters: [
@@ -245,6 +258,17 @@ export default {
               return row.status == "READY"
             } else if (value === "禁用") {
               return row.status == "DISABLED"
+            }
+          },
+          render: (h, params) => {
+            if (params.row.status === "READY") {
+              return h('span', "准备就绪")
+            } else if (params.row.status === "unenabled") {
+              return h("span", "禁用")
+            } else if (params.row.status === "RUNNING") {
+              return h("span", "运行中")
+            } else {
+              return h("span", params.row.status)
             }
           },
           renderHeader(h, params) {
@@ -289,11 +313,19 @@ export default {
           resizable: true,
         },
         {
+          title: '配置内容',
+          key: 'configuration',
+          slot: 'configuration',
+          align: 'center',
+          width: 120,
+          resizable: true,
+        },
+        {
           title: '日志',
           key: 'log',
           slot: 'log',
           align: 'center',
-          minWidth: 120,
+          width: 120,
           resizable: true,
         },
       ],
@@ -304,10 +336,12 @@ export default {
       testServer: false,
       serveDetailData: {},
       current: 1,
-      pageSize: 10,
       isFilter: false,
       total: 0,
-      search_key: ""
+      search_key: "",
+      showLoading: false,
+      pageSize: null,
+      copyServer: {}
     }
   },
   methods: {
@@ -327,6 +361,7 @@ export default {
       this.serverDetail = true
     },
     handleCancleServerDetailModal() {
+      this.getServe()
       this.serverDetail = false
     },
     handleTestServer() {
@@ -338,6 +373,7 @@ export default {
     // 获取服务列表
     async getServe(search, filter) {
       const self = this
+      self.showLoading = true
       let searchKey = ""
       if (search) {
         searchKey = search
@@ -361,6 +397,7 @@ export default {
         if (res.data.code == 0) {
           self.total = res.data.data.total
           self.ServeData = res.data.data.page
+          self.showLoading = false
         }
       } catch (error) {
         self.$Message.error("获取服务列表错误")
@@ -373,6 +410,8 @@ export default {
     },
     pageSizeChange(size) {
       this.pageSize = size
+      localStorage.setItem("pageSize", size)
+      this.$store.commit("changePageSize", size)
       this.getServe()
     },
     // 搜索任务
@@ -398,6 +437,11 @@ export default {
           self.getServe("", "DISABLED")
         }
       }
+    },
+    handCopyClick(row) {
+      console.log(row);
+      this.copyServer = row
+      this.newServer = true
     }
   },
   components: {
@@ -405,7 +449,13 @@ export default {
     "i-serverDetail": ServerDetail,
     "i-testServer": TestServer
   },
+  computed: {
+    pageSizeC() {
+      return this.$store.state.pageSize
+    }
+  },
   mounted() {
+    this.pageSize = this.pageSizeC
     this.getServe()
   },
 }
@@ -439,8 +489,12 @@ export default {
 >>> .ivu-table-cell {
   padding: 5px !important;
 }
->>> .ivu-table-overflowX {
-  overflow-x: unset !important;
+/* >>> .ivu-table-overflowX {
+  overflow-x: auto !important;
+} */
+.Servel-table {
+  font-weight: 450;
+  overflow: auto;
 }
 .params {
   text-align: left;

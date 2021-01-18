@@ -1,60 +1,51 @@
 <template>
   <div class="task">
     <div class="task-top">
-      <div class="task-button-group">
-        <i-button
-          type="success"
-          icon="md-play"
-          class="task-button"
-        >批量执行</i-button>
-        <i-button
-          type="error"
-          icon="md-trash"
-          class="task-button"
-        >批量禁用</i-button>
-        <i-button
-          type="success"
-          icon="md-checkmark"
-          class="task-button"
-        >批量启用</i-button>
-        <i-button
-          type="warning"
-          icon="md-pause"
-          class="task-button"
-        >批量暂停</i-button>
-        <i-button
-          type="success"
-          icon="md-refresh"
-          style="width:140px"
-          class="task-button"
-        >批量恢复</i-button>
-        <i-button
-          type="error"
-          icon="md-close"
-        >批量终止</i-button>
-      </div>
-      <div class="task-search">
-        <i-input
-          v-model="search"
-          placeholder="关键词搜索"
-          style="width: 200px"
-          clearable
-        />
-        <i-button
-          type="info"
-          icon="md-search"
-          class="search"
-          @click="searchTask"
-        >搜索</i-button>
-      </div>
-      <i-button
-        style="color: #fff;background-color: #057009"
-        onMouseOver="this.style.color='#b6f204'"
-        onMouseOut="this.style.color='#fff'"
-        icon="md-power"
-        class="new-task"
-        @click="handleNewTask"
-      >新建任务</i-button>
+      <i-row style="width:100%">
+        <i-col
+          span="8"
+          class="task-button-group"
+        >
+          <i-button
+            type="success"
+            icon="md-checkmark"
+            class="task-button"
+          >批量启用</i-button>
+          <i-button
+            type="error"
+            icon="md-trash"
+            class="task-button"
+          >批量禁用</i-button>
+        </i-col>
+        <i-col
+          span="8"
+          class="task-search"
+        >
+          <i-input
+            v-model="search"
+            placeholder="关键词搜索"
+            style="width: 200px"
+            @on-clear="getTASKList"
+            clearable
+          />
+          <i-button
+            type="info"
+            icon="md-search"
+            class="search"
+            @click="searchTask"
+          >搜索</i-button>
+        </i-col>
+        <i-col span="8">
+          <i-button
+            style="color: #fff;background-color: #057009"
+            onMouseOver="this.style.color='#b6f204'"
+            onMouseOut="this.style.color='#fff'"
+            icon="md-power"
+            class="new-task"
+            @click="handleNewTask"
+          >新建任务</i-button>
+        </i-col>
+      </i-row>
     </div>
     <div class="task-main">
       <i-page
@@ -71,6 +62,7 @@
         @on-page-size-change="pageSizeChange"
       />
       <i-table
+        class="task-table"
         :columns="columns1"
         :data="TaskData"
         stripe
@@ -147,14 +139,6 @@
               v-else
               @click="handRunClick(row)"
             ></i-button>
-            <!-- 终止 -->
-            <i-button
-              type="error"
-              size="small"
-              icon="md-close"
-              style="margin-right: 5px"
-              @click="handStoppedClick(row)"
-            ></i-button>
           </div>
         </template>
         <template slot="log">
@@ -196,6 +180,22 @@
         @cancleLogModal="cancleLogModal"
       ></i-log>
     </div>
+
+    <!-- loading-->
+    <div
+      v-if="showLoading"
+      class="demo-spin-col"
+      span="8"
+    >
+      <i-spin fix>
+        <i-icon
+          type="ios-loading"
+          size=18
+          class="demo-spin-icon-load"
+        ></i-icon>
+        <div>Loading</div>
+      </i-spin>
+    </div>
   </div>
 </template>
 
@@ -210,7 +210,6 @@ export default {
     return {
       search: "",
       current: 1,
-      pageSize: 10,
       total: 0,
       columns1: [
         {
@@ -290,14 +289,6 @@ export default {
               }
             }
           }
-        },
-        {
-          title: '配置内容',
-          key: 'configuration',
-          slot: 'configuration',
-          align: 'center',
-          width:120,
-          resizable: true,
         },
         {
           title: '执行计划',
@@ -390,9 +381,6 @@ export default {
             {
               label: '准备就绪',
               value: "准备就绪"
-            }, {
-              label: "已终止",
-              value: "已终止"
             },
             {
               label: '禁用',
@@ -402,14 +390,11 @@ export default {
           filterMultiple: true,
           filterMethod(value, row) {
             if (value === "运行中") {
-
               return row.status == "RUNNING"
             } else if (value === "暂停中") {
               return row.status == "PAUSED"
             } else if (value === "准备就绪") {
               return row.status == "READY"
-            } else if (value === "已终止") {
-              return row.status == "STOPPED"
             } else if (value === "禁用") {
               return row.status == "unenabled"
             }
@@ -419,8 +404,6 @@ export default {
               return h('span', "准备就绪")
             } else if (params.row.status === "PAUSED") {
               return h("span", "暂停中")
-            } else if (params.row.status === "STOPPED") {
-              return h("span", "已终止")
             } else if (params.row.status === "unenabled") {
               return h("span", "禁用")
             } else if (params.row.status === "RUNNING") {
@@ -472,12 +455,19 @@ export default {
           resizable: true,
         },
         {
+          title: '配置内容',
+          key: 'configuration',
+          slot: 'configuration',
+          align: 'center',
+          width: 120,
+          resizable: true,
+        },
+        {
           title: '日志',
           key: 'log',
           slot: 'log',
           align: 'center',
-          minWidth: 120,
-          maxWidth: 140,
+          width: 120,
           resizable: true,
         },
       ],
@@ -492,7 +482,9 @@ export default {
       columns4: [],
       copyTask: {},
       isFilter: false,
-      fData: {}
+      fData: {},
+      showLoading: false,
+      pageSize: null
     }
   },
   components: {
@@ -500,11 +492,17 @@ export default {
     "i-taskdetail": TaskDetail,
     "i-log": Log
   },
+  computed: {
+    pageSizeC() {
+      return this.$store.state.pageSize
+    }
+  },
   methods: {
     // 获取任务列表
     async getTASKList(search) {
       const self = this
       let searchKey = ""
+      self.showLoading = true
       if (search) {
         searchKey = search
       }
@@ -539,6 +537,7 @@ export default {
               item.status = "unenabled"
             }
           })
+          self.showLoading = false
         }
       } catch (err) {
         self.$Message.error("获取任务列表错误")
@@ -563,25 +562,6 @@ export default {
         }
       } catch (err) {
         self.$Message.error("启用或禁用任务错误")
-      }
-    },
-    // 终止任务
-    async handStoppedClick(row) {
-      const self = this
-      let xData = {
-        id: row.id,
-      }
-      try {
-        const res = await self.axios({
-          method: "post",
-          url: self.$store.state.baseurl + "api/job/stop",
-          params: xData
-        })
-        if (res.data.code === 0) {
-          this.getTASKList()
-        }
-      } catch (err) {
-        self.$Message.error("终止任务错误")
       }
     },
     // 运行 恢复任务
@@ -776,6 +756,8 @@ export default {
     },
     pageSizeChange(size) {
       this.pageSize = size
+      localStorage.setItem("pageSize", size)
+      this.$store.commit("changePageSize", size)
       if (this.isFilter) {
         this.fData.psize = this.pageSize
         this.filterTASKList(this.fData)
@@ -820,6 +802,7 @@ export default {
   },
   mounted() {
     const self = this
+    self.pageSize = self.pageSizeC
     self.getTASKList()
   },
 }
@@ -831,15 +814,11 @@ export default {
   display: flex;
   margin-bottom: 10px;
 }
-.task-button-group {
-  margin-left: 5px;
-}
 .task-button {
   margin-right: 5px;
 }
 .task-search {
   min-width: 302px;
-  margin-left: 75px;
 }
 .task-search .search {
   margin-left: 20px;
@@ -854,6 +833,10 @@ export default {
   padding: 5px !important;
 }
 >>> .ivu-table-overflowX {
-  overflow-x: unset !important;
+  overflow-x: auto !important;
+}
+.task-table {
+  font-weight: 450;
+  overflow: auto !important;
 }
 </style>
