@@ -105,7 +105,7 @@
               size="small"
               icon="md-open"
               style="margin-right: 20px"
-              @click="handleTestServer"
+              @click="callServer(row)"
             ></i-button>
             <!-- 启用 -->
             <i-button
@@ -221,45 +221,34 @@ export default {
           resizable: true,
         },
         {
-          title: '状态',
-          key: 'status',
-          minWidth: 120,
-          maxWidth: 140,
+          title: "状态",
+          key: 'enabled',
+          width: 100,
           align: 'center',
           resizable: true,
           filters: [
             {
-              label: "运行中",
-              value: "运行中"
+              label: '启用',
+              value: "启用"
             },
             {
-              label: "准备就绪",
-              value: "准备就绪"
-            },
-            {
-              label: "禁用",
+              label: '禁用',
               value: "禁用"
             }
           ],
           filterMultiple: false,
           filterMethod(value, row) {
-            if (value === "运行中") {
-              return row.status == "RUNNING"
-            } else if (value === "准备就绪") {
-              return row.status == "READY"
+            if (value === "启用") {
+              return row.enabled == true
             } else if (value === "禁用") {
-              return row.status == "DISABLED"
+              return row.status == false
             }
           },
           render: (h, params) => {
-            if (params.row.status === "READY") {
-              return h('span', "准备就绪")
-            } else if (params.row.status === "unenabled") {
-              return h("span", "禁用")
-            } else if (params.row.status === "RUNNING") {
-              return h("span", "运行中")
-            } else {
-              return h("span", params.row.status)
+            if (params.row.enabled === true) {
+              return h('span', "启用")
+            } else if (params.row.enabled === false) {
+              return h('span', "禁用")
             }
           },
           renderHeader(h, params) {
@@ -381,7 +370,7 @@ export default {
             p: self.current,
             psize: self.pageSize,
             search_key: searchKey,
-            status: filterKey
+            enabled: filterKey
           }
         })
         console.log(res)
@@ -420,12 +409,10 @@ export default {
         self.isFilter = false
       } else {
         let filterChecked = col._filterChecked[0]
-        if (filterChecked == "运行中") {
-          self.getServe("", "RUNNING")
-        } else if (filterChecked == "准备就绪") {
-          self.getServe("", "READY")
-        } else if (filterChecked == "禁用") {
-          self.getServe("", "DISABLED")
+        if (filterChecked == "启用") {
+          self.getServe("", "yes")
+        } else {
+          self.getServe("", "no")
         }
       }
     },
@@ -433,6 +420,28 @@ export default {
       console.log(row);
       this.copyServer = row
       this.newServer = true
+    },
+    // 调用服务
+    async callServer(row) {
+      const self = this
+      let xData = {
+        id: row.id,
+      }
+      try {
+        const res = await self.axios({
+          method: "get",
+          url: self.$store.state.baseurl + "api/service/call",
+          params: xData
+        })
+        console.log(res);
+        // if (res.data.code == 0) {
+        // } else {
+        //   self.$Message.error(res.data.error_message)
+        // }
+      } catch (err) {
+        console.log(err);
+        self.$Message.error("运行任务错误")
+      }
     }
   },
   components: {

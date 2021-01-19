@@ -183,12 +183,14 @@ export default {
           self.$Message.error("请输入服务名称")
         } else {
           console.log(self.serveDetailData)
-          const l = self.serveDetailDataParams.length
           let service_params = {}
-          for (let i = 0; i < l; i++) {
-            service_params[`service_params_spec-${i}-name`] = self.serveDetailDataParams[i].name
-            service_params[`service_params_spec-${i}-default`] = self.serveDetailDataParams[i].default
-            service_params[`service_params_spec-${i}-desc`] = self.serveDetailDataParams[i].description
+          if (self.serveDetailDataParams) {
+            const l = self.serveDetailDataParams.length
+            for (let i = 0; i < l; i++) {
+              service_params[`service_params_spec-${i}-name`] = self.serveDetailDataParams[i].name
+              service_params[`service_params_spec-${i}-default`] = self.serveDetailDataParams[i].default
+              service_params[`service_params_spec-${i}-desc`] = self.serveDetailDataParams[i].description
+            }
           }
           const res = await self.axios({
             method: "patch",
@@ -211,6 +213,7 @@ export default {
           }
         }
       } catch (error) {
+        console.log(error);
         self.$Message.error("创建任务错误")
       }
     },

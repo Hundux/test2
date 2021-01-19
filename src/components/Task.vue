@@ -99,7 +99,7 @@
             <i-button
               type="success"
               size="small"
-               style="margin-right: 20px"
+              style="margin-right: 20px"
               v-if="row.enabled === false"
               icon="md-checkmark"
               @click="handBanClick(row,'yes')"
@@ -118,7 +118,6 @@
               type="primary"
               size="small"
               icon="md-copy"
-              style="margin-right: 20px"
               @click="handleCopyTask(row)"
             ></i-button>
           </div>
@@ -347,55 +346,36 @@ export default {
         },
         {
           title: "状态",
-          key: 'status',
+          key: 'enabled',
           width: 100,
           align: 'center',
           resizable: true,
           filters: [
             {
-              label: '运行中',
-              value: "运行中"
-            },
-            {
-              label: "暂停中",
-              value: "暂停中"
-            },
-            {
-              label: '准备就绪',
-              value: "准备就绪"
+              label: '启用',
+              value: "启用"
             },
             {
               label: '禁用',
               value: "禁用"
             }
           ],
-          filterMultiple: true,
+          filterMultiple: false,
           filterMethod(value, row) {
-            if (value === "运行中") {
-              return row.status == "RUNNING"
-            } else if (value === "暂停中") {
-              return row.status == "PAUSED"
-            } else if (value === "准备就绪") {
-              return row.status == "READY"
+            if (value === "启用") {
+              return row.enabled == true
             } else if (value === "禁用") {
-              return row.status == "unenabled"
+              return row.enabled == false
             }
           },
           render: (h, params) => {
-            if (params.row.status === "READY") {
-              return h('span', "准备就绪")
-            } else if (params.row.status === "PAUSED") {
-              return h("span", "暂停中")
-            } else if (params.row.status === "unenabled") {
-              return h("span", "禁用")
-            } else if (params.row.status === "RUNNING") {
-              return h("span", "运行中")
-            } else {
-              return h("span", params.row.status)
+            if (params.row.enabled === true) {
+              return h('span', "启用")
+            } else if (params.row.enabled === false) {
+              return h('span', "禁用")
             }
           },
           renderHeader(h, params) {
-            global.columns3 = params.column._filterChecked
             if (params.index === 4) {
               if (params.column._filterChecked.length != 0) {
                 let column_Ck = params.column._filterChecked
@@ -515,9 +495,6 @@ export default {
             } else {
               item.plan = "未计划"
             }
-            if (item.enabled == false) {
-              item.status = "unenabled"
-            }
           })
           self.showLoading = false
         }
@@ -548,11 +525,9 @@ export default {
     },
     // 运行 恢复任务
     async handRunClick(row) {
-
       const self = this
       let xData = {
         id: row.id,
-        crawler_count: 1
       }
       try {
         const res = await self.axios({
@@ -560,10 +535,14 @@ export default {
           url: self.$store.state.baseurl + "api/job/run",
           params: xData
         })
-        if (res.data.code === 0) {
+        console.log(res);
+        if (res.data.code == 0) {
           this.getTASKList()
+        } else {
+          self.$Message.error(res.data.error_message)
         }
       } catch (err) {
+        console.log(err);
         self.$Message.error("运行任务错误")
       }
     },
@@ -575,7 +554,7 @@ export default {
     filter(col) {
       const self = this
       self.isFilter = true
-      console.log(col);
+      // console.log(col);
       if (col.title == "类型") {
         self.current = 1
         if (col._filterChecked.length == 2 || col._filterChecked.length == 0) {
@@ -632,40 +611,28 @@ export default {
         }
       } else if (col.title == "状态") {
         self.current = 1
-        if (col._filterChecked.length == 0 || col._filterChecked.length == 5) {
-          self.getTASKList()
+        console.log(col._filterChecked);
+        if (col._filterChecked.length == 0) {
           self.isFilter = false
-        } else {
-          const l = col._filterChecked.length
-          let paramsF = {}
-          const ban = col._filterChecked.indexOf("禁用")
-          if (ban !== -1) {
-            paramsF["enabled"] = "no"
-          }
-          let j = 0
-          for (let i = 0; i < l; i++) {
-            if (col._filterChecked[i] == "运行中") {
-              paramsF[`status-${j}`] = "RUNNING"
-              j++
-            } else if (col._filterChecked[i] == "准备就绪") {
-              paramsF[`status-${j}`] = "READY"
-              j++
-            } else if (col._filterChecked[i] == "已终止") {
-              paramsF[`status-${j}`] = "STOPPED"
-              j++
-            } else if (col._filterChecked[i] == "暂停中") {
-              paramsF[`status-${j}`] = "PAUSED"
-              j++
-            }
-          }
+          self.getTASKList()
+        } else if (col._filterChecked[0] == "启用") {
           let xData = {
             p: self.current,
             psize: self.pageSize,
-            ...paramsF
+            enabled: "yes"
+          }
+          self.fData = xData
+          self.filterTASKList(xData)
+        } else {
+          let xData = {
+            p: self.current,
+            psize: self.pageSize,
+            enabled: "no"
           }
           self.fData = xData
           self.filterTASKList(xData)
         }
+
       }
     },
     // 筛选任务列表
@@ -678,7 +645,6 @@ export default {
           url: self.$store.state.baseurl + "api/job/list",
           params: xData
         })
-        console.log(xData)
         console.log(res);
         if (res.data.code == 0) {
           self.TaskData = res.data.data.page
@@ -693,9 +659,6 @@ export default {
               item.date = "定期:" + item.schedule.cron.month + "月" + item.schedule.cron.day_of_month + "日" + item.schedule.cron.hour + "时" + item.schedule.cron.minute + "分" + item.schedule.cron.second + "秒" + "  星期" + item.schedule.cron.day_of_week
             } else {
               item.plan = "未计划"
-            }
-            if (item.enabled == false) {
-              item.status = "unenabled"
             }
           })
         }

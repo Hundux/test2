@@ -314,17 +314,20 @@ export default {
       deep: true,
       handler: function (newValue) {
         console.log(newValue)
-        let spec = JSON.stringify(newValue.content.service_inst.service.spec)
-        let params = newValue.content.service_inst.params
-        console.log(params);
-        if (params !== null) {
-          for (const key in params) {
-            while (spec.indexOf(key) != -1) {
-              spec = spec.replace(key, params[key])
+        if (newValue.content.service_inst != null) {
+          let spec = JSON.stringify(newValue.content.service_inst.service.spec)
+          let params = newValue.content.service_inst.params
+          console.log(params);
+          if (params !== null) {
+            for (const key in params) {
+              while (spec.indexOf(key) != -1) {
+                spec = spec.replace(key, params[key])
+              }
             }
           }
+          this.spec = JSON.parse(spec)
         }
-        this.spec = JSON.parse(spec)
+
       }
     }
   },
@@ -345,7 +348,9 @@ export default {
       this.$emit("cancleTaskDetailModal", isOperation, task)
     },
     handleServerDetail() {
-      this.serveDetailData = this.task.content.service_inst.service
+      if (this.task.content.service_inst != null) {
+        this.serveDetailData = this.task.content.service_inst.service
+      }
       this.serverDetail = true
     },
     handleCancleServerDetailModal() {
@@ -356,7 +361,6 @@ export default {
       const self = this
       let xData = {
         id: self.task.id,
-        crawler_count: 1
       }
       try {
         const res = await self.axios({
@@ -432,11 +436,13 @@ export default {
           self.$Message.error("请输入任务名称")
         } else {
           let service_params = {}
-          let i = 0
-          for (let key in self.task.content.service_inst.params) {
-            service_params[`service_params-${i}-name`] = key
-            service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
-            i = i + 1
+          if (self.category == "SERVICE") {
+            let i = 0
+            for (let key in self.task.content.service_inst.params) {
+              service_params[`service_params-${i}-name`] = key
+              service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
+              i = i + 1
+            }
           }
           console.log(service_params);
           const res = await self.axios({
@@ -456,6 +462,7 @@ export default {
           }
         }
       } catch (error) {
+        console.log(error);
         self.$Message.error("修改任务错误")
       }
     },
