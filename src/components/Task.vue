@@ -13,7 +13,7 @@
           >批量启用</i-button>
           <i-button
             type="error"
-            icon="md-trash"
+            icon="md-remove"
             class="task-button"
           >批量禁用</i-button>
         </i-col>
@@ -87,19 +87,19 @@
           slot-scope="{ row }"
         >
           <div>
-            <!-- 执行 -->
+            <!-- 提交 -->
             <i-button
               type="success"
               size="small"
-              icon="md-play"
-              style="margin-right: 5px"
+              icon="md-arrow-round-up"
+              style="margin-right: 20px"
               @click="handRunClick(row)"
             ></i-button>
             <!-- 启用 -->
             <i-button
               type="success"
               size="small"
-              style="margin-right: 5px"
+               style="margin-right: 20px"
               v-if="row.enabled === false"
               icon="md-checkmark"
               @click="handBanClick(row,'yes')"
@@ -108,8 +108,8 @@
             <i-button
               type="error"
               size="small"
-              icon="md-trash"
-              style="margin-right: 5px"
+              icon="md-remove"
+              style="margin-right: 20px"
               v-else
               @click="handBanClick(row,'no')"
             ></i-button>
@@ -118,26 +118,8 @@
               type="primary"
               size="small"
               icon="md-copy"
-              style="margin:0 20px 0 15px"
+              style="margin-right: 20px"
               @click="handleCopyTask(row)"
-            ></i-button>
-            <!-- 暂停 -->
-            <i-button
-              type="warning"
-              size="small"
-              icon="md-pause"
-              style="margin-right: 5px"
-              v-if="row.status=='RUNNING'"
-              @click="handPausedClick(row)"
-            ></i-button>
-            <!-- 恢复 -->
-            <i-button
-              type="success"
-              size="small"
-              style="margin-right: 5px"
-              icon="md-refresh"
-              v-else
-              @click="handRunClick(row)"
             ></i-button>
           </div>
         </template>
@@ -329,42 +311,42 @@ export default {
               return h("span", "未计划")
             }
           },
-          renderHeader(h, params) {
-            global.columns2 = params.column._filterChecked
-            if (params.index === 4) {
-              if (params.column._filterChecked.length != 0) {
-                let column_Ck = params.column._filterChecked
-                let words = ''
-                let line = 0
-                for (let i = 0; i < column_Ck.length; i++) {
-                  words += column_Ck[i] + ',' + '\xa0\xa0'
-                  if ((i + 1) % 3 == 0 && i != 8) {
-                    words += '\n'
-                    line = line + 1
-                  } else if (line == 2 && i == 8) {
-                    words = words + '...'
-                    break
-                  }
-                }
-                words = words.trim()
-                return h('span', [
-                  h('span', params.column.title),
-                  h('span', {
-                    style: {
-                      'white-space': 'pre-line',
-                      'font-size': '10px',
-                      'color': 'black'
-                    }
-                  }, '\n' + words + '\n')
-                ])
-              } else {
-                return h('span', params.column.title)
-              }
-            }
-          }
+          // renderHeader(h, params) {
+          //   global.columns2 = params.column._filterChecked
+          //   if (params.index === 4) {
+          //     if (params.column._filterChecked.length != 0) {
+          //       let column_Ck = params.column._filterChecked
+          //       let words = ''
+          //       let line = 0
+          //       for (let i = 0; i < column_Ck.length; i++) {
+          //         words += column_Ck[i] + ',' + '\xa0\xa0'
+          //         if ((i + 1) % 3 == 0 && i != 8) {
+          //           words += '\n'
+          //           line = line + 1
+          //         } else if (line == 2 && i == 8) {
+          //           words = words + '...'
+          //           break
+          //         }
+          //       }
+          //       words = words.trim()
+          //       return h('span', [
+          //         h('span', params.column.title),
+          //         h('span', {
+          //           style: {
+          //             'white-space': 'pre-line',
+          //             'font-size': '10px',
+          //             'color': 'black'
+          //           }
+          //         }, '\n' + words + '\n')
+          //       ])
+          //     } else {
+          //       return h('span', params.column.title)
+          //     }
+          //   }
+          // }
         },
         {
-          title: '状态',
+          title: "状态",
           key: 'status',
           width: 100,
           align: 'center',
@@ -414,7 +396,7 @@ export default {
           },
           renderHeader(h, params) {
             global.columns3 = params.column._filterChecked
-            if (params.index === 5) {
+            if (params.index === 4) {
               if (params.column._filterChecked.length != 0) {
                 let column_Ck = params.column._filterChecked
                 let words = ''
@@ -451,7 +433,7 @@ export default {
           key: 'operation',
           slot: 'operation',
           align: 'center',
-          width: 250,
+          width: 150,
           resizable: true,
         },
         {
@@ -576,25 +558,6 @@ export default {
         const res = await self.axios({
           method: "post",
           url: self.$store.state.baseurl + "api/job/run",
-          params: xData
-        })
-        if (res.data.code === 0) {
-          this.getTASKList()
-        }
-      } catch (err) {
-        self.$Message.error("运行任务错误")
-      }
-    },
-    // 暂停任务
-    async handPausedClick(row) {
-      const self = this
-      let xData = {
-        id: row.id,
-      }
-      try {
-        const res = await self.axios({
-          method: "post",
-          url: self.$store.state.baseurl + "api/job/pause",
           params: xData
         })
         if (res.data.code === 0) {
@@ -811,7 +774,6 @@ export default {
 <style scoped>
 .task-top {
   margin-top: 10px;
-  display: flex;
   margin-bottom: 10px;
 }
 .task-button {
