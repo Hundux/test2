@@ -2,59 +2,55 @@
 <template>
 <div class="spider">
     <div class="spider-top">
-        <div class="spider-button-group">
-        <i-button
-          type="success"
-          icon="md-checkmark"
-          class="spider-button"
-        >批量启用</i-button>
-        <i-button
-          type="error"
-          icon="md-close"
-          class="spider-button"
-        >批量停止</i-button>
-        <i-button
-          type="warning"
-          icon="md-pause"
-          style="width:140px"
-          class="spider-button"
-        >批量挂起</i-button>
-      </div>
-        <div class="spider-search">
-        <i-input
-          v-model="search"
-          placeholder="关键词搜索"
-          style="width: 200px"
-          clearable
-        />
-        <i-button
-          type="info"
-          icon="md-search"
-          class="search"
-        >搜索</i-button>
-        </div>
-        <i-button
-        style="color: #fff;background-color: #057009"
-        onMouseOver="this.style.color='#b6f204'"
-        onMouseOut="this.style.color='#fff'"
-        icon="md-power"
-        class="new-spider"
-        @click="handleNewSpider"
-        >新增爬虫</i-button>
+      <i-row style="width:100%">
+        <i-col
+          span="8"
+        >
+          <i-button
+            type="success"
+            icon="md-checkmark"
+            class="spider-button"
+          >批量启用</i-button>
+          <i-button
+            type="error"
+            icon="md-remove"
+            class="spider-button"
+          >批量停止</i-button>
+          <i-button
+            type="warning"
+            icon="md-remove"
+            class="spider-button"
+          >批量停止</i-button>
+        </i-col>
+        <i-col
+          span="8"
+          class="spider-search"
+        >
+          <i-input
+            placeholder="关键词搜索"
+            style="width: 200px"
+            clearable
+          />
+          <i-button
+            type="info"
+            icon="md-search"
+            class="search"
+          >搜索</i-button>
+        </i-col>
+        <i-col span="8">
+          <i-button
+            style="color: #fff;background-color: #057009"
+            onMouseOver="this.style.color='#b6f204'"
+            onMouseOut="this.style.color='#fff'"
+            icon="md-power"
+            class="spider-task"
+          >新建爬虫</i-button>
+        </i-col>
+      </i-row>
     </div>
     <div class="spider-main">
-        <i-page
-        :total="total"
-        :page-size-opts=[10,20,30,40,50,100]
-        size="small"
-        show-elevator
-        show-sizer
-        show-total
-        placement="bottom"
-        :current="current"
-        :page-size="pageSize"
-        />
         <i-table
+            class="spider-table"
             :columns="columns1"
             :data="SpiderData"
             stripe
@@ -69,17 +65,7 @@
         </template>
 
         </i-table>
-        <i-page
-        :total="total"
-        :page-size-opts=[10,20,30,40,50,100]
-        size="small"
-        show-elevator
-        show-sizer
-        show-total
-        placement="top"
-        :current="current"
-        :page-size="pageSize"
-        />
+
         <!-- 隐藏组件 -->
         <i-log
         :log="log"
@@ -120,21 +106,21 @@ data() {
             },
             {
                 title: '爬虫名',
-                key: 'name',
+                key: 'spider_name',
                 width: 150,
                 align: 'center',
                 resizable: true,
             },
             {
                 title: '爬虫idx',
-                key: 'id',
+                key: 'INDEX',
                 width: 200,
                 align: 'center',
                 resizable: true,
             },
             {
                 title: '所在机器',
-                key: 'machine',
+                key: 'NODE',
                 minWidth: 150,
                 align: 'center',
                 resizable: true,
@@ -151,7 +137,7 @@ data() {
             },
             {
                 title: '状态',
-                key: 'status',
+                key: 'STATUS',
                 minWidth: 200,
                 align: 'center',
                 resizable: true,
@@ -180,30 +166,30 @@ data() {
                 filterMultiple: true,
                 filterMethod(value, row) {
                     if (value === "运行中") {
-                    return row.status == "RUNNING"
+                    return row.STATUS == "RUNNING"
                     } else if (value === "暂停中") {
-                    return row.status == "PAUSED"
+                    return row.STATUS == "PAUSED"
                     } else if (value === "准备就绪") {
-                    return row.status == "READY"
+                    return row.STATUS == "READY"
                     } else if (value === "已终止") {
-                    return row.status == "STOPPED"
+                    return row.STATUS == "STOPPED"
                     } else if (value === "禁用") {
-                    return row.status == "unenabled"
+                    return row.STATUS == "unenabled"
                     }
                 },
                 render: (h, params) => {
-                    if (params.row.status === "READY") {
+                    if (params.row.STATUS === "READY") {
                     return h('span', "准备就绪")
-                    } else if (params.row.status === "PAUSED") {
+                    } else if (params.row.STATUS === "PAUSED") {
                     return h("span", "暂停中")
-                    } else if (params.row.status === "STOPPED") {
+                    } else if (params.row.STATUS === "STOPPED") {
                     return h("span", "已终止")
-                    } else if (params.row.status === "unenabled") {
+                    } else if (params.row.STATUS === "unenabled") {
                     return h("span", "禁用")
-                    } else if (params.row.status === "RUNNING") {
+                    } else if (params.row.STATUS === "RUNNING") {
                     return h("span", "运行中")
                     } else {
-                    return h("span", params.row.status)
+                    return h("span", params.row.STATUS)
                     }
                 },
                 renderHeader(h, params) {
@@ -245,6 +231,13 @@ data() {
                 minWidth: 200,
                 align: 'center',
                 resizable: true,
+                render:(h, params)=>{
+                  //console.log(params.row['CURRENT STATE'])
+                  //console.log(params.row['DESIRED STATE'])
+                  let runtime = ''
+                  runtime=params.row['CURRENT STATE'].replaceAll(params.row['DESIRED STATE'],"")
+                  return h('span',runtime)
+                }
             },
             {
                 title: '操作',
@@ -258,7 +251,11 @@ data() {
         SpiderData: [
         ],
         log:false,
-        newspider:false
+        newspider:false,
+        showLoading: false,
+        singleArr:[],
+        testArr:[],
+        name:''
     };
 },
 
@@ -273,7 +270,18 @@ methods: {
           method: "get",
           url: self.$store.state.baseurl + "api/spider/list",
         })
-        console.log(res);
+        console.log(res.data.data);
+        
+        if(res.data.code == 0){
+          var resValues = Object.values(res.data.data)
+          for(var i in resValues){
+                self.singleArr=resValues[i]
+                self.SpiderData=self.SpiderData.concat(self.singleArr)
+                //console.log(i)
+           }
+            self.showLoading = false          
+        }
+        
       } catch (err) {
           self.$Message.error("获取爬虫列表错误")
         }
@@ -311,7 +319,6 @@ mounted() {
 <style scoped>
 .spider-top {
   margin-top: 10px;
-  display: flex;
   margin-bottom: 10px;
 }
 .spider-button-group {
@@ -322,7 +329,6 @@ mounted() {
 }
 .spider-search {
   min-width: 302px;
-  margin-left: 75px;
 }
 .spider-search .search {
   margin-left: 20px;
@@ -338,5 +344,9 @@ mounted() {
 }
 >>> .ivu-table-overflowX {
   overflow-x: unset !important;
+}
+.spider-table {
+  font-weight: 450;
+  overflow: auto !important;
 }
 </style>
