@@ -143,6 +143,7 @@
             <i-menuItem
               name="3"
               class="sidebar-item sidebar-title sidebar-item-bao"
+              to='/Executor'
             >
               <i-icon
                 v-show="!collpsed"
@@ -207,6 +208,7 @@
                 class="sidebar-item"
                 style="fontSize:13px"
                 v-show="collpsed"
+                to="/Spider"
               >
                 爬虫
               </i-menuItem>
@@ -215,6 +217,7 @@
                 class="sidebar-item"
                 style="fontSize:13px"
                 v-show="collpsed"
+                to="/Db"
               >
                 查重db
               </i-menuItem>
