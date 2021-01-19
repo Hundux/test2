@@ -18,9 +18,9 @@
           >批量停止</i-button>
           <i-button
             type="warning"
-            icon="md-remove"
+            icon="md-pause"
             class="spider-button"
-          >批量停止</i-button>
+          >批量挂起</i-button>
         </i-col>
         <i-col
           span="8"
