@@ -37,7 +37,7 @@
                 <span>任务管理</span>
               </div>
             </i-menuItem>
-            <!-- <i-menuItem
+            <i-menuItem
               name="server"
               class="sidebar-item sidebar-title"
               to="/server"
@@ -74,72 +74,7 @@
                 ></i-icon>
                 <span>运行记录</span>
               </div>
-            </i-menuItem> -->
-            <i-submenu
-              name="server"
-              :class="!collpsed ? 'collapsed-menu':''"
-            >
-              <template slot="title">
-                <i-poptip
-                  class="mypiptip"
-                  v-show="!collpsed"
-                  trigger="hover"
-                  :transfer="true"
-                  placement="right-start"
-                >
-                  <i-icon
-                    type="md-cloud"
-                    name="icon"
-                    size="22"
-                  ></i-icon>
-                  <div slot="content">
-                    <i-menuItem
-                      class="sidebar-item"
-                      v-show="!collpsed"
-                      name="server"
-                      to="/server"
-                    >
-                      服务管理
-                    </i-menuItem>
-                    <i-menuItem
-                      class="sidebar-item"
-                      v-show="!collpsed"
-                      name="record"
-                      to="/record"
-                    >
-                      运行记录
-                    </i-menuItem>
-                  </div>
-                </i-poptip>
-                <div v-show="collpsed">
-                  <i-icon
-                    type="md-cloud"
-                    name="icon"
-                  ></i-icon>
-                  <span>
-                    服务管理
-                  </span>
-                </div>
-              </template>
-              <i-menuItem
-                name="server"
-                to="/server"
-                class="sidebar-item"
-                style="fontSize:13px"
-                v-show="collpsed"
-              >
-                服务管理
-              </i-menuItem>
-              <i-menuItem
-                name="record"
-                to="/record"
-                class="sidebar-item"
-                style="fontSize:13px"
-                v-show="collpsed"
-              >
-                运行记录
-              </i-menuItem>
-            </i-submenu>
+            </i-menuItem>
             <i-menuItem
               name="3"
               class="sidebar-item sidebar-title sidebar-item-bao"
