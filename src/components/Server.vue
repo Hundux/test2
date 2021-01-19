@@ -12,7 +12,7 @@
         >批量启用</i-button>
         <i-button
           type="error"
-          icon="md-trash"
+          icon="md-remove"
           class="server-button"
         >批量禁用</i-button>
       </i-col>
@@ -99,13 +99,15 @@
           slot-scope="{ row }"
         >
           <div>
+            <!-- 调用 -->
             <i-button
               type="success"
               size="small"
-              icon="md-play"
+              icon="md-open"
               style="margin-right: 20px"
               @click="handleTestServer"
             ></i-button>
+            <!-- 启用 -->
             <i-button
               type="success"
               size="small"
@@ -114,10 +116,11 @@
               icon="md-checkmark"
               @click="handBanClick(row)"
             ></i-button>
+            <!-- 禁用 -->
             <i-button
               type="error"
               size="small"
-              icon="md-trash"
+              icon="md-remove"
               style="margin-right: 20px"
               v-else
               @click="handBanClick(row)"

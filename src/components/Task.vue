@@ -13,7 +13,7 @@
           >批量启用</i-button>
           <i-button
             type="error"
-            icon="md-trash"
+            icon="md-remove"
             class="task-button"
           >批量禁用</i-button>
         </i-col>
@@ -87,11 +87,11 @@
           slot-scope="{ row }"
         >
           <div>
-            <!-- 执行 -->
+            <!-- 提交 -->
             <i-button
               type="success"
               size="small"
-              icon="md-play"
+              icon="md-arrow-round-up"
               style="margin-right: 20px"
               @click="handRunClick(row)"
             ></i-button>
@@ -108,7 +108,7 @@
             <i-button
               type="error"
               size="small"
-              icon="md-trash"
+              icon="md-remove"
               style="margin-right: 20px"
               v-else
               @click="handBanClick(row,'no')"
@@ -774,7 +774,6 @@ export default {
 <style scoped>
 .task-top {
   margin-top: 10px;
-  display: flex;
   margin-bottom: 10px;
 }
 .task-button {
