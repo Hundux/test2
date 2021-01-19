@@ -1,39 +1,25 @@
 <template>
   <div class="server">
-    <div class="server-top">
-      <div class="server-button-group">
-        <i-button
-          type="success"
-          icon="md-play"
-          class="server-button"
-        >批量执行</i-button>
-        <i-button
-          type="error"
-          icon="md-trash"
-          class="server-button"
-        >批量禁用</i-button>
+    <i-row class="server-top">
+      <i-col
+        span="8"
+        class="server-button-group"
+      >
         <i-button
           type="success"
           icon="md-checkmark"
           class="server-button"
         >批量启用</i-button>
         <i-button
-          type="warning"
-          icon="md-pause"
-          class="server-button"
-        >批量暂停</i-button>
-        <i-button
-          type="success"
-          icon="md-refresh"
-          style="width:140px"
-          class="server-button"
-        >批量恢复</i-button>
-        <i-button
           type="error"
-          icon="md-close"
-        >批量终止</i-button>
-      </div>
-      <div class="server-search">
+          icon="md-trash"
+          class="server-button"
+        >批量禁用</i-button>
+      </i-col>
+      <i-col
+        span="8"
+        class="server-search"
+      >
         <i-input
           placeholder="关键词搜索"
           style="width: 200px"
@@ -47,16 +33,18 @@
           class="search"
           @click="searchService"
         >搜索</i-button>
-      </div>
-      <i-button
-        style="color: #fff;background-color: #057009"
-        onMouseOver="this.style.color='#b6f204'"
-        onMouseOut="this.style.color='#fff'"
-        icon="md-power"
-        class="new-server"
-        @click="handleNewServer"
-      >新建服务</i-button>
-    </div>
+      </i-col>
+      <i-col span="8">
+        <i-button
+          style="color: #fff;background-color: #057009"
+          onMouseOver="this.style.color='#b6f204'"
+          onMouseOut="this.style.color='#fff'"
+          icon="md-power"
+          class="new-server"
+          @click="handleNewServer"
+        >新建服务</i-button>
+      </i-col>
+    </i-row>
     <div class="server-main">
       <i-page
         :total="total"
@@ -272,7 +260,7 @@ export default {
             }
           },
           renderHeader(h, params) {
-            if (params.index === 4) {
+            if (params.index === 3) {
               if (params.column._filterChecked.length != 0) {
                 let column_Ck = params.column._filterChecked
                 let words = ''
