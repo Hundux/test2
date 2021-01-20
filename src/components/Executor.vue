@@ -45,7 +45,6 @@
         >
         <template 
         slot="operation">
-            <i-button type="primary" size="small" style="margin-right: 5px">复制</i-button>
             <i-button type="error" size="small" >删除</i-button>
         </template>
 
@@ -80,13 +79,6 @@ data() {
         total: 0,
         columns1:[
             {
-                title: 'id',
-                key: 'id',
-                width: 150,
-                align: 'center',
-                resizable: true,
-            },
-            {
                 title: '包名',
                 key: 'name',
                 width: 200,
@@ -103,9 +95,26 @@ data() {
             {
                 title: '引用地址',
                 key: 'address',
+                slot:'address',
                 minWidth: 200,
                 align: 'center',
                 resizable: true,
+                render:(h,params)=>{
+                  return h('span',
+                    [
+                    h('span',params.row.address),
+                    h('i-button',{
+                        props:{
+                          type:"success",
+                          size:"small",
+                          icon:"ios-copy"
+                        },
+                        style:{
+                          'margin-left':'10px'
+                        }
+                    }), 
+                  ])
+                }
             },
             {
                 title: '操作',
