@@ -7,7 +7,6 @@
       width="100%"
       footer-hide
     >
-
       <i-row style="height:100%">
         <i-col
           span="18"
@@ -25,57 +24,72 @@
               class="vueJsonEditor"
             ></i-vueJsonEditor>
           </div>
-          <div
-            class="configure"
+          <i-row
             v-if="taskForm.category==='SERVICE'"
+            class="service_configure"
           >
-            <i-row
-              class="configure-top"
-              v-if="server.id"
+            <i-col
+              span="12"
+              class="server_spec"
             >
-              <i-col
-                span="4"
-                class="configure-top-one"
-              ><span>参数名</span></i-col>
-              <i-col span="8">参数值</i-col>
-              <i-col span="8">描述</i-col>
-              <i-col span="4">默认值</i-col>
-            </i-row>
-            <i-row
-              class="configure-body"
-              v-for="(item,index) in server.params"
-              :key="index"
+              <div
+                v-if="server != null"
+                style="height:100%"
+              >
+                <i-vueJsonEditor
+                  name="jsonData"
+                  v-model="server.spec"
+                  :mode="'code'"
+                  lang="zh"
+                  class="vueJsonEditor"
+                >
+                </i-vueJsonEditor>
+              </div>
+            </i-col>
+            <i-col
+              span="12"
+              class="service_col"
             >
-              <i-col
-                span="4"
-                class="configure-body-one"
-              ><span>{{item.name}}</span></i-col>
-              <i-col span="8">
-                <i-input
-                  style="width:60%"
-                  v-model="item.input"
-                ></i-input>
-              </i-col>
-              <i-col span="8">
-                <i-input
-                  type="textarea"
-                  style="width:60%"
-                  v-model="item.description"
-                ></i-input>
-              </i-col>
-              <i-col span="4">
-                <i-input
-                  style="width:60%"
-                  v-model="item.default"
-                ></i-input>
-              </i-col>
-            </i-row>
-          </div>
+              <i-row class="configure-top">
+                <i-col
+                  span="4"
+                  class="configure-top-one"
+                ><span>参数名</span></i-col>
+                <i-col span="8">参数值</i-col>
+                <i-col span="8">描述</i-col>
+                <i-col span="4">默认值</i-col>
+              </i-row>
+              <i-row
+                class="configure-body"
+                v-for="(item,index) in server.params"
+                :key="index"
+              >
+                <i-col
+                  span="4"
+                  class="configure-body-one"
+                ><span>{{item.name}}</span></i-col>
+                <i-col span="8">
+                  <i-input
+                    style="width:60%"
+                    v-model="item.input"
+                  ></i-input>
+                </i-col>
+                <i-col span="8">
+                  <div class="description">{{item.description}}</div>
+                </i-col>
+                <i-col span="4">
+                  <div class="description">{{item.default}}</div>
+                </i-col>
+              </i-row>
+            </i-col>
+          </i-row>
         </i-col>
+
         <i-col span="6">
           <i-form
             label-position="right"
             :label-width="100"
+            :rules="ruleValidate"
           >
             <i-formItem
               label="执行计划："
@@ -150,30 +164,54 @@
               class="form-item"
               style="margin-bottom:10px;margin-left:20px"
             >
-              <i-col span="3"><input
-                  style="width:40px"
-                  v-model="taskForm.schedule.cron.second"
-                /></i-col>
-              <i-col span="4"><input
-                  style="width:55px"
-                  v-model="taskForm.schedule.cron.minute"
-                /></i-col>
-              <i-col span="4"><input
-                  style="width:55px"
-                  v-model="taskForm.schedule.cron.hour"
-                /></i-col>
-              <i-col span="3"><input
-                  style="width:40px"
-                  v-model="taskForm.schedule.cron.day_of_month"
-                /></i-col>
-              <i-col span="5"><input
-                  style="width:68px"
-                  v-model="taskForm.schedule.cron.day_of_week"
-                /></i-col>
-              <i-col span="3"><input
-                  style="width:46px"
-                  v-model="taskForm.schedule.cron.month"
-                /></i-col>
+              <i-col span="3">
+                <i-formItem prop="second">
+                  <i-input
+                    style="width:40px"
+                    v-model="taskForm.schedule.cron.second"
+                  ></i-input>
+                </i-formItem>
+              </i-col>
+              <i-col span="4">
+                <i-formItem>
+                  <i-input
+                    style="width:50px"
+                    v-model="taskForm.schedule.cron.minute"
+                  ></i-input>
+                </i-formItem>
+              </i-col>
+              <i-col span="4">
+                <i-formItem>
+                  <i-input
+                    style="width:50px"
+                    v-model="taskForm.schedule.cron.hour"
+                  ></i-input>
+                </i-formItem>
+              </i-col>
+              <i-col span="3">
+                <i-formItem>
+                  <i-input
+                    style="width:40px"
+                    v-model="taskForm.schedule.cron.day_of_month"
+                  ></i-input>
+                </i-formItem>
+              </i-col>
+              <i-col span="5">
+                <i-formItem>
+                  <i-input
+                    style="width:70px"
+                    v-model="taskForm.schedule.cron.day_of_week"
+                  ></i-input>
+                </i-formItem>
+              </i-col>
+              <i-col span="3">
+                <i-formItem>
+                  <i-input
+                    style="width:40px"
+                    v-model="taskForm.schedule.cron.month"
+                  ></i-input>
+                </i-formItem>
+              </i-col>
             </i-row>
             <i-formItem
               label="名称："
@@ -208,7 +246,7 @@
             </i-formItem>
             <i-formItem
               label="服务："
-              class="form-item"
+              class="form-item serverList"
               v-if="taskForm.category==='SERVICE'"
             >
               <i-input
@@ -220,18 +258,21 @@
                 clearable
                 search
               />
+              <div
+                class="serverListWrap"
+                ref="serverListWrap"
+              >
+                <div
+                  v-for="(item,index) in  serverList"
+                  :key="index"
+                  class="serverListDiv"
+                  @click="selectServer($event,item)"
+                >
+                  {{item.title}}
+                </div>
+              </div>
             </i-formItem>
           </i-form>
-          <div class="serverListWrap">
-            <div
-              v-for="(item,index) in  serverList"
-              :key="index"
-              class="serverListDiv"
-              @click="selectServer($event,item)"
-            >
-              {{item.title}}
-            </div>
-          </div>
           <div class="determine">
             <i-button
               type="primary"
@@ -271,6 +312,9 @@ export default {
         time: "",
         crawler_count: 1
       },
+      ruleValidate: {
+        second: [{ required: false, message: 'The name cannot be empty', trigger: 'blur' }]
+      },
       searchServiceKey: "",
       server: {},
       serverList: []
@@ -287,9 +331,11 @@ export default {
   },
   watch: {
     copyTask(newValue) {
+      console.log(newValue);
       if (newValue) {
         if (newValue.id) {
           this.taskForm = newValue
+          this.server = newValue.content.service_inst.service
           this.taskForm.title = this.taskForm.title + "(copy)"
         }
       }
@@ -303,10 +349,6 @@ export default {
         category: "TASK",
         content: {
           spec: {
-            "appid": "~4.5.0",
-            "crawlid": "~4.5.0",
-            "url": "~4.5.0",
-            "spiderid": "~4.5.0",
           },
         },
         schedule: {
@@ -325,6 +367,7 @@ export default {
       this.searchServiceKey = ""
       this.server = {}
       this.$emit("cancleNewTaskModal", isCreate)
+      this.serverList = {}
     },
     async createTask() {
       const self = this
@@ -533,7 +576,14 @@ export default {
       this.server = server
     },
     handleChange() {
+      let parentNode = this.$refs.serverListWrap.children
+      parentNode.forEach(item => {
+        item.classList.remove("selected")
+      })
       this.handleSearch()
+    },
+    handleBlur() {
+      this.serverList = []
     }
   },
 
@@ -569,6 +619,15 @@ export default {
   height: 94%;
   border: 1px solid black;
   margin: 0 auto;
+}
+.service_configure {
+  width: 100%;
+  height: 94%;
+  margin: 0 auto;
+}
+.service_col {
+  height: 100%;
+  border-right: 1px solid black;
 }
 .configure-top {
   margin-top: 15px;
@@ -614,20 +673,29 @@ export default {
   margin-left: 10px;
 }
 .serverListWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 10px;
-  margin-top: -24px;
-  transform: translateX(37px);
   cursor: pointer;
+}
+.serverList {
+  display: flex;
 }
 .serverListDiv {
   border: 1px solid black;
   width: 250px;
 }
 .selected {
-  background: red;
+  background: #057009;
   color: #fff;
+}
+.server_spec {
+  height: 100%;
+  border: 1px solid black;
+}
+.description {
+  width: 80%;
+  height: 32px;
+  line-height: 32px;
+  word-break: break-all;
+  overflow-y: auto;
+  border: 1px solid black;
 }
 </style>

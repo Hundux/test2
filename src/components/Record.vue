@@ -6,6 +6,7 @@
           span="12"
           class="record-button-group"
         >
+          <span style="marginRight:20px;fontSize:20px">{{taskTitle}}</span>
           <i-button
             type="success"
             icon="md-checkmark"
@@ -83,44 +84,65 @@
         >
           <div>
             <!-- 恢复运行 -->
-            <i-button
-              type="success"
-              size="small"
-              icon="md-checkmark"
+            <i-tooltip
+              content="恢复运行"
               style="margin-right: 20px"
-              @click="resume(row)"
-            ></i-button>
+            >
+              <i-button
+                type="success"
+                size="small"
+                icon="md-checkmark"
+                @click="resume(row)"
+              ></i-button>
+            </i-tooltip>
             <!-- 暂停 -->
-            <i-button
-              type="error"
-              size="small"
-              icon="md-pause"
+            <i-tooltip
+              content="暂停运行"
               style="margin-right: 20px"
-              @click="pause(row)"
-            ></i-button>
+            >
+              <i-button
+                type="error"
+                size="small"
+                icon="md-pause"
+                @click="pause(row)"
+              ></i-button>
+            </i-tooltip>
             <!-- 开启爬虫 -->
-            <i-button
-              type="success"
-              size="small"
+            <i-tooltip
+              content="启动爬虫"
               style="margin-right: 20px"
-              icon="md-arrow-round-up"
-              @click="start(row)"
-            ></i-button>
+            >
+              <i-button
+                type="success"
+                size="small"
+                icon="md-arrow-round-up"
+                @click="start(row)"
+              ></i-button>
+            </i-tooltip>
             <!-- 停止爬虫 -->
-            <i-button
-              type="error"
-              size="small"
-              icon="md-radio-button-on"
+            <i-tooltip
+              content="停止爬虫"
               style="margin-right: 20px"
-              @click="stop(row)"
-            ></i-button>
+            >
+              <i-button
+                type="error"
+                size="small"
+                icon="md-radio-button-on"
+                @click="stop(row)"
+              ></i-button>
+            </i-tooltip>
             <!-- 取消 -->
-            <i-button
-              type="error"
-              size="small"
-              icon="md-close"
-              @click="cancel(row)"
-            ></i-button>
+            <i-tooltip
+              content="取消运行"
+              style="margin-right: 20px"
+            >
+              <i-button
+                type="error"
+                size="small"
+                icon="md-close"
+                @click="cancel(row)"
+              ></i-button>
+            </i-tooltip>
           </div>
         </template>
         <template slot="log">
@@ -193,53 +215,113 @@ export default {
         {
           title: "执行时间",
           key: "invoke_datetime",
-          width: 200,
+          width: 280,
           align: 'center',
           resizable: true,
-          renderHeader(h) {
-            return h('span', [
-              h('span', '执行时间'),
-              h('i-poptip', {
-                props: {
-                  title: "日期过滤",
-                  content: "content",
-                  placement: "right-start",
-                  transfer: true,
-                  trigger: 'click',
-                  width: 400
-                },
-                style: {
-                  'margin-left': '5px',
-                  'cursor': 'pointer'
-                }
-              },
-                [h('i-icon', {
+          renderHeader(h, params) {
+            if (params.column.daterange) {
+              let time = ""
+              time = params.column.daterange[0] + "-" + params.column.daterange[1]
+              return h('span', [
+                h('span', '执行时间'),
+                h('i-poptip', {
                   props: {
-                    type: 'ios-funnel',
-                    size: 16
-                  }
-                }),
-                h('i-datePicker', {
-                  slot: "content",
-                  props: {
-                    type: 'datetimerange',
-                    placeholder: '选择日期时间区间',
-                    transfer: false,
-                    format: "yyyy/MM/dd HH:mm:ss"
+                    title: "日期过滤",
+                    content: "content",
+                    placement: "right-start",
+                    transfer: true,
+                    trigger: 'click',
+                    width: 400
                   },
                   style: {
-                    position: 'static',
-                    width: '320px'
-                  },
-                  on: {
-                    'on-change': (daterange) => {
-                      // console.log(daterange)
-                      global.TimeChange(daterange)
-                    }
+                    'margin-left': '5px',
+                    'cursor': 'pointer'
                   }
-                })
-                ])
-            ])
+                },
+                  [h('i-icon', {
+                    props: {
+                      type: 'ios-funnel',
+                      size: 16
+                    }
+                  }),
+                  h("span", {
+                    style: {
+                      'white-space': 'pre-line',
+                      'font-size': '10px',
+                      'color': 'black'
+                    }
+                  }, time),
+                  h('i-datePicker', {
+                    slot: "content",
+                    props: {
+                      type: 'datetimerange',
+                      placeholder: '选择日期时间区间',
+                      transfer: false,
+                      format: "yyyy/MM/dd HH:mm:ss"
+                    },
+                    style: {
+                      position: 'static',
+                      width: '320px'
+                    },
+                    on: {
+                      'on-change': (daterange) => {
+                        params.column.daterange = daterange
+                        console.log(daterange)
+                        global.daterange = daterange
+                        global.TimeChange(daterange)
+                      }
+                    }
+                  })
+                  ])
+              ])
+            }
+            else {
+              return h('span', [
+                h('span', '执行时间'),
+                h('i-poptip', {
+                  props: {
+                    title: "日期过滤",
+                    content: "content",
+                    placement: "right-start",
+                    transfer: true,
+                    trigger: 'click',
+                    width: 400
+                  },
+                  style: {
+                    'margin-left': '5px',
+                    'cursor': 'pointer'
+                  }
+                },
+                  [h('i-icon', {
+                    props: {
+                      type: 'ios-funnel',
+                      size: 16
+                    }
+                  }),
+                  h('i-datePicker', {
+                    slot: "content",
+                    props: {
+                      type: 'datetimerange',
+                      placeholder: '选择日期时间区间',
+                      transfer: false,
+                      format: "yyyy/MM/dd HH:mm:ss"
+                    },
+                    style: {
+                      position: 'static',
+                      width: '320px'
+                    },
+                    on: {
+                      'on-change': (daterange) => {
+                        params.column.daterange = daterange
+                        console.log(daterange)
+                        global.daterange = daterange
+                        global.TimeChange(daterange)
+                      }
+                    }
+                  })
+                  ])
+              ])
+            }
           }
         },
         {
@@ -275,9 +357,9 @@ export default {
           },
           render: (h, params) => {
             if (params.row.category === "JOB") {
-              return h('i-icon', { props: { type: 'md-list', size: '20' } })
+              return h('i-icon', { props: { type: "md-arrow-round-up", size: '20' } })
             } else if (params.row.category === "SERVICE") {
-              return h('i-icon', { props: { type: 'md-cloud', size: '20' } })
+              return h('i-icon', { props: { type: 'md-open', size: '20' } })
             }
           },
           renderHeader(h, params) {
@@ -361,14 +443,6 @@ export default {
               label: "DONE, 结束状态：爬取任务已经完成，等待标记为SUCCESS",
               value: "DONE"
             },
-            {
-              label: "SUCCESS, 结束状态：执行完成，爬虫关闭",
-              value: "SUCCESS"
-            },
-            {
-              label: "ERROR, 结束状态：执行错误，爬虫关闭，任务队列尚在，不可恢复",
-              value: "ERROR"
-            },
           ],
           filterMultiple: true,
           filterMethod(value, row) {
@@ -388,10 +462,6 @@ export default {
               return row.status == "CANCELED"
             } else if (value === "DONE") {
               return row.status == "DONE"
-            } else if (value === "SUCCESS") {
-              return row.status == "SUCCESS"
-            } else if (value === "ERROR") {
-              return row.status == "ERROR"
             }
           },
           renderHeader(h, params) {
@@ -436,6 +506,68 @@ export default {
           resizable: true,
         },
         {
+          title: '运行结果',
+          key: 'result',
+          align: 'center',
+          width: 100,
+          resizable: true,
+          filters: [
+            {
+              label: 'UNKNOWN',
+              value: "UNKNOWN"
+            },
+            {
+              label: 'SUCCESS',
+              value: "SUCCESS"
+            },
+            {
+              label: 'FAILURE',
+              value: "FAILURE"
+            }
+          ],
+          filterMethod(value, row) {
+            if (value === "UNKNOWN") {
+              return row.result == "UNKNOWN"
+            } else if (value === "SUCCESS") {
+              return row.result == "SUCCESS"
+            } else if (value === "FAILURE") {
+              return row.result == "FAILURE"
+            }
+          },
+          renderHeader(h, params) {
+            if (params.index === 7) {
+              if (params.column._filterChecked.length != 0) {
+                let column_Ck = params.column._filterChecked
+                let words = ''
+                let line = 0
+                for (let i = 0; i < column_Ck.length; i++) {
+                  words += column_Ck[i] + ',' + '\xa0\xa0'
+                  if ((i + 1) % 3 == 0 && i != 8) {
+                    words += '\n'
+                    line = line + 1
+                  } else if (line == 2 && i == 8) {
+                    words = words + '...'
+                    break
+                  }
+                }
+                words = words.trim()
+                return h('span', [
+                  h('span', params.column.title),
+                  h('span', {
+                    style: {
+                      'white-space': 'pre-line',
+                      'font-size': '10px',
+                      'color': 'black'
+                    }
+                  }, '\n' + words + '\n')
+                ])
+              } else {
+                return h('span', params.column.title)
+              }
+            }
+          }
+        },
+        {
           title: "查看",
           key: 'log',
           slot: 'log',
@@ -453,7 +585,12 @@ export default {
       showLoading: false,
       recordDetail: false,
       detail: {},
-      isFilter: false
+      isFilter: false,
+      daterange: [],
+      filterData: {},
+      queryID: "",
+      queryCategory: "",
+      taskTitle: ""
     }
   },
   computed: {
@@ -477,13 +614,21 @@ export default {
     // page改变
     pageChange(index) {
       this.current = index
-      this.getRecordList()
+      if (this.isFilter == true) {
+        this.getRecordList("", this.filterData)
+      } else {
+        this.getRecordList()
+      }
     },
     pageSizeChange(size) {
       this.pageSize = size
       localStorage.setItem("pageSize", size)
       this.$store.commit("changePageSize", size)
-      this.getRecordList()
+      if (this.isFilter == true) {
+        this.getRecordList("", this.filterData)
+      } else {
+        this.getRecordList()
+      }
     },
     // 获取运行记录列表
     async getRecordList(search, filter) {
@@ -494,17 +639,45 @@ export default {
         searchKey = search
       }
       try {
-        const xData = {
-          p: self.current,
-          psize: self.pageSize,
-          search_key: searchKey,
-          ...filter
+        let res = {}
+        if (self.queryID != "") {
+          if (self.queryCategory == "job_id") {
+            res = await self.axios({
+              method: "get",
+              url: self.$store.state.baseurl + "api/run_log/list",
+              params: {
+                p: self.current,
+                psize: self.pageSize,
+                search_key: searchKey,
+                job_id: self.queryID,
+                ...filter
+              }
+            })
+          } else {
+            res = await self.axios({
+              method: "get",
+              url: self.$store.state.baseurl + "api/run_log/list",
+              params: {
+                p: self.current,
+                psize: self.pageSize,
+                search_key: searchKey,
+                service_id: self.queryID,
+                ...filter
+              }
+            })
+          }
+        } else {
+          res = await self.axios({
+            method: "get",
+            url: self.$store.state.baseurl + "api/run_log/list",
+            params: {
+              p: self.current,
+              psize: self.pageSize,
+              search_key: searchKey,
+              ...filter
+            }
+          })
         }
-        const res = await self.axios({
-          method: "get",
-          url: self.$store.state.baseurl + "api/run_log/list",
-          params: xData
-        })
         console.log(res);
         if (res.data.code == 0) {
           self.RecordData = res.data.data.page
@@ -527,12 +700,15 @@ export default {
     TimeChange(daterange) {
       console.log()
       if (daterange[0] != "") {
+        this.isFilter = true
         const data = {
           start_time: this.$moment(new Date(daterange[0])).format('YYYY-MM-DD HH:mm:ss'),
           end_time: this.$moment(new Date(daterange[1])).format('YYYY-MM-DD HH:mm:ss')
         }
+        this.filterData = data
         this.getRecordList("", data)
       } else {
+        this.isFilter = false
         this.getRecordList()
       }
     },
@@ -542,7 +718,22 @@ export default {
       self.isFilter = true
       if (col.title == "状态") {
         self.current = 1
-        if (col._filterChecked.length == 10 || col._filterChecked.length == 0) {
+        if (col._filterChecked.length == 8 || col._filterChecked.length == 0) {
+          self.isFilter = false
+          self.getRecordList()
+        } else {
+          // console.log(col._filterChecked)
+          const l = col._filterChecked.length
+          let data = {}
+          for (let i = 0; i < l; i++) {
+            data[`status-${i}`] = col._filterChecked[i]
+          }
+          self.filterData = data
+          self.getRecordList("", data)
+        }
+      } else if (col.title == "运行结果") {
+        self.current = 1
+        if (col._filterChecked.length == 3 || col._filterChecked.length == 0) {
           self.isFilter = false
           self.getRecordList()
         } else {
@@ -550,8 +741,9 @@ export default {
           const l = col._filterChecked.length
           let data = {}
           for (let i = 0; i < l; i++) {
-            data[`status-${i}`] = col._filterChecked[i]
+            data[`result-${i}`] = col._filterChecked[i]
           }
+          self.filterData = data
           self.getRecordList("", data)
         }
       }
@@ -571,7 +763,9 @@ export default {
         })
         // console.log(res);
         if (res.data.code == 0) {
-          console.log("seccuss");
+          self.getRecordList()
+        } else if (res.data.data == -2) {
+          self.$Message.error(res.data.code)
         } else {
           self.$Message.error(res.data.error_message)
         }
@@ -594,7 +788,9 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
-          console.log("seccuss");
+          self.getRecordList()
+        } else if (res.data.data == -2) {
+          self.$Message.error(res.data.code)
         } else {
           self.$Message.error(res.data.error_message)
         }
@@ -615,9 +811,11 @@ export default {
           url: self.$store.state.baseurl + "api/run_log/cancel",
           params: xData
         })
-        console.log(res);
+        console.log(res)
         if (res.data.code == 0) {
-          console.log("seccuss");
+          self.getRecordList()
+        } else if (res.data.data == -2) {
+          self.$Message.error(res.data.code)
         } else {
           self.$Message.error(res.data.error_message)
         }
@@ -640,8 +838,11 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
-          console.log("seccuss");
-        } else {
+          self.getRecordList()
+        } else if (res.data.data == -2) {
+          self.$Message.error(res.data.code)
+        }
+        else {
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -663,8 +864,11 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
-          console.log("seccuss");
-        } else {
+          self.getRecordList()
+        } else if (res.data.data == -2) {
+          self.$Message.error(res.data.code)
+        }
+        else {
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -675,6 +879,13 @@ export default {
   mounted() {
     const self = this
     self.pageSize = self.pageSizeC
+    self.queryID = self.$route.query.id
+    self.queryCategory = self.$route.query.category
+    if (self.queryCategory == "job_id") {
+      self.taskTitle = `当前任务：${self.$route.query.name}`
+    } else if (self.queryCategory == "service_id") {
+      self.taskTitle = `当前服务：${self.$route.query.name}`
+    }
     self.getRecordList()
   },
 }

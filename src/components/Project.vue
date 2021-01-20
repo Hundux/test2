@@ -187,7 +187,7 @@ export default {
   watch: {
     collpsed: function () {
       this.collapsedSider()
-    }
+    },
   },
   methods: {
     collapsedSider() {
@@ -197,6 +197,7 @@ export default {
   mounted() {
     window.addEventListener("load", () => {
       const route = this.$route.path.substring(1)
+      console.log(route)
       this.selected = route
     })
   },

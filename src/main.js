@@ -6,8 +6,10 @@ import VueAxios from 'vue-axios'
 import axios from 'axios'
 import moment from "moment"
 import 'element-ui/lib/theme-chalk/icon.css';
-import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup } from 'view-design'
+import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup ,Tooltip} from 'view-design'
 
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 import 'view-design/dist/styles/iview.css'
 import vueJsonEditor from 'vue-json-editor'
 
@@ -48,6 +50,7 @@ Vue.component('i-radio', Radio)
 Vue.component('i-spin', Spin)
 Vue.component('i-drawer', Drawer)
 Vue.component('i-backTop', BackTop)
+Vue.component('i-tooltip', Tooltip)
 
 moment.locale('zh-cn', {
   longDateFormat: {
@@ -60,6 +63,24 @@ Vue.prototype.$Message.config({
   top: 50,
   duration: 2
 });
+
+// axios 请求拦截器
+axios.interceptors.request.use((config) => {
+  NProgress.start()
+  return config
+}, function (error) {
+  return Promise.reject(error)
+})
+
+// axios响应拦截器
+axios.interceptors.response.use(
+  (response) => {
+    NProgress.done()
+    return response
+  },
+  function (error) {
+    return Promise.reject(error)
+  })
 
 Vue.prototype.$Modal = Modal
 Vue.use(VueAxios, axios)

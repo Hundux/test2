@@ -88,18 +88,23 @@
         >
           <div>
             <!-- 提交 -->
-            <i-button
-              type="success"
-              size="small"
-              icon="md-arrow-round-up"
-              style="margin-right: 20px"
-              @click="handRunClick(row)"
-            ></i-button>
+            <i-poptip
+              confirm
+              :title="`确定启动${row.crawler_count}个爬虫立即运行`"
+              @on-ok="handRunClick(row)"
+              placement="right"
+            >
+              <i-button
+                type="success"
+                size="small"
+                icon="md-arrow-round-up"
+              ></i-button>
+            </i-poptip>
             <!-- 启用 -->
             <i-button
               type="success"
               size="small"
-              style="margin-right: 20px"
+              style="margin:0 20px"
               v-if="row.enabled === false"
               icon="md-checkmark"
               @click="handBanClick(row,'yes')"
@@ -109,7 +114,7 @@
               type="error"
               size="small"
               icon="md-remove"
-              style="margin-right: 20px"
+              style="margin:0 20px"
               v-else
               @click="handBanClick(row,'no')"
             ></i-button>
@@ -122,14 +127,17 @@
             ></i-button>
           </div>
         </template>
-        <template slot="log">
+        <template
+          slot="log"
+          slot-scope="{ row }"
+        >
           <div>
             <i-button
               type="primary"
               size="small"
               style="margin-right: 5px"
-              @click="handleLog"
-            >查看任务日志</i-button>
+              @click="toRecord(row)"
+            >查看</i-button>
           </div>
         </template>
       </i-table>
@@ -156,10 +164,6 @@
         :task.sync="task"
         @cancleTaskDetailModal="handleCancleTaskDetailModal"
       ></i-taskdetail>
-      <i-log
-        :log="log"
-        @cancleLogModal="cancleLogModal"
-      ></i-log>
     </div>
 
     <!-- loading-->
@@ -183,7 +187,6 @@
 <script>
 import NewTask from './Task/newTask'
 import TaskDetail from './Task/taskDetail'
-import Log from './Log'
 export default {
   name: "Task",
   data() {
@@ -425,7 +428,7 @@ export default {
           resizable: true,
         },
         {
-          title: '日志',
+          title: '运行记录',
           key: 'log',
           slot: 'log',
           align: 'center',
@@ -438,7 +441,6 @@ export default {
       newTask: false,
       taskDetail: false,
       task: {},
-      log: false,
       columns2: [],
       columns3: [],
       columns4: [],
@@ -446,13 +448,13 @@ export default {
       isFilter: false,
       fData: {},
       showLoading: false,
-      pageSize: null
+      pageSize: null,
+      setTitle: ""
     }
   },
   components: {
     "i-newtask": NewTask,
     "i-taskdetail": TaskDetail,
-    "i-log": Log
   },
   computed: {
     pageSizeC() {
@@ -691,6 +693,9 @@ export default {
         this.getTASKList()
       }
     },
+    toRecord(row) {
+      this.$router.push({ path: "/record", query: { id: row.id, category: "job_id", name: row.title } })
+    },
     // 模态框相关
     handleNewTask() {
       this.newTask = true
@@ -718,12 +723,6 @@ export default {
       } else if (isOperation == "copy") {
         this.handleCopyTask(copyTask)
       }
-    },
-    handleLog() {
-      this.log = true
-    },
-    cancleLogModal() {
-      this.log = false
     },
   },
   mounted() {
@@ -763,5 +762,8 @@ export default {
 .task-table {
   font-weight: 450;
   overflow: auto !important;
+}
+>>> .ivu-icon-ios-help-circle {
+  display: none !important;
 }
 </style>

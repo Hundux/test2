@@ -10,11 +10,14 @@
     >
       <i-row class="taskDetail-wrap">
         <i-col
-          span="10"
+          span="18"
           class="taskDetail-configure"
           style="height:100%"
         >
-          <div class="configure">
+          <div
+            class="configure"
+            v-if="task.category=='TASK'"
+          >
             <div
               v-if="task.content"
               style="height:100%"
@@ -27,23 +30,81 @@
                 v-model="task.content.spec"
                 class="vueJsonEditor"
               ></i-vueJsonEditor>
-              <i-vueJsonEditor
-                name="jsonData"
-                :mode="'code'"
-                lang="zh"
-                v-model="spec"
-                v-else-if="spec"
-                class="vueJsonEditor"
-              ></i-vueJsonEditor>
             </div>
-            <p
-              class="noConfigure"
-              v-else
-            >填写配置</p>
           </div>
+          <i-row
+            v-else
+            style="height:100%"
+          >
+            <i-col
+              span="12"
+              class="service_configure"
+            >
+              <div style="height:100%">
+                <i-vueJsonEditor
+                  name="jsonData"
+                  :mode="'code'"
+                  lang="zh"
+                  v-model="spec"
+                  class="vueJsonEditor"
+                >
+                </i-vueJsonEditor>
+              </div>
+            </i-col>
+            <i-col
+              span="12"
+              style="height:100%"
+            >
+              <div
+                v-if="task.category=='SERVICE'"
+                style="width:100%"
+                class="params"
+              >
+                <div v-if="task.content.service_inst.params">
+                  <i-row
+                    class="configure-top"
+                    style="width:100%;marginBottom:10px"
+                  >
+                    <i-col
+                      span="4"
+                      class="configure-top-one"
+                    ><span>参数名</span></i-col>
+                    <i-col span="8">参数值</i-col>
+                    <i-col span="8">描述</i-col>
+                    <i-col span="4">默认值</i-col>
+                  </i-row>
+                  <i-row
+                    class="configure-body"
+                    style="marginBottom:10px"
+                    :key="index"
+                    v-for="(item,index) in task.content.service_inst.service.params"
+                  >
+                    <i-col
+                      span="4"
+                      class="configure-body-one"
+                      style="marginTop:8px"
+                    ><span>{{item.name}}</span>
+                    </i-col>
+                    <i-col span="8">
+                      <i-input
+                        style="width:85%"
+                        v-model="task.content.service_inst.params[item.name]"
+                      ></i-input>
+                    </i-col>
+                    <i-col span="8">
+                      <div class="description">{{item.description}}</div>
+                    </i-col>
+                    <i-col span="4">
+                      <div class="description">{{item.default}}</div>
+                    </i-col>
+                  </i-row>
+                </div>
+              </div>
+            </i-col>
+          </i-row>
         </i-col>
         <i-col
-          span="7"
+          span="6"
           class="taskDetail-task"
         >
           <i-form
@@ -229,49 +290,6 @@
               @click="handleCopy(task)"
             >复制</i-button>
           </i-buttongroup>
-        </i-col>
-        <i-col
-          span="7"
-          style="height:100%"
-          v-if="task.id"
-        >
-          <div
-            v-if="task.category=='SERVICE'"
-            style="width:100%"
-            class="params"
-          >
-            <div v-if="task.content.service_inst.params">
-              <i-row
-                class="configure-top"
-                style="width:100%;marginBottom:10px"
-              >
-                <i-col
-                  span="6"
-                  class="configure-top-one"
-                ><span>参数</span></i-col>
-                <i-col span="6">参数值</i-col>
-              </i-row>
-              <i-row
-                class="configure-body"
-                style="marginBottom:10px"
-                :key="index"
-                v-for="(item,key,index) in task.content.service_inst.params"
-              >
-                <i-col
-                  span="6"
-                  class="configure-body-one"
-                  style="marginTop:8px"
-                ><span>{{key}}:</span>
-                </i-col>
-                <i-col span="6">
-                  <i-input
-                    style="width:85%"
-                    v-model="task.content.service_inst.params[key]"
-                  ></i-input>
-                </i-col>
-              </i-row>
-            </div>
-          </div>
         </i-col>
       </i-row>
     </i-modal>
@@ -544,10 +562,14 @@ export default {
   margin: 0 auto;
   position: relative;
 }
+.service_configure {
+  border: 1px solid black;
+  height: 100%;
+}
 .params {
   width: 98%;
-  height: 94%;
-  border: 1px solid black;
+  height: 100%;
+  border-right: 1px solid black;
   position: relative;
   padding: 20px 0 0 20px;
 }
@@ -584,5 +606,13 @@ export default {
 }
 >>> textarea.ivu-input {
   height: 32px;
+}
+.description{
+  width: 80%;
+  height: 32px;
+  line-height: 32px;
+  word-break: break-all;
+  overflow-y: auto;
+  border: 1px solid black;
 }
 </style>

@@ -51,40 +51,42 @@
               ></i-input>
             </i-formItem>
           </i-form>
-          <div v-if="paramsData.length">
-            <i-row class="configure-top">
-              <i-col
-                span="6"
-                class="configure-top-one"
-              ><span>参数</span></i-col>
+          <div v-if="paramsData!=null">
+            <div v-if="paramsData.length">
+              <i-row class="configure-top">
+                <i-col
+                  span="6"
+                  class="configure-top-one"
+                ><span>参数</span></i-col>
 
-              <i-col span="6">默认值</i-col>
-              <i-col span="12">描述</i-col>
-            </i-row>
-            <i-row
-              class="configure-body"
-              :key="index"
-              v-for="(item,index) in paramsData"
-            >
-              <i-col
-                span="6"
-                class="configure-body-one"
-              ><span>{{item.name}}：</span></i-col>
+                <i-col span="6">默认值</i-col>
+                <i-col span="12">描述</i-col>
+              </i-row>
+              <i-row
+                class="configure-body"
+                :key="index"
+                v-for="(item,index) in paramsData"
+              >
+                <i-col
+                  span="6"
+                  class="configure-body-one"
+                ><span>{{item.name}}：</span></i-col>
 
-              <i-col span="6">
-                <i-input
-                  style="width:85%"
-                  v-model="item.default"
-                ></i-input>
-              </i-col>
-              <i-col span="12">
-                <i-input
-                  type="textarea"
-                  style="width:85%"
-                  v-model="item.description"
-                ></i-input>
-              </i-col>
-            </i-row>
+                <i-col span="6">
+                  <i-input
+                    style="width:85%"
+                    v-model="item.default"
+                  ></i-input>
+                </i-col>
+                <i-col span="12">
+                  <i-input
+                    type="textarea"
+                    style="width:85%"
+                    v-model="item.description"
+                  ></i-input>
+                </i-col>
+              </i-row>
+            </div>
           </div>
           <div class="determine">
             <i-button
@@ -144,12 +146,14 @@ export default {
         if (self.newServe.title == "") {
           self.$Message.error("请输入服务名称")
         } else {
-          const l = self.paramsData.length
           let service_params = {}
-          for (let i = 0; i < l; i++) {
-            service_params[`service_params_spec-${i}-name`] = self.paramsData[i].name
-            service_params[`service_params_spec-${i}-default`] = self.paramsData[i].default
-            service_params[`service_params_spec-${i}-desc`] = self.paramsData[i].description
+          if (self.paramsData != null) {
+            const l = self.paramsData.length
+            for (let i = 0; i < l; i++) {
+              service_params[`service_params_spec-${i}-name`] = self.paramsData[i].name
+              service_params[`service_params_spec-${i}-default`] = self.paramsData[i].default
+              service_params[`service_params_spec-${i}-desc`] = self.paramsData[i].description
+            }
           }
           const res = await self.axios({
             method: "post",
@@ -175,7 +179,8 @@ export default {
       }
     },
     onJsonChange(value) {
-      // console.log(value)
+      console.log(value)
+      this.jsonData = value
       let jsonData = value
       jsonData = JSON.stringify(jsonData)
       let res = jsonData.match(/\$.*?\$/g)
