@@ -84,4 +84,10 @@ export default {
 .configure {
   height: 100%;
 }
+>>> .jsoneditor {
+  border: none;
+}
+>>> .jsoneditor-poweredBy {
+  display: none !important;
+}
 </style>

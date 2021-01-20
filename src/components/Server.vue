@@ -89,8 +89,9 @@
               :key="index"
               class="params"
             >
-              <span>{{item.name}}:</span>
-              <span>{{item.description}}</span>
+              <span>{{item.name}}</span>
+              <span class="params_">:</span>
+              <span class="params_desc">{{item.description}}</span>
             </div>
           </div>
         </template>
@@ -100,18 +101,24 @@
         >
           <div>
             <!-- 调用 -->
-            <i-button
-              type="success"
-              size="small"
-              icon="md-open"
-              style="margin-right: 20px"
-              @click="callServer(row)"
-            ></i-button>
+            <i-poptip
+              confirm
+              :title="`确定启动${row.crawler_count}个爬虫立即调用`"
+              @on-ok="callServer(row)"
+              placement="right"
+            >
+              <i-button
+                type="success"
+                size="small"
+                icon="md-open"
+              >
+              </i-button>
+            </i-poptip>
             <!-- 启用 -->
             <i-button
               type="success"
               size="small"
-              style="margin-right: 20px"
+              style="margin:0 20px"
               v-if="row.isban === true"
               icon="md-checkmark"
               @click="handBanClick(row)"
@@ -121,7 +128,7 @@
               type="error"
               size="small"
               icon="md-remove"
-              style="margin-right: 20px"
+              style="margin:0 20px"
               v-else
               @click="handBanClick(row)"
             ></i-button>
@@ -133,13 +140,17 @@
             ></i-button>
           </div>
         </template>
-        <template slot="log">
+        <template
+          slot="log"
+          slot-scope="{ row }"
+        >
           <div>
             <i-button
               type="primary"
               size="small"
               style="margin-right: 5px"
-            >查看任务日志</i-button>
+              @click="toRecord(row)"
+            >查看</i-button>
           </div>
         </template>
       </i-table>
@@ -301,7 +312,7 @@ export default {
           resizable: true,
         },
         {
-          title: '日志',
+          title: '运行记录',
           key: 'log',
           slot: 'log',
           align: 'center',
@@ -442,7 +453,10 @@ export default {
         console.log(err);
         self.$Message.error("运行任务错误")
       }
-    }
+    },
+    toRecord(row) {
+      this.$router.push({ path: "/record", query: { id: row.id, category: "service_id", name: row.title } })
+    },
   },
   components: {
     "i-newServer": NewServe,
@@ -489,9 +503,6 @@ export default {
 >>> .ivu-table-cell {
   padding: 5px !important;
 }
-/* >>> .ivu-table-overflowX {
-  overflow-x: auto !important;
-} */
 .Servel-table {
   font-weight: 450;
   overflow: auto;
@@ -499,5 +510,17 @@ export default {
 .params {
   text-align: left;
   padding-left: 20px;
+  position: relative;
+}
+.params_ {
+  position: absolute;
+  left: 70px;
+}
+.params_desc {
+  position: absolute;
+  left: 80px;
+}
+>>> .ivu-icon-ios-help-circle {
+  display: none !important;
 }
 </style>
