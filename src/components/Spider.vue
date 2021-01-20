@@ -18,9 +18,9 @@
           >批量停止</i-button>
           <i-button
             type="warning"
-            icon="md-remove"
+            icon="md-pause"
             class="spider-button"
-          >批量停止</i-button>
+          >批量挂起</i-button>
         </i-col>
         <i-col
           span="8"
@@ -57,13 +57,21 @@
             border
         >
         <template 
-        slot="operation">
-            <i-button type="error" size="small" style="margin-right: 5px">停止</i-button>
-            <i-button type="success" size="small">恢复</i-button>
-            <!-- <i-button type="success" size="small">挂起</i-button> -->
-            <i-button type="primary" size="small" style="margin-left: 5px" @click="handleLog">查看日志</i-button>
+        slot="operation"
+        slot-scope="{ row }"
+        >
+            <!--停止-->
+            <i-button type="error" size="small" style="margin-right: 15px" icon="md-remove"></i-button>
+            <!--恢复-->
+            <i-button type="success" size="small" icon="md-refresh" @click="handSuspendClick(row,'resume')"></i-button>
+            <!--挂起-->
+            <!-- <i-button type="success" size="small" icon="md-pause"></i-button> -->
+            <i-button type="primary" size="small" style="margin-left: 15px" @click="handleLog">查看日志</i-button>
         </template>
-
+                <template 
+        slot="operation-nd">
+            <i-button type="primary" size="small" style="margin-left: 15px" @click="handleLog">查看日志</i-button>
+        </template>
         </i-table>
 
         <!-- 隐藏组件 -->
@@ -110,6 +118,24 @@ data() {
                 width: 150,
                 align: 'center',
                 resizable: true,
+                filters:[
+                    {
+                        label:'single',
+                        value:'single'
+                    },
+                    {
+                        label:'test',
+                        value:'test'
+                    },
+                ],
+                filterMultiple: true,
+                filterMethod(value, row) {
+                    if (value === "single") {
+                      return row.spider_name =='single'
+                    }else if(value ==='test'){
+                      return row.spider_name =='test'
+                    }
+                },
             },
             {
                 title: '爬虫idx',
@@ -126,16 +152,32 @@ data() {
                 resizable: true,
                 filters:[
                     {
-                        label:'机器1',
-                        value:'机器1'
+                        label:'crawer-1',
+                        value:'crawer-1'
                     }
                 ],
                 filterMultiple: true,
                 filterMethod(value, row) {
-                    return row
+                    if (value === "crawer-1") {
+                    return row.NODE == "crawer-1"
+                    }     
                 },
             },
-            {
+              {
+                title: '运行时间',
+                key: 'runtime',
+                minWidth: 200,
+                align: 'center',
+                resizable: true,
+                render:(h, params)=>{
+                  //console.log(params.row['CURRENT STATE'])
+                  //console.log(params.row['DESIRED STATE'])
+                  let runtime = ''
+                  runtime=params.row['CURRENT STATE'].replaceAll(params.row['DESIRED STATE'],"")
+                  return h('span',runtime)
+                }
+            },
+                {
                 title: '状态',
                 key: 'STATUS',
                 minWidth: 200,
@@ -225,20 +267,6 @@ data() {
                     
                 }
             },
-              {
-                title: '运行时间',
-                key: 'runtime',
-                minWidth: 200,
-                align: 'center',
-                resizable: true,
-                render:(h, params)=>{
-                  //console.log(params.row['CURRENT STATE'])
-                  //console.log(params.row['DESIRED STATE'])
-                  let runtime = ''
-                  runtime=params.row['CURRENT STATE'].replaceAll(params.row['DESIRED STATE'],"")
-                  return h('span',runtime)
-                }
-            },
             {
                 title: '操作',
                 key: 'operation',
@@ -246,7 +274,15 @@ data() {
                 minWidth: 150,
                 align: 'center',
                 resizable: true,
-            }
+            },
+              {
+                title: '操作',
+                key: 'operation',
+                slot:'operation-nd',
+                minWidth: 150,
+                align: 'center',
+                resizable: true,
+            },
         ],
         SpiderData: [
         ],
@@ -255,7 +291,7 @@ data() {
         showLoading: false,
         singleArr:[],
         testArr:[],
-        name:''
+      
     };
 },
 
@@ -270,8 +306,7 @@ methods: {
           method: "get",
           url: self.$store.state.baseurl + "api/spider/list",
         })
-        console.log(res.data.data);
-        
+        console.log(res);
         if(res.data.code == 0){
           var resValues = Object.values(res.data.data)
           for(var i in resValues){
@@ -284,6 +319,23 @@ methods: {
         
       } catch (err) {
           self.$Message.error("获取爬虫列表错误")
+        }
+    },
+    async handSuspendClick(row, isUse) {
+        const self = this
+        let xData = {
+          "name":row.spider_name,
+          do:isUse
+        }
+        try {
+          const res = await self.axios({
+            method:'post',
+            url:self.$store.state.baseurl + "api/spider/operate",
+            params:xData
+          })
+          console.log(res)
+        } catch (error) {
+          self.$Message.error("挂起或恢复爬虫进程错误")
         }
     },
     handleLog() {
