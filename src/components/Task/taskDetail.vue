@@ -40,7 +40,11 @@
               span="12"
               class="service_configure"
             >
-              <div style="height:100%">
+              <div style="height:100%;position:relative">
+                <p
+                  class="copy_btn"
+                  @click="copySpec"
+                >复制替换后配置</p>
                 <i-vueJsonEditor
                   name="jsonData"
                   :mode="'code'"
@@ -271,17 +275,18 @@
               type="success"
               icon="md-play"
               @click="runTask"
+              :loading="isPress"
             >立即执行</i-button>
             <i-button
               type="success"
               iicon="md-checkmark"
               v-if="task.enabled === false"
-              @click="handBanClick(1)"
+              @click="handBanClick('yes')"
             >启用</i-button>
             <i-button
               type="error"
               icon="md-trash"
-              @click="handBanClick()"
+              @click="handBanClick('no')"
               v-else
             >禁用</i-button>
             <i-button
@@ -315,7 +320,9 @@ export default {
       },
       serverTaskDetail: {},
       serveDetailData: {},
-      spec: {}
+      spec: {},
+      copy_spec: {},
+      isPress: false
     }
   },
   props: {
@@ -334,18 +341,24 @@ export default {
         console.log(newValue)
         if (newValue.content.service_inst != null) {
           let spec = JSON.stringify(newValue.content.service_inst.service.spec)
+          let copy_spec = spec
           let params = newValue.content.service_inst.params
           console.log(params);
           if (params !== null) {
             for (const key in params) {
-              while (spec.indexOf(key) != -1) {
-                spec = spec.replace(key, params[key])
+              spec = spec.replace(key, `${key}:${params[key]}`)
+              copy_spec = copy_spec.replace(`$${key}$`, params[key])
+              while (copy_spec.indexOf(`$${key}$`) != -1) {
+                copy_spec = copy_spec.replace(`$${key}$`, params[key])
+              }
+              while (spec.indexOf(`$${key}$`) != -1) {
+                spec = spec.replace(`$${key}$`, `$${key}:${params[key]}$`)
               }
             }
           }
+          this.copy_spec = JSON.parse(copy_spec)
           this.spec = JSON.parse(spec)
         }
-
       }
     }
   },
@@ -375,8 +388,8 @@ export default {
       this.serverDetail = false
     },
     async runTask() {
-      console.log(this.task)
       const self = this
+      self.isPress = true
       let xData = {
         id: self.task.id,
       }
@@ -387,6 +400,7 @@ export default {
           params: xData
         })
         if (res.data.code === 0) {
+          self.isPress = false
           self.cancle(true)
         }
       } catch (err) {
@@ -396,8 +410,8 @@ export default {
     async handBanClick(isBan) {
       const self = this
       let xData = {
-        id: self.task.id,
-        enabled: isBan
+        "ids-0": self.task.id,
+        enable: isBan
       }
       try {
         const res = await self.axios({
@@ -454,7 +468,7 @@ export default {
           self.$Message.error("请输入任务名称")
         } else {
           let service_params = {}
-          if (self.category == "SERVICE") {
+          if (self.task.category == "SERVICE") {
             let i = 0
             for (let key in self.task.content.service_inst.params) {
               service_params[`service_params-${i}-name`] = key
@@ -499,6 +513,9 @@ export default {
       } catch (error) {
         self.$Message.error("获取服务列表错误")
       }
+    },
+    copySpec() {
+      this.spec = this.copy_spec
     },
     handleCopy(task) {
       // console.log(task);
@@ -607,12 +624,20 @@ export default {
 >>> textarea.ivu-input {
   height: 32px;
 }
-.description{
+.description {
   width: 80%;
   height: 32px;
   line-height: 32px;
   word-break: break-all;
   overflow-y: auto;
-  border: 1px solid black;
+}
+.copy_btn {
+  position: absolute;
+  cursor: pointer;
+  color: white;
+  opacity: 0.8;
+  top: 7px;
+  right: 10%;
+  z-index: 999;
 }
 </style>

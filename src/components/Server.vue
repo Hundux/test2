@@ -106,6 +106,7 @@
               :title="`确定启动${row.crawler_count}个爬虫立即调用`"
               @on-ok="callServer(row)"
               placement="right"
+              style="margin-right: 20px"
             >
               <i-button
                 type="success"
@@ -115,29 +116,41 @@
               </i-button>
             </i-poptip>
             <!-- 启用 -->
-            <i-button
-              type="success"
-              size="small"
-              style="margin:0 20px"
-              v-if="row.isban === true"
-              icon="md-checkmark"
-              @click="handBanClick(row)"
-            ></i-button>
+            <i-tooltip
+              content="启用服务"
+              style="margin-right: 20px"
+              v-if="row.enabled === false"
+            >
+              <i-button
+                type="success"
+                size="small"
+                icon="md-checkmark"
+                @click="handBanClick(row,'yes')"
+              >
+              </i-button>
+            </i-tooltip>
             <!-- 禁用 -->
-            <i-button
-              type="error"
-              size="small"
-              icon="md-remove"
-              style="margin:0 20px"
+            <i-tooltip
+              content="禁用服务"
+              style="margin-right: 20px"
               v-else
-              @click="handBanClick(row)"
-            ></i-button>
-            <i-button
-              type="primary"
-              size="small"
-              icon="md-copy"
-              @click="handCopyClick(row)"
-            ></i-button>
+            >
+              <i-button
+                type="error"
+                size="small"
+                icon="md-remove"
+                @click="handBanClick(row,'no')"
+              >
+              </i-button>
+            </i-tooltip>
+            <i-tooltip content="复制服务">
+              <i-button
+                type="primary"
+                size="small"
+                icon="md-copy"
+                @click="handCopyClick(row)"
+              ></i-button>
+            </i-tooltip>
           </div>
         </template>
         <template
@@ -187,6 +200,21 @@
     <!-- loading-->
     <div
       v-if="showLoading"
+      class="demo-spin-col"
+      span="8"
+    >
+      <i-spin fix>
+        <i-icon
+          type="ios-loading"
+          size=18
+          class="demo-spin-icon-load"
+        ></i-icon>
+        <div>Loading</div>
+      </i-spin>
+    </div>
+
+    <div
+      v-if="isPress"
       class="demo-spin-col"
       span="8"
     >
@@ -332,14 +360,12 @@ export default {
       search_key: "",
       showLoading: false,
       pageSize: null,
-      copyServer: {}
+      copyServer: {},
+      isPress: false
     }
   },
   methods: {
     // 模态框相关
-    handBanClick(row) {
-      row.isban = !row.isban
-    },
     handleNewServer() {
       this.newServer = true
     },
@@ -435,23 +461,49 @@ export default {
     // 调用服务
     async callServer(row) {
       const self = this
+      if (self.isPress == false) {
+        self.isPress = true
+        let xData = {
+          id: row.id,
+        }
+        try {
+          const res = await self.axios({
+            method: "get",
+            url: self.$store.state.baseurl + "api/service/call",
+            params: xData
+          })
+          console.log(res);
+          if (res.data.code == 0) {
+            self.getServe()
+            self.isPress = false
+          } else {
+            self.$Message.error(res.data.error_message)
+          }
+        } catch (err) {
+          console.log(err);
+          self.$Message.error("运行任务错误")
+        }
+      }
+    },
+    // 禁用 启用任务
+    async handBanClick(row, isBan) {
+      const self = this
       let xData = {
-        id: row.id,
+        "ids-0": row.id,
+        enable: isBan
       }
       try {
         const res = await self.axios({
-          method: "get",
-          url: self.$store.state.baseurl + "api/service/call",
+          method: "post",
+          url: self.$store.state.baseurl + "api/service/enable",
           params: xData
         })
         console.log(res);
-        // if (res.data.code == 0) {
-        // } else {
-        //   self.$Message.error(res.data.error_message)
-        // }
+        if (res.data.code == 0) {
+          this.getServe()
+        }
       } catch (err) {
-        console.log(err);
-        self.$Message.error("运行任务错误")
+        self.$Message.error("启用或禁用任务错误")
       }
     },
     toRecord(row) {

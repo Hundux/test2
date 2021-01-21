@@ -188,6 +188,10 @@ export default {
     collpsed: function () {
       this.collapsedSider()
     },
+    '$route': function (newValue) {
+      const route = newValue.path.substring(1)
+      this.selected = route
+    }
   },
   methods: {
     collapsedSider() {
@@ -197,7 +201,6 @@ export default {
   mounted() {
     window.addEventListener("load", () => {
       const route = this.$route.path.substring(1)
-      console.log(route)
       this.selected = route
     })
   },

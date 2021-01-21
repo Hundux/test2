@@ -92,39 +92,55 @@
               confirm
               :title="`确定启动${row.crawler_count}个爬虫立即运行`"
               @on-ok="handRunClick(row)"
+              style="margin-right: 20px"
               placement="right"
             >
               <i-button
                 type="success"
                 size="small"
                 icon="md-arrow-round-up"
-              ></i-button>
+              >
+              </i-button>
             </i-poptip>
             <!-- 启用 -->
-            <i-button
-              type="success"
-              size="small"
-              style="margin:0 20px"
+            <i-tooltip
+              content="启用任务"
+              style="margin-right: 20px"
               v-if="row.enabled === false"
-              icon="md-checkmark"
-              @click="handBanClick(row,'yes')"
-            ></i-button>
+            >
+              <i-button
+                type="success"
+                size="small"
+                icon="md-checkmark"
+                @click="handBanClick(row,'yes')"
+              >
+              </i-button>
+            </i-tooltip>
             <!-- 禁止 -->
-            <i-button
-              type="error"
-              size="small"
-              icon="md-remove"
-              style="margin:0 20px"
+            <i-tooltip
+              content="禁用任务"
+              style="margin-right: 20px"
               v-else
-              @click="handBanClick(row,'no')"
-            ></i-button>
+            >
+              <i-button
+                type="error"
+                size="small"
+                icon="md-remove"
+                @click="handBanClick(row,'no')"
+              >
+              </i-button>
+            </i-tooltip>
             <!-- 复制 -->
-            <i-button
-              type="primary"
-              size="small"
-              icon="md-copy"
-              @click="handleCopyTask(row)"
-            ></i-button>
+            <i-tooltip
+              content="复制任务"
+            >
+              <i-button
+                type="primary"
+                size="small"
+                icon="md-copy"
+                @click="handleCopyTask(row)"
+              ></i-button>
+            </i-tooltip>
           </div>
         </template>
         <template
@@ -169,6 +185,20 @@
     <!-- loading-->
     <div
       v-if="showLoading"
+      class="demo-spin-col"
+      span="8"
+    >
+      <i-spin fix>
+        <i-icon
+          type="ios-loading"
+          size=18
+          class="demo-spin-icon-load"
+        ></i-icon>
+        <div>Loading</div>
+      </i-spin>
+    </div>
+    <div
+      v-if="isPress"
       class="demo-spin-col"
       span="8"
     >
@@ -449,7 +479,8 @@ export default {
       fData: {},
       showLoading: false,
       pageSize: null,
-      setTitle: ""
+      setTitle: "",
+      isPress: false
     }
   },
   components: {
@@ -525,27 +556,31 @@ export default {
         self.$Message.error("启用或禁用任务错误")
       }
     },
-    // 运行 恢复任务
+    // 运行任务
     async handRunClick(row) {
       const self = this
-      let xData = {
-        id: row.id,
-      }
-      try {
-        const res = await self.axios({
-          method: "post",
-          url: self.$store.state.baseurl + "api/job/run",
-          params: xData
-        })
-        console.log(res);
-        if (res.data.code == 0) {
-          this.getTASKList()
-        } else {
-          self.$Message.error(res.data.error_message)
+      if (self.isPress == false) {
+        self.isPress = true
+        let xData = {
+          id: row.id,
         }
-      } catch (err) {
-        console.log(err);
-        self.$Message.error("运行任务错误")
+        try {
+          const res = await self.axios({
+            method: "post",
+            url: self.$store.state.baseurl + "api/job/run",
+            params: xData
+          })
+          console.log(res);
+          if (res.data.code == 0) {
+            this.getTASKList()
+            self.isPress = false
+          } else {
+            self.$Message.error(res.data.error_message)
+          }
+        } catch (err) {
+          console.log(err);
+          self.$Message.error("运行任务错误")
+        }
       }
     },
     // 搜索任务
