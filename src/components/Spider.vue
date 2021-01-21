@@ -55,21 +55,19 @@
             :data="SpiderData"
             stripe
             border
+            row-key='NAME'
         >
         <template 
         slot="operation"
         slot-scope="{ row }"
+        v-if="row.showButton === true"
         >
             <!--停止-->
-            <i-button type="error" size="small" style="margin-right: 15px" icon="md-remove"></i-button>
+            <i-button type="error" size="small" style="margin-right: 15px" icon="md-remove" @click="handStopClick(row)"></i-button>
             <!--恢复-->
-            <i-button type="success" size="small" icon="md-refresh" @click="handSuspendClick(row,'resume')"></i-button>
-            <!--挂起-->
-            <!-- <i-button type="success" size="small" icon="md-pause"></i-button> -->
-            <i-button type="primary" size="small" style="margin-left: 15px" @click="handleLog">查看日志</i-button>
-        </template>
-                <template 
-        slot="operation-nd">
+            <!-- <i-button type="success" size="small" icon="md-refresh" @click="handPauseClick(row,'resume')"></i-button> -->
+            <!--暂停-->
+            <i-button type="success" size="small" icon="md-pause" @click="handPauseClick(row,'pause')"></i-button>
             <i-button type="primary" size="small" style="margin-left: 15px" @click="handleLog">查看日志</i-button>
         </template>
         </i-table>
@@ -102,9 +100,6 @@ data() {
     //var global =this
     return {
         search: "",
-        current: 1,
-        pageSize: 10,
-        total: 0,
         columns1:[
             {
                 type: 'selection',
@@ -114,27 +109,18 @@ data() {
             },
             {
                 title: '爬虫名',
-                key: 'spider_name',
-                width: 150,
-                align: 'center',
+                key: 'NAME',
+                width: 180,
+                align: 'left',
                 resizable: true,
+                tree: true,
                 filters:[
-                    {
-                        label:'single',
-                        value:'single'
-                    },
-                    {
-                        label:'test',
-                        value:'test'
-                    },
                 ],
                 filterMultiple: true,
                 filterMethod(value, row) {
-                    if (value === "single") {
-                      return row.spider_name =='single'
-                    }else if(value ==='test'){
-                      return row.spider_name =='test'
-                    }
+                  if(row.NAME == value){
+                    return row
+                  }
                 },
             },
             {
@@ -185,52 +171,60 @@ data() {
                 resizable: true,
                 filters:[
                     {
-                        label:'运行中',
-                        value:'运行中'
+                        label:'RUNNING',
+                        value:'RUNNING'
                     },
                     {
-                        label: "暂停中",
-                        value: "暂停中"
+                        label: "PAUSED",
+                        value: "PAUSED"
                     },
                     {
-                        label:'准备就绪',
-                        value:'准备就绪'
+                        label:'READY',
+                        value:'READY'
                     },
                     {
-                        label: "已终止",
-                        value: "已终止"
+                        label: "STOPPED",
+                        value: "STOPPED"
                     },
                     {
-                        label:'禁用',
-                        value:'禁用'
+                        label:'unenabled',
+                        value:'unenabled'
                     },
+                    {
+                      label:'DONE',
+                      value:'DONE'
+                    }
                 ],
                 filterMultiple: true,
                 filterMethod(value, row) {
-                    if (value === "运行中") {
+                    if (value === "RUNNING") {
                     return row.STATUS == "RUNNING"
-                    } else if (value === "暂停中") {
+                    } else if (value === "PAUSED") {
                     return row.STATUS == "PAUSED"
-                    } else if (value === "准备就绪") {
+                    } else if (value === "READY") {
                     return row.STATUS == "READY"
-                    } else if (value === "已终止") {
+                    } else if (value === "STOPPED") {
                     return row.STATUS == "STOPPED"
-                    } else if (value === "禁用") {
+                    } else if (value === "unenabled") {
                     return row.STATUS == "unenabled"
+                    } else if(value === "DONE"){
+                    return row.STATUS == "DONE"
                     }
                 },
                 render: (h, params) => {
                     if (params.row.STATUS === "READY") {
-                    return h('span', "准备就绪")
+                    return h('span', "READY")
                     } else if (params.row.STATUS === "PAUSED") {
-                    return h("span", "暂停中")
+                    return h("span", "PAUSED")
                     } else if (params.row.STATUS === "STOPPED") {
-                    return h("span", "已终止")
+                    return h("span", "STOPPED")
                     } else if (params.row.STATUS === "unenabled") {
-                    return h("span", "禁用")
+                    return h("span", "unenabled")
                     } else if (params.row.STATUS === "RUNNING") {
-                    return h("span", "运行中")
-                    } else {
+                    return h("span", "RUNNING")
+                    } else if(params.row.STATUS === "DONE"){
+                    return h("span", "DONE")
+                    }else {
                     return h("span", params.row.STATUS)
                     }
                 },
@@ -275,27 +269,21 @@ data() {
                 align: 'center',
                 resizable: true,
             },
-              {
-                title: '操作',
-                key: 'operation',
-                slot:'operation-nd',
-                minWidth: 150,
-                align: 'center',
-                resizable: true,
-            },
         ],
-        SpiderData: [
+        SpiderData: [         
         ],
         log:false,
         newspider:false,
         showLoading: false,
         singleArr:[],
-        testArr:[],
+        spiderNameFilters:[],
       
     };
 },
 
-computed: {},
+computed: {
+
+},
 
 methods: {
     //获取爬虫列表
@@ -306,25 +294,57 @@ methods: {
           method: "get",
           url: self.$store.state.baseurl + "api/spider/list",
         })
-        console.log(res);
+        console.log(res.data.data);
         if(res.data.code == 0){
+          //加入_showChildren属性
+          for(let key of res.data.data){
+              key._showChildren = true
+              key.showButton = true
+          }
+          //获取爬虫名filters
+          for(let ele in res.data.data){
+              self.spiderNameFilters.push({
+                  'label': res.data.data[ele].NAME,
+                  'value': res.data.data[ele].NAME
+                })    
+          }
+          //数据去重
+          let arr = self.spiderNameFilters
+          var newArr= []; //存新数组
+          var obj= {}; //存处理后转成字符串的对象
+          for (var i = 0; i < arr.length; i++) {
+              var keys = Object.keys(arr[i]);
+              keys.sort(function(a, b) {
+                   return (Number(a) - Number(b));
+              });
+              var str = '';
+          for (var j = 0; j < keys.length; j++) {
+               str += JSON.stringify(keys[j]);
+              str += JSON.stringify(arr[i][keys[j]]);
+              }
+          if (!Object.prototype.hasOwnProperty.call(obj, str)) {
+                newArr.push(arr[i]);
+                obj[str] = true;
+              }
+            }
+                self.columns1[1].filters = newArr
+          //获取爬虫列表数据
           var resValues = Object.values(res.data.data)
-          for(var i in resValues){
-                self.singleArr=resValues[i]
+          for(var ii in resValues){
+                self.singleArr=resValues[ii]
                 self.SpiderData=self.SpiderData.concat(self.singleArr)
-                //console.log(i)
            }
             self.showLoading = false          
-        }
-        
+          }
       } catch (err) {
           self.$Message.error("获取爬虫列表错误")
         }
     },
-    async handSuspendClick(row, isUse) {
+    //暂停爬虫队列
+    async handPauseClick(row, isUse) {
         const self = this
         let xData = {
-          "name":row.spider_name,
+          "name":row.NAME,
           do:isUse
         }
         try {
@@ -336,6 +356,23 @@ methods: {
           console.log(res)
         } catch (error) {
           self.$Message.error("挂起或恢复爬虫进程错误")
+        }
+    },
+    //停止爬虫队列
+      async handStopClick(row) {
+        const self = this
+        let xData = {
+          "name":row.NAME
+        }
+        try {
+          const res = await self.axios({
+            method:'post',
+            url:self.$store.state.baseurl + "api/spider/stop",
+            params:xData
+          })
+          console.log(res)
+        } catch (error) {
+          self.$Message.error("停止爬虫进程错误")
         }
     },
     handleLog() {
@@ -356,6 +393,8 @@ methods: {
         //this.newspider=false
         console.log('bb',this.newspider)
     },
+
+
 },
 
 created() {
@@ -365,7 +404,7 @@ created() {
 mounted() {
   const self = this
   self.getSpiderList()
-},
+  },
 }
 </script>
 <style scoped>

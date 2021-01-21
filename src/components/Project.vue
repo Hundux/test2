@@ -152,7 +152,7 @@
                 class="sidebar-item"
                 style="fontSize:13px"
                 v-show="collpsed"
-                to="/Db"
+                to="/Dupdb"
               >
                 查重db
               </i-menuItem>

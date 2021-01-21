@@ -11,7 +11,7 @@ Vue.use(VueRouter);
 const routes = [
   { path: '/task', component: Task },
   { path: '/server', component: Server },
-  { path: '/Db', component: Db },
+  { path: '/Dupdb', component: Db },
   { path: '/Executor', component: Executor },
   { path: '/Spider', component: Spider },
   { path: '/Record', component: Record },
