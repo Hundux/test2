@@ -6,22 +6,24 @@
           span="12"
           class="record-button-group"
         >
-          <span style="marginRight:20px;fontSize:20px">{{taskTitle}}</span>
-          <i-button
-            type="success"
-            icon="md-checkmark"
-            class="record-button"
-          >批量恢复运行</i-button>
-          <i-button
-            type="error"
-            icon="md-pause"
-            class="record-button"
-          >批量暂停</i-button>
-          <i-button
-            type="error"
-            icon="md-close"
-            class="record-button"
-          >批量取消</i-button>
+          <span class="titleSpan">{{taskTitle}}</span>
+          <div>
+            <i-button
+              type="success"
+              icon="md-checkmark"
+              class="record-button"
+            >批量恢复运行</i-button>
+            <i-button
+              type="error"
+              icon="md-pause"
+              class="record-button"
+            >批量暂停</i-button>
+            <i-button
+              type="error"
+              icon="md-close"
+              class="record-button"
+            >批量取消</i-button>
+          </div>
         </i-col>
         <i-col
           span="12"
@@ -83,22 +85,11 @@
           slot-scope="{ row }"
         >
           <div>
-            <!-- 恢复运行 -->
-            <i-tooltip
-              content="恢复运行"
-              style="margin-right: 20px"
-            >
-              <i-button
-                type="success"
-                size="small"
-                icon="md-checkmark"
-                @click="resume(row)"
-              ></i-button>
-            </i-tooltip>
             <!-- 暂停 -->
             <i-tooltip
               content="暂停运行"
               style="margin-right: 20px"
+              v-if="row.status=='RUNNING'"
             >
               <i-button
                 type="error"
@@ -107,10 +98,24 @@
                 @click="pause(row)"
               ></i-button>
             </i-tooltip>
+            <!-- 恢复运行 -->
+            <i-tooltip
+              content="恢复运行"
+              style="margin-right: 20px"
+              v-else
+            >
+              <i-button
+                type="success"
+                size="small"
+                icon="md-checkmark"
+                @click="resume(row)"
+              ></i-button>
+            </i-tooltip>
             <!-- 开启爬虫 -->
             <i-tooltip
               content="启动爬虫"
               style="margin-right: 20px"
+              v-if="row.status=='SENT'"
             >
               <i-button
                 type="success"
@@ -123,6 +128,7 @@
             <i-tooltip
               content="停止爬虫"
               style="margin-right: 20px"
+              v-else
             >
               <i-button
                 type="error"
@@ -132,10 +138,7 @@
               ></i-button>
             </i-tooltip>
             <!-- 取消 -->
-            <i-tooltip
-              content="取消运行"
-              style="margin-right: 20px"
-            >
+            <i-tooltip content="取消运行">
               <i-button
                 type="error"
                 size="small"
@@ -351,7 +354,7 @@ export default {
           filterMethod(value, row) {
             if (value === "执行任务") {
               return row.category == "JOB"
-            } else if (value === "服务任务") {
+            } else if (value === "调用服务") {
               return row.category == "SERVICE"
             }
           },
@@ -363,7 +366,6 @@ export default {
             }
           },
           renderHeader(h, params) {
-            global.columns4 = params.column._filterChecked
             if (params.index === 3) {
               if (params.column._filterChecked.length != 0) {
                 let column_Ck = params.column._filterChecked
@@ -502,7 +504,7 @@ export default {
           key: 'operation',
           slot: 'operation',
           align: 'center',
-          width: 250,
+          width: 150,
           resizable: true,
         },
         {
@@ -733,6 +735,7 @@ export default {
         }
       } else if (col.title == "运行结果") {
         self.current = 1
+        console.log(col._filterChecked.length)
         if (col._filterChecked.length == 3 || col._filterChecked.length == 0) {
           self.isFilter = false
           self.getRecordList()
@@ -742,6 +745,21 @@ export default {
           let data = {}
           for (let i = 0; i < l; i++) {
             data[`result-${i}`] = col._filterChecked[i]
+          }
+          self.filterData = data
+          self.getRecordList("", data)
+        }
+      } else if (col.title == "类型") {
+        self.current = 1
+        if (col._filterChecked.length == 0) {
+          self.isFilter = false
+          self.getRecordList()
+        } else {
+          let data = {}
+          if (col._filterChecked[0] == "执行任务") {
+            data["category"] = "JOB"
+          } else {
+            data["category"] = "SERVICE"
           }
           self.filterData = data
           self.getRecordList("", data)
@@ -882,10 +900,18 @@ export default {
     self.queryID = self.$route.query.id
     self.queryCategory = self.$route.query.category
     if (self.queryCategory == "job_id") {
-      self.taskTitle = `当前任务：${self.$route.query.name}`
+      self.taskTitle = `所指任务：${self.$route.query.name}`
     } else if (self.queryCategory == "service_id") {
-      self.taskTitle = `当前服务：${self.$route.query.name}`
+      self.taskTitle = `所指服务：${self.$route.query.name}`
     }
+    const item = document.getElementsByClassName("ivu-table-filter-select-item")
+    if (item[1] != undefined) {
+      item[1].innerHTML = "<i-icon class='ivu-icon ivu-icon-md-arrow-round-up' style='font-size:20px'></i-icon>执行任务"
+    }
+    if (item[2] != undefined) {
+      item[2].innerHTML = "<i-icon class='ivu-icon ivu-icon-md-open' style='font-size:20px'></i-icon>调用服务"
+    }
+
     self.getRecordList()
   },
 }
@@ -907,5 +933,16 @@ export default {
 }
 >>> .ivu-table-cell {
   padding: 5px !important;
+}
+.titleSpan {
+  font-size: 22px;
+  font-weight: 600;
+  color: #212891;
+}
+.record-button-group {
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  justify-content: space-around;
 }
 </style>

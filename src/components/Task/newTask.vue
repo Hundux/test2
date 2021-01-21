@@ -34,11 +34,15 @@
             >
               <div
                 v-if="server != null"
-                style="height:100%"
+                style="height:100%;position:relative"
               >
+                <p
+                  class="copy_btn"
+                  @click="copySpec"
+                >复制替换后配置</p>
                 <i-vueJsonEditor
                   name="jsonData"
-                  v-model="server.spec"
+                  v-model="spec"
                   :mode="'code'"
                   lang="zh"
                   class="vueJsonEditor"
@@ -317,7 +321,9 @@ export default {
       },
       searchServiceKey: "",
       server: {},
-      serverList: []
+      serverList: [],
+      copy_spec: {},
+      spec: {}
     }
   },
   props: {
@@ -335,8 +341,39 @@ export default {
       if (newValue) {
         if (newValue.id) {
           this.taskForm = newValue
-          this.server = newValue.content.service_inst.service
+          if (newValue.content.service_inst != null) {
+            this.server = newValue.content.service_inst.service
+          }
           this.taskForm.title = this.taskForm.title + "(copy)"
+        }
+      }
+    },
+    server: {
+      deep: true,
+      handler: function (newValue) {
+        console.log(newValue);
+        let spec = ""
+        let copy_spec = ""
+        if (newValue.spec != null) {
+          spec = JSON.stringify(newValue.spec)
+        }
+        copy_spec = spec
+        let params = newValue.params
+        if (params != null) {
+          for (let i = 0; i < params.length; i++) {
+            spec = spec.replace(params[i].name, `${params[i].name}:${params[i].input}`)
+            while (spec.indexOf(`$${params[i].name}$`) != -1) {
+              spec = spec.replace(`$${params[i].name}$`, `$${params[i].name}:${params[i].input}$`)
+            }
+            copy_spec = copy_spec.replace(`$${params[i].name}$`, params[i].input)
+            while (copy_spec.indexOf(`$${params[i].name}$`) != -1) {
+              copy_spec = copy_spec.replace(`$${params[i].name}$`, params[i].input)
+            }
+          }
+        }
+        if (spec != "") {
+          this.copy_spec = JSON.parse(copy_spec)
+          this.spec = JSON.parse(spec)
         }
       }
     }
@@ -444,11 +481,13 @@ export default {
           }
         } else if (self.taskForm.category == "SERVICE") {
           if (self.server.id) {
-            const l = self.server.params.length
             let service_params = {}
-            for (let i = 0; i < l; i++) {
-              service_params[`service_params-${i}-name`] = self.server.params[i].name
-              service_params[`service_params-${i}-value`] = self.server.params[i].input
+            if (self.server.params != null) {
+              const l = self.server.params.length
+              for (let i = 0; i < l; i++) {
+                service_params[`service_params-${i}-name`] = self.server.params[i].name
+                service_params[`service_params-${i}-value`] = self.server.params[i].input
+              }
             }
             let xData = {
               title: self.taskForm.title,
@@ -526,30 +565,8 @@ export default {
     timeChange(time) {
       this.taskForm.time = time
     },
-    async searchService() {
-      // console.log(this.searchServiceKey);
-      const self = this
-      try {
-        const res = await self.axios({
-          method: "get",
-          url: self.$store.state.baseurl + "api/service/list",
-          params: {
-            search_key: this.searchServiceKey
-          }
-        })
-        console.log(res);
-        if (res.data.code == 0) {
-          self.server = res.data.data[0]
-          self.server.params.forEach(item => {
-            item["input"] = ""
-          })
-          console.log(self.server)
-        }
-      } catch (error) {
-        self.$Message.error("获取服务列表错误")
-      }
-    },
     async handleSearch() {
+      this.$refs.serverListWrap.style.display = "block"
       const self = this
       try {
         const res = await self.axios({
@@ -568,23 +585,27 @@ export default {
       }
     },
     selectServer(e, server) {
-      let parentNode = e.target.parentNode.children
-      parentNode.forEach(item => {
-        item.classList.remove("selected")
-      })
-      e.target.classList.add("selected")
+      this.$refs.serverListWrap.style.display = "none"
       this.server = server
+      this.searchServiceKey = server.title
+      this.spec = server.spec
+      if (this.server.params != null) {
+        for (let i = 0; i < this.server.params.length; i++) {
+          this.$set(this.server.params[i], "input", "")
+        }
+      }
     },
     handleChange() {
-      let parentNode = this.$refs.serverListWrap.children
-      parentNode.forEach(item => {
-        item.classList.remove("selected")
-      })
+      this.$refs.serverListWrap.style.display = "block"
+
       this.handleSearch()
     },
     handleBlur() {
       this.serverList = []
-    }
+    },
+    copySpec() {
+      this.spec = this.copy_spec
+    },
   },
 
 }
@@ -679,7 +700,9 @@ export default {
   display: flex;
 }
 .serverListDiv {
-  border: 1px solid black;
+  border: 1px solid #dcdee2;
+  border-radius: 5px;
+  padding-left: 4px;
   width: 250px;
 }
 .selected {
@@ -696,6 +719,14 @@ export default {
   line-height: 32px;
   word-break: break-all;
   overflow-y: auto;
-  border: 1px solid black;
+}
+.copy_btn {
+  position: absolute;
+  cursor: pointer;
+  color: white;
+  opacity: 0.8;
+  top: 7px;
+  right: 10%;
+  z-index: 999;
 }
 </style>
