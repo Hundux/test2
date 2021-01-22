@@ -181,6 +181,7 @@
                       class="sidebar-item"
                       v-show="!collpsed"
                       name="4-1"
+                      to="/Spider"
                     >
                       爬虫
                     </i-menuItem>
@@ -188,6 +189,7 @@
                       class="sidebar-item"
                       v-show="!collpsed"
                       name="4-2"
+                      to="/Dupdb"
                     >
                       查重db
                     </i-menuItem>

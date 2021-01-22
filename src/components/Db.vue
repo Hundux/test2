@@ -34,7 +34,13 @@
             :data="TaskData"
             stripe
             border
-        ></i-table>
+        >
+        <template 
+        slot="operation"
+        >
+            <i-button type="error" size="small">删除</i-button>
+        </template>
+        </i-table>
         <i-page
         :total="total"
         :page-size-opts=[10,20,30,40,50,100]
@@ -74,14 +80,26 @@ data() {
                 resizable: true,
             },
             {
-                title: '所属任务',
+                title: '运行记录',
                 key: 'task',
                 minWidth: 150,
                 align: 'center',
                 resizable: true,
             },
+            {
+              title:'操作',
+              slot:'operation',
+              align: 'center',
+              resizable: true,
+            }
         ],
-        TaskData:[]
+        TaskData:[
+          {
+            name:1,
+            num:1,
+            task:1
+          }
+        ]
     }
 },
 computed: {},
@@ -102,7 +120,7 @@ mounted() {
 }
 .db-search {
   min-width: 302px;
-  margin-left: 75px;
+  flex:1
 }
 .db-search .search {
   margin-left: 20px;

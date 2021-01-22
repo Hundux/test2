@@ -161,13 +161,14 @@ mounted() {
 }
 .executor-search {
   min-width: 302px;
-  margin-left: 75px;
+  margin-left: 200px;
+  flex:1
 }
 .executor-search .search {
   margin-left: 20px;
 }
 .new-executor {
-  margin-left: 75px;
+  margin-right: 200px;
 }
 .executor-main {
   padding: 0 20px;
