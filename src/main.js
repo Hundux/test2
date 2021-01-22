@@ -52,6 +52,7 @@ Vue.component('i-spin', Spin)
 Vue.component('i-drawer', Drawer)
 Vue.component('i-backTop', BackTop)
 Vue.component('i-tooltip', Tooltip)
+Vue.component('i-inputNumber', InputNumber)
 
 moment.locale('zh-cn', {
   longDateFormat: {
