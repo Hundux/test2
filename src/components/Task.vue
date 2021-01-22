@@ -42,7 +42,7 @@
             style="color: #fff;background-color: #057009"
             onMouseOver="this.style.color='#b6f204'"
             onMouseOut="this.style.color='#fff'"
-            icon="md-power"
+            icon="md-add"
             class="new-task"
             @click="handleNewTask"
           >新建任务</i-button>
@@ -708,7 +708,10 @@ export default {
         const res = await self.axios({
           method: "get",
           url: self.$store.state.baseurl + "api/job/list",
-          params: xData
+          params: {
+            ...xData,
+            search_key: self.search
+          }
         })
         console.log(res);
         if (res.data.code == 0) {

@@ -7,6 +7,7 @@ import axios from 'axios'
 import moment from "moment"
 import 'element-ui/lib/theme-chalk/icon.css';
 import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup, Tooltip } from 'view-design'
+import cronParser from 'cron-parser'
 
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
@@ -58,6 +59,7 @@ moment.locale('zh-cn', {
   }
 })
 Vue.prototype.$moment = moment
+Vue.prototype.$cronParser = cronParser
 Vue.prototype.$Message = Message
 Vue.prototype.$Message.config({
   top: 50,

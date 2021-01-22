@@ -41,7 +41,7 @@
           style="color: #fff;background-color: #057009"
           onMouseOver="this.style.color='#b6f204'"
           onMouseOut="this.style.color='#fff'"
-          icon="md-power"
+          icon="md-add"
           class="new-server"
           @click="handleNewServer"
         >新建服务</i-button>
