@@ -34,7 +34,7 @@
             </i-row>
         </div>
         <div slot="footer" style="text-align:center">
-              <i-button type="primary" size="large" style="width:200px">确认</i-button>
+              <i-button type="primary" size="large" style="width:200px" @click="ok">确认</i-button>
         </div>
     </i-modal>
 </div>
@@ -64,9 +64,11 @@ watch: {},
 methods: {
     cancle() {
       this.$emit('cancleCreateSpider')
+      //this.$Message.info('Clicked no');
     },
     ok(){
       this.$emit('confirm')
+      //this.$Message.info('Clicked ok');
     }
 },
 
