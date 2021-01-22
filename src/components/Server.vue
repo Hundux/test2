@@ -89,9 +89,8 @@
               :key="index"
               class="params"
             >
-              <span>{{item.name}}</span>
-              <span class="params_">:</span>
-              <span class="params_desc">{{item.description}}</span>
+              <span class="params_name">{{item.name}}</span>
+              <span class="params_desc">：{{item.description}}</span>
             </div>
           </div>
         </template>
@@ -500,7 +499,11 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
-          this.getServe()
+          if (isBan == "yes") {
+            row.enabled = true
+          } else {
+            row.enabled = false
+          }
         }
       } catch (err) {
         self.$Message.error("启用或禁用任务错误")
@@ -564,13 +567,15 @@ export default {
   padding-left: 20px;
   position: relative;
 }
-.params_ {
-  position: absolute;
-  left: 70px;
-}
+/* .params_name{
+  display: inline-block;
+  width: 20px;
+} */
 .params_desc {
   position: absolute;
   left: 80px;
+  /* display: inline-block;
+  margin-left: 5px; */
 }
 >>> .ivu-icon-ios-help-circle {
   display: none !important;

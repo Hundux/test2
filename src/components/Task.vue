@@ -68,6 +68,7 @@
         stripe
         border
         @on-filter-change="filter"
+        @on-selection-change="selection_change"
       >
         <template
           slot="configuration"
@@ -131,9 +132,7 @@
               </i-button>
             </i-tooltip>
             <!-- 复制 -->
-            <i-tooltip
-              content="复制任务"
-            >
+            <i-tooltip content="复制任务">
               <i-button
                 type="primary"
                 size="small"
@@ -550,7 +549,11 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
-          this.getTASKList()
+          if (isBan == "yes") {
+            row.enabled = true
+          } else {
+            row.enabled = false
+          }
         }
       } catch (err) {
         self.$Message.error("启用或禁用任务错误")
@@ -728,6 +731,10 @@ export default {
         this.getTASKList()
       }
     },
+    // 列表选中
+    selection_change(selection) {
+      console.log(selection);
+    },
     toRecord(row) {
       this.$router.push({ path: "/record", query: { id: row.id, category: "job_id", name: row.title } })
     },
@@ -763,6 +770,13 @@ export default {
   mounted() {
     const self = this
     self.pageSize = self.pageSizeC
+    const item = document.getElementsByClassName("ivu-table-filter-select-item")
+    if (item[1] != undefined) {
+      item[1].innerHTML = "<i-icon class='ivu-icon ivu-icon-md-list' style='font-size:20px'></i-icon>普通任务"
+    }
+    if (item[2] != undefined) {
+      item[2].innerHTML = "<i-icon class='ivu-icon ivu-icon-md-cloud' style='font-size:20px'></i-icon>服务任务"
+    }
     self.getTASKList()
   },
 }

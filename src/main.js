@@ -6,13 +6,13 @@ import VueAxios from 'vue-axios'
 import axios from 'axios'
 import moment from "moment"
 import 'element-ui/lib/theme-chalk/icon.css';
-import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup ,Tooltip} from 'view-design'
+import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup, Tooltip } from 'view-design'
 
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import 'view-design/dist/styles/iview.css'
 import vueJsonEditor from 'vue-json-editor'
-
+import VueClipboard from 'vue-clipboard2'
 
 Vue.component('i-vueJsonEditor', vueJsonEditor)
 Vue.component('i-button', Button)
@@ -84,6 +84,7 @@ axios.interceptors.response.use(
 
 Vue.prototype.$Modal = Modal
 Vue.use(VueAxios, axios)
+Vue.use(VueClipboard)
 Vue.config.productionTip = false;
 
 new Vue({
