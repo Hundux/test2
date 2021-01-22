@@ -15,7 +15,7 @@
             class="layout-sider-menu"
             theme="light"
             width="auto"
-            :open-names="['task','server','3','4']"
+            :open-names="['task','server','executor','spider']"
             :active-name="selected"
           >
             <i-menuItem
@@ -76,9 +76,9 @@
               </div>
             </i-menuItem>
             <i-menuItem
-              name="3"
+              name="executor"
               class="sidebar-item sidebar-title sidebar-item-bao"
-              to='/Executor'
+              to='/executor'
             >
               <i-icon
                 v-show="!collpsed"
@@ -95,7 +95,7 @@
               </div>
             </i-menuItem>
             <i-submenu
-              name="4"
+              name="spider"
               :class="!collpsed ? 'collapsed-menu':''"
             >
               <template slot="title">
@@ -115,16 +115,16 @@
                     <i-menuItem
                       class="sidebar-item"
                       v-show="!collpsed"
-                      name="4-1"
-                      to="/Spider"
+                      name="spider"
+                      to="/spider"
                     >
                       爬虫
                     </i-menuItem>
                     <i-menuItem
                       class="sidebar-item"
                       v-show="!collpsed"
-                      name="4-2"
-                      to="/Dupdb"
+                      name="dupdb"
+                      to="/dupdb"
                     >
                       查重db
                     </i-menuItem>
@@ -141,20 +141,20 @@
                 </div>
               </template>
               <i-menuItem
-                name="4-1"
+                name="spider"
                 class="sidebar-item"
                 style="fontSize:13px"
                 v-show="collpsed"
-                to="/Spider"
+                to="/spider"
               >
                 爬虫
               </i-menuItem>
               <i-menuItem
-                name="4-2"
+                name="dupdb"
                 class="sidebar-item"
                 style="fontSize:13px"
                 v-show="collpsed"
-                to="/Dupdb"
+                to="/dupdb"
               >
                 查重db
               </i-menuItem>

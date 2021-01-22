@@ -90,6 +90,7 @@ data() {
                     return h('span',{
                       style:{
                           'text-align':'center !important',
+                          'display':'inline-block'
                       }
                     },'爬虫名')
                 }

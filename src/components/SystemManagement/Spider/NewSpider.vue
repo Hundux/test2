@@ -12,37 +12,29 @@
         <div style="text-align:center">
             <i-row style="margin:15px 0 30px 0">
                 <i-col span="6">
-                  <span class="title">爬虫名:</span>
+                  <span class="title" style="float:right">爬虫名:</span>
                 </i-col>
-                <i-col span="12">
-                  <!-- <i-input
+                <i-col span="18">
+                  <i-input
                         
                         placeholder="请输入爬虫名"
                         style="width: 200px"
                         clearable
                   >
-                  </i-input> -->
-                </i-col>
-                <i-col span="6">
-                    <span>挂起还是恢复?</span>
+                  </i-input>
                 </i-col>
             </i-row>
             <i-row style="margin:15px 0 30px 0">
                 <i-col span="6">
-                  <span class="title">新增进程树:</span>
+                  <span class="title" style="float:right">新增进程树:</span>
                 </i-col>
                 <i-col span="18">
-                  <!-- <i-input
-                        
-                        style="width: 200px"
-                        clearable
-                  >
-                  </i-input> -->
+                    <i-inputNumber  :min="1" style="width: 200px"></i-inputNumber>
                 </i-col>
             </i-row>
         </div>
         <div slot="footer" style="text-align:center">
-              <i-button type="primary" size="large" style="width:200px">确认</i-button>
+              <i-button type="primary" size="large" style="width:200px" @click="ok">确认</i-button>
         </div>
     </i-modal>
 </div>
@@ -72,9 +64,11 @@ watch: {},
 methods: {
     cancle() {
       this.$emit('cancleCreateSpider')
+      //this.$Message.info('Clicked no');
     },
     ok(){
       this.$emit('confirm')
+      //this.$Message.info('Clicked ok');
     }
 },
 

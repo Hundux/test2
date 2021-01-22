@@ -40,6 +40,11 @@
         >
             <i-button type="error" size="small">删除</i-button>
         </template>
+           <template 
+        slot="task"
+        >
+            <i-button type="primary" size="small">查看</i-button>
+        </template>
         </i-table>
         <i-page
         :total="total"
@@ -59,7 +64,7 @@
 
 <script>
 export default {
-name: "db",
+name: "dupdb",
 components: {},
 data() {
     //var global =this
@@ -81,7 +86,7 @@ data() {
             },
             {
                 title: '运行记录',
-                key: 'task',
+                slot:'task',
                 minWidth: 150,
                 align: 'center',
                 resizable: true,
