@@ -2,51 +2,14 @@
 <template>
 <div class="spider">
     <div class="spider-top">
-      <i-row style="width:100%">
-        <i-col
-          span="8"
-        >
           <i-button
-            type="success"
-            icon="md-checkmark"
-            class="spider-button"
-          >批量启用</i-button>
-          <i-button
-            type="error"
-            icon="md-remove"
-            class="spider-button"
-          >批量停止</i-button>
-          <i-button
-            type="warning"
-            icon="md-pause"
-            class="spider-button"
-          >批量挂起</i-button>
-        </i-col>
-        <i-col
-          span="8"
-          class="spider-search"
-        >
-          <i-input
-            placeholder="关键词搜索"
-            style="width: 200px"
-            clearable
-          />
-          <i-button
-            type="info"
-            icon="md-search"
-            class="search"
-          >搜索</i-button>
-        </i-col>
-        <i-col span="8">
-          <i-button
-            style="color: #fff;background-color: #057009"
+            style="color: #fff;background-color: #057009;"
             onMouseOver="this.style.color='#b6f204'"
             onMouseOut="this.style.color='#fff'"
             icon="md-power"
             class="spider-task"
+            @click="handleNewSpider"
           >新建爬虫</i-button>
-        </i-col>
-      </i-row>
     </div>
     <div class="spider-main">
         <i-table
@@ -69,6 +32,7 @@
             <!--暂停-->
             <i-button type="success" size="small" icon="md-pause" @click="handPauseClick(row,'pause')"></i-button>
             <i-button type="primary" size="small" style="margin-left: 15px" @click="handleLog">查看日志</i-button>
+            <i-button type="primary" size="small" style="margin-left: 15px">修改爬虫数</i-button>
         </template>
         </i-table>
 
@@ -122,6 +86,13 @@ data() {
                     return row
                   }
                 },
+                renderHeader:(h)=>{
+                    return h('span',{
+                      style:{
+                          'text-align':'center !important',
+                      }
+                    },'爬虫名')
+                }
             },
             {
                 title: '爬虫idx',
@@ -152,7 +123,7 @@ data() {
               {
                 title: '运行时间',
                 key: 'runtime',
-                minWidth: 200,
+                minWidth: 150,
                 align: 'center',
                 resizable: true,
                 render:(h, params)=>{
@@ -166,7 +137,7 @@ data() {
                 {
                 title: '状态',
                 key: 'STATUS',
-                minWidth: 200,
+                minWidth: 150,
                 align: 'center',
                 resizable: true,
                 filters:[
@@ -390,7 +361,7 @@ methods: {
          console.log(this.newspider)
     },
     confirm(){
-        //this.newspider=false
+        this.newspider=false
         console.log('bb',this.newspider)
     },
 
@@ -412,20 +383,8 @@ mounted() {
   margin-top: 10px;
   margin-bottom: 10px;
 }
-.spider-button-group {
-  margin-left: 5px;
-}
-.spider-button {
-  margin-right: 5px;
-}
-.spider-search {
-  min-width: 302px;
-}
-.spider-search .search {
-  margin-left: 20px;
-}
-.new-spider {
-  margin-left: 75px;
+.spider-task{
+  margin-left:1000px
 }
 .spider-main {
   padding: 0 20px;
@@ -440,4 +399,5 @@ mounted() {
   font-weight: 450;
   overflow: auto !important;
 }
+
 </style>

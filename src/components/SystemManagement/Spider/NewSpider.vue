@@ -15,13 +15,13 @@
                   <span class="title">爬虫名:</span>
                 </i-col>
                 <i-col span="12">
-                  <i-input
+                  <!-- <i-input
                         
                         placeholder="请输入爬虫名"
                         style="width: 200px"
                         clearable
                   >
-                  </i-input>
+                  </i-input> -->
                 </i-col>
                 <i-col span="6">
                     <span>挂起还是恢复?</span>
@@ -32,12 +32,12 @@
                   <span class="title">新增进程树:</span>
                 </i-col>
                 <i-col span="18">
-                  <i-input
+                  <!-- <i-input
                         
                         style="width: 200px"
                         clearable
                   >
-                  </i-input>
+                  </i-input> -->
                 </i-col>
             </i-row>
         </div>
