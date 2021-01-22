@@ -9,11 +9,13 @@
           type="success"
           icon="md-checkmark"
           class="server-button"
+          @click="batchCall('yes')"
         >批量启用</i-button>
         <i-button
           type="error"
           icon="md-remove"
           class="server-button"
+          @click="batchCall('no')"
         >批量禁用</i-button>
       </i-col>
       <i-col
@@ -65,6 +67,7 @@
         stripe
         border
         @on-filter-change="filter"
+        @on-selection-change="selection_change"
       >
         <template
           slot="configuration"
@@ -360,7 +363,8 @@ export default {
       showLoading: false,
       pageSize: null,
       copyServer: {},
-      isPress: false
+      isPress: false,
+      selection_id: []
     }
   },
   methods: {
@@ -387,13 +391,9 @@ export default {
       this.testServer = false
     },
     // 获取服务列表
-    async getServe(search, filter) {
+    async getServe(filter) {
       const self = this
       self.showLoading = true
-      let searchKey = ""
-      if (search) {
-        searchKey = search
-      }
       let filterKey = ""
       if (filter) {
         filterKey = filter
@@ -405,7 +405,7 @@ export default {
           params: {
             p: self.current,
             psize: self.pageSize,
-            search_key: searchKey,
+            search_key: self.search_key,
             enabled: filterKey
           }
         })
@@ -430,10 +430,21 @@ export default {
       this.$store.commit("changePageSize", size)
       this.getServe()
     },
+    // 列表选中
+    selection_change(selection) {
+      this.selection_id = []
+      if (selection.length > 0) {
+        selection.forEach(item => {
+          this.selection_id.push(item.id)
+        })
+      }
+
+      console.log(this.selection_id)
+    },
     // 搜索任务
     async searchService() {
       this.current = 1
-      this.getServe(this.search_key)
+      this.getServe()
     },
     // 筛选功能
     filter(col) {
@@ -446,9 +457,9 @@ export default {
       } else {
         let filterChecked = col._filterChecked[0]
         if (filterChecked == "启用") {
-          self.getServe("", "yes")
+          self.getServe( "yes")
         } else {
-          self.getServe("", "no")
+          self.getServe( "no")
         }
       }
     },
@@ -481,6 +492,31 @@ export default {
         } catch (err) {
           console.log(err);
           self.$Message.error("运行任务错误")
+        }
+      }
+    },
+    async batchCall(isban) {
+      const self = this
+      if (self.selection_id.length == 0) {
+        self.$Message.info("请选择服务 ")
+      } else {
+        let xData = {
+          enable: isban
+        }
+        for (let i = 0; i < self.selection_id.length; i++) {
+          xData[`ids-${i}`] = self.selection_id[i]
+        }
+        try {
+          const res = await self.axios({
+            method: "post",
+            url: self.$store.state.baseurl + "api/service/enable",
+            params: xData
+          })
+          if (res.data.code == 0) {
+            self.getServe()
+          }
+        } catch (err) {
+          self.$Message.error("启用或禁用服务错误")
         }
       }
     },

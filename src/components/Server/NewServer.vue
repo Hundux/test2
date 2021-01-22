@@ -183,7 +183,7 @@ export default {
       this.jsonData = value
       let jsonData = value
       jsonData = JSON.stringify(jsonData)
-      let res = jsonData.match(/\$.*?\$/g)
+      let res = jsonData.match(/\$\w+?\$/g)
       let params = Array.from(new Set(res))
       for (let i = 0; i < params.length; i++) {
         let name = params[i].substr(1, params[i].length - 2)

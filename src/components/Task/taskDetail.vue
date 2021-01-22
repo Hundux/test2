@@ -48,7 +48,7 @@
                 >复制结果配置</p>
                 <i-vueJsonEditor
                   name="jsonData"
-                  :mode="'code'"
+                  :mode="'text'"
                   lang="zh"
                   v-model="spec"
                   class="vueJsonEditor"
