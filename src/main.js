@@ -6,8 +6,12 @@ import VueAxios from 'vue-axios'
 import axios from 'axios'
 import moment from "moment"
 import 'element-ui/lib/theme-chalk/icon.css';
+<<<<<<< HEAD
 import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup, Tooltip, InputNumber } from 'view-design'
 import cronParser from 'cron-parser'
+=======
+import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup, Tooltip, InputNumber} from 'view-design'
+>>>>>>> main
 
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
