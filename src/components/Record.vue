@@ -89,12 +89,13 @@
             <i-tooltip
               content="暂停运行"
               style="margin-right: 20px"
-              v-if="row.status=='RUNNING'"
+              v-if="row.status!='PAUSED'"
             >
               <i-button
                 type="error"
                 size="small"
                 icon="md-pause"
+                :disabled="!(row.result=='UNKNOWN'&&(row.status=='RUNNING'||row.status=='STOPPED'))"
                 @click="pause(row)"
               ></i-button>
             </i-tooltip>
@@ -108,44 +109,24 @@
                 type="success"
                 size="small"
                 icon="md-checkmark"
+                :disabled="!(row.result=='UNKNOWN'&&row.status=='PAUSED')"
                 @click="resume(row)"
               ></i-button>
             </i-tooltip>
-            <!-- 开启爬虫 -->
-            <i-tooltip
-              content="启动爬虫"
-              style="margin-right: 20px"
-              v-if="row.status=='SENT'"
-            >
-              <i-button
-                type="success"
-                size="small"
-                icon="md-arrow-round-up"
-                @click="start(row)"
-              ></i-button>
-            </i-tooltip>
-            <!-- 停止爬虫 -->
-            <i-tooltip
-              content="停止爬虫"
-              style="margin-right: 20px"
-              v-else
-            >
-              <i-button
-                type="error"
-                size="small"
-                icon="md-radio-button-on"
-                @click="stop(row)"
-              ></i-button>
-            </i-tooltip>
             <!-- 取消 -->
-            <i-tooltip content="取消运行">
+            <i-poptip
+              confirm
+              :title="`确定取消运行`"
+              @on-ok="cancel(row)"
+              placement="right"
+            >
               <i-button
                 type="error"
                 size="small"
                 icon="md-close"
-                @click="cancel(row)"
+                :disabled="!(row.result=='UNKNOWN'&&(row.status!='CANCELED'&&row.status!='DONE'))"
               ></i-button>
-            </i-tooltip>
+            </i-poptip>
           </div>
         </template>
         <template slot="log">
@@ -153,13 +134,48 @@
             <i-button
               type="primary"
               size="small"
-              style="margin-right: 5px"
-            >爬虫</i-button>
+            >日志</i-button>
+          </div>
+        </template>
+        <template
+          slot="reptile"
+          slot-scope="{ row }"
+        >
+          <div>
             <i-button
               type="primary"
               size="small"
-              style="margin-right: 5px"
-            >日志</i-button>
+              style="margin-right: 10px"
+              :disabled="!(row.status!='CANCELED'&&row.status!='DONE')"
+            >查看</i-button>
+            <!-- 开启爬虫 -->
+            <i-tooltip
+              content="启动爬虫"
+              v-if="row.status=='STOPPED'"
+            >
+              <i-button
+                type="success"
+                size="small"
+                icon="md-arrow-round-up"
+                :disabled="!(row.result=='UNKNOWN'&&row.status=='STOPPED')"
+                @click="start(row)"
+              ></i-button>
+            </i-tooltip>
+            <!-- 停止爬虫 -->
+            <i-poptip
+              confirm
+              :title="'确定停止爬虫'"
+              @on-ok="stop(row)"
+              placement="right"
+              v-else
+            >
+              <i-button
+                type="error"
+                size="small"
+                icon="md-radio-button-on"
+                :disabled="!(row.result=='UNKNOWN'&&(row.status=='RUNNING'||row.status=='PAUSED'))"
+              ></i-button>
+            </i-poptip>
           </div>
         </template>
       </i-table>
@@ -504,7 +520,7 @@ export default {
           key: 'operation',
           slot: 'operation',
           align: 'center',
-          width: 150,
+          width: 100,
           resizable: true,
         },
         {
@@ -570,13 +586,21 @@ export default {
           }
         },
         {
-          title: "查看",
+          title: "日志",
           key: 'log',
           slot: 'log',
           align: 'center',
-          width: 120,
+          width: 60,
           resizable: true,
         },
+        {
+          title: "爬虫",
+          key: 'reptile',
+          slot: 'reptile',
+          align: 'center',
+          width: 120,
+          resizable: true,
+        }
 
       ],
       RecordData: [],
@@ -684,6 +708,7 @@ export default {
         if (res.data.code == 0) {
           self.RecordData = res.data.data.page
           self.total = res.data.data.total
+
           self.showLoading = false
         } else {
           self.$Message.error(res.data.error_message)
@@ -944,5 +969,8 @@ export default {
   align-items: center;
   padding: 0 15px;
   justify-content: space-around;
+}
+>>> .ivu-icon-ios-help-circle {
+  display: none !important;
 }
 </style>

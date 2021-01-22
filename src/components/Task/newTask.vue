@@ -44,7 +44,7 @@
                 <i-vueJsonEditor
                   name="jsonData"
                   v-model="spec"
-                  :mode="'code'"
+                  :mode="'text'"
                   lang="zh"
                   class="vueJsonEditor"
                 >

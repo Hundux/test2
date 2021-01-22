@@ -81,7 +81,7 @@
           >
             <i-col
               span="6"
-              class="configure-body-one"
+              class="configure-body-one params_name"
             ><span>{{item.name}}：</span>
             </i-col>
             <i-col span="6">
@@ -170,6 +170,7 @@ export default {
     onJsonChange(value) {
       let jsonData = value
       jsonData = JSON.stringify(jsonData)
+      // let res = jsonData.match(/\$\w+?\$/g)
       let res = jsonData.match(/\$.*?\$/g)
       let params = Array.from(new Set(res))
       let paramsDefault = this.serveDetailData.params
@@ -366,5 +367,8 @@ export default {
 }
 >>> textarea.ivu-input {
   height: 32px;
+}
+.params_name{
+  cursor: pointer;
 }
 </style>

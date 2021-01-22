@@ -10,11 +10,13 @@
             type="success"
             icon="md-checkmark"
             class="task-button"
+            @click="batchRun('yes')"
           >批量启用</i-button>
           <i-button
             type="error"
             icon="md-remove"
             class="task-button"
+            @click="batchRun('no')"
           >批量禁用</i-button>
         </i-col>
         <i-col
@@ -479,7 +481,8 @@ export default {
       showLoading: false,
       pageSize: null,
       setTitle: "",
-      isPress: false
+      isPress: false,
+      selection_id: []
     }
   },
   components: {
@@ -493,18 +496,14 @@ export default {
   },
   methods: {
     // 获取任务列表
-    async getTASKList(search) {
+    async getTASKList() {
       const self = this
-      let searchKey = ""
       self.showLoading = true
-      if (search) {
-        searchKey = search
-      }
       try {
         const xData = {
           p: self.current,
           psize: self.pageSize,
-          search_key: searchKey
+          search_key: self.search
         }
         const res = await self.axios({
           method: "get",
@@ -559,6 +558,32 @@ export default {
         self.$Message.error("启用或禁用任务错误")
       }
     },
+    // 批量启用禁用
+    async batchRun(isban) {
+      const self = this
+      if (self.selection_id.length == 0) {
+        self.$Message.info("请选择任务 ")
+      } else {
+        let xData = {
+          enable: isban
+        }
+        for (let i = 0; i < self.selection_id.length; i++) {
+          xData[`ids-${i}`] = self.selection_id[i]
+        }
+        try {
+          const res = await self.axios({
+            method: "post",
+            url: self.$store.state.baseurl + "api/job/enable",
+            params: xData
+          })
+          if (res.data.code == 0) {
+            self.getTASKList()
+          }
+        } catch (err) {
+          self.$Message.error("启用或禁用任务错误")
+        }
+      }
+    },
     // 运行任务
     async handRunClick(row) {
       const self = this
@@ -589,7 +614,7 @@ export default {
     // 搜索任务
     async searchTask() {
       this.current = 1
-      this.getTASKList(this.search)
+      this.getTASKList()
     },
     filter(col) {
       const self = this
@@ -733,7 +758,14 @@ export default {
     },
     // 列表选中
     selection_change(selection) {
-      console.log(selection);
+      this.selection_id = []
+      if (selection.length > 0) {
+        selection.forEach(item => {
+          this.selection_id.push(item.id)
+        })
+      }
+
+      console.log(this.selection_id)
     },
     toRecord(row) {
       this.$router.push({ path: "/record", query: { id: row.id, category: "job_id", name: row.title } })
