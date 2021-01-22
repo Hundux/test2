@@ -38,8 +38,9 @@
               >
                 <p
                   class="copy_btn"
-                  @click="copySpec"
-                >复制替换后配置</p>
+                  v-clipboard:copy="copy_spec"
+                  v-clipboard:success="onCopy"
+                >复制结果配置</p>
                 <i-vueJsonEditor
                   name="jsonData"
                   v-model="spec"
@@ -322,7 +323,7 @@ export default {
       searchServiceKey: "",
       server: {},
       serverList: [],
-      copy_spec: {},
+      copy_spec: "",
       spec: {}
     }
   },
@@ -361,7 +362,7 @@ export default {
         let params = newValue.params
         if (params != null) {
           for (let i = 0; i < params.length; i++) {
-            spec = spec.replace(params[i].name, `${params[i].name}:${params[i].input}`)
+            spec = spec.replace(`$${params[i].name}$`, `$${params[i].name}:${params[i].input}$`)
             while (spec.indexOf(`$${params[i].name}$`) != -1) {
               spec = spec.replace(`$${params[i].name}$`, `$${params[i].name}:${params[i].input}$`)
             }
@@ -372,7 +373,7 @@ export default {
           }
         }
         if (spec != "") {
-          this.copy_spec = JSON.parse(copy_spec)
+          this.copy_spec = copy_spec
           this.spec = JSON.parse(spec)
         }
       }
@@ -603,9 +604,10 @@ export default {
     handleBlur() {
       this.serverList = []
     },
-    copySpec() {
-      this.spec = this.copy_spec
-    },
+    onCopy() {
+      this.$Message.success("配置内容已复制到剪切板！")
+    }
+
   },
 
 }

@@ -43,8 +43,9 @@
               <div style="height:100%;position:relative">
                 <p
                   class="copy_btn"
-                  @click="copySpec"
-                >复制替换后配置</p>
+                  v-clipboard:copy="copy_spec"
+                  v-clipboard:success="onCopy"
+                >复制结果配置</p>
                 <i-vueJsonEditor
                   name="jsonData"
                   :mode="'code'"
@@ -321,7 +322,7 @@ export default {
       serverTaskDetail: {},
       serveDetailData: {},
       spec: {},
-      copy_spec: {},
+      copy_spec: "",
       isPress: false
     }
   },
@@ -346,7 +347,7 @@ export default {
           console.log(params);
           if (params !== null) {
             for (const key in params) {
-              spec = spec.replace(key, `${key}:${params[key]}`)
+              spec = spec.replace(`$${key}$`, `$${key}:${params[key]}$`)
               copy_spec = copy_spec.replace(`$${key}$`, params[key])
               while (copy_spec.indexOf(`$${key}$`) != -1) {
                 copy_spec = copy_spec.replace(`$${key}$`, params[key])
@@ -356,7 +357,7 @@ export default {
               }
             }
           }
-          this.copy_spec = JSON.parse(copy_spec)
+          this.copy_spec = copy_spec
           this.spec = JSON.parse(spec)
         }
       }
@@ -514,9 +515,6 @@ export default {
         self.$Message.error("获取服务列表错误")
       }
     },
-    copySpec() {
-      this.spec = this.copy_spec
-    },
     handleCopy(task) {
       // console.log(task);
       this.cancle("copy", task)
@@ -526,6 +524,9 @@ export default {
     },
     timeChange(time) {
       this.updateTask.time = time
+    },
+    onCopy() {
+      this.$Message.success("配置内容已复制到剪切板！")
     }
   },
   components: {

@@ -68,6 +68,7 @@
         stripe
         border
         @on-filter-change="filter"
+        @on-selection-change="selection_change"
       >
         <template
           slot="configuration"
@@ -729,6 +730,10 @@ export default {
       } else {
         this.getTASKList()
       }
+    },
+    // 列表选中
+    selection_change(selection) {
+      console.log(selection);
     },
     toRecord(row) {
       this.$router.push({ path: "/record", query: { id: row.id, category: "job_id", name: row.title } })
