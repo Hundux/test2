@@ -6,7 +6,7 @@ import VueAxios from 'vue-axios'
 import axios from 'axios'
 import moment from "moment"
 import 'element-ui/lib/theme-chalk/icon.css';
-import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup, InputNumber } from 'view-design'
+import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup, InputNumber, Tooltip} from 'view-design'
 
 import 'view-design/dist/styles/iview.css'
 import vueJsonEditor from 'vue-json-editor'
@@ -49,6 +49,7 @@ Vue.component('i-spin', Spin)
 Vue.component('i-drawer', Drawer)
 Vue.component('i-backTop', BackTop)
 Vue.component('i-inputNumber', InputNumber)
+Vue.component('i-tooltip', Tooltip)
 
 moment.locale('zh-cn', {
   longDateFormat: {
