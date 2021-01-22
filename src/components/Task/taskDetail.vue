@@ -12,7 +12,7 @@
         <i-col
           span="18"
           class="taskDetail-configure"
-          style="height:100%"
+          style="height:98%"
         >
           <div
             class="configure"
@@ -34,7 +34,7 @@
           </div>
           <i-row
             v-else
-            style="height:100%"
+            style="height:98%"
           >
             <i-col
               span="12"
@@ -581,11 +581,11 @@ export default {
 }
 .service_configure {
   border: 1px solid black;
-  height: 100%;
+  height: 98%;
 }
 .params {
   width: 98%;
-  height: 100%;
+  height: 98%;
   border-right: 1px solid black;
   position: relative;
   padding: 20px 0 0 20px;

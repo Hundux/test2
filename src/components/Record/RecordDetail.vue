@@ -12,7 +12,7 @@
         <i-col
           span="24"
           class="taskDetail-configure"
-          style="height:100%"
+          style="height:99%"
         >
           <div class="configure">
             <i-vueJsonEditor
@@ -69,10 +69,10 @@ export default {
   overflow: hidden;
 }
 >>> .ivu-modal-content {
-  height: 100%;
+  height: 98%;
 }
 >>> .ivu-modal-body {
-  height: 100%;
+  height: 95%;
 }
 >>> .jsoneditor-vue {
   height: 100%;
