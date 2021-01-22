@@ -3,31 +3,15 @@
     <div class="record-top">
       <i-row style="width:100%">
         <i-col
-          span="12"
+          span="6"
           class="record-button-group"
         >
           <span class="titleSpan">{{taskTitle}}</span>
-          <div>
-            <i-button
-              type="success"
-              icon="md-checkmark"
-              class="record-button"
-            >批量恢复运行</i-button>
-            <i-button
-              type="error"
-              icon="md-pause"
-              class="record-button"
-            >批量暂停</i-button>
-            <i-button
-              type="error"
-              icon="md-close"
-              class="record-button"
-            >批量取消</i-button>
-          </div>
         </i-col>
         <i-col
           span="12"
           class="record-search"
+          offset="6"
         >
           <i-input
             v-model="search"
@@ -146,7 +130,7 @@
               type="primary"
               size="small"
               style="margin-right: 10px"
-              :disabled="!(row.status!='CANCELED'&&row.status!='DONE')"
+              :disabled="!(row.result=='UNKNOWN'&&row.status!='CANCELED'&&row.status!='DONE'&&row.status!='STOPPED')"
             >查看</i-button>
             <!-- 开启爬虫 -->
             <i-tooltip
@@ -156,7 +140,7 @@
               <i-button
                 type="success"
                 size="small"
-                icon="md-arrow-round-up"
+                icon="md-power"
                 :disabled="!(row.result=='UNKNOWN'&&row.status=='STOPPED')"
                 @click="start(row)"
               ></i-button>
@@ -641,7 +625,7 @@ export default {
     pageChange(index) {
       this.current = index
       if (this.isFilter == true) {
-        this.getRecordList("", this.filterData)
+        this.getRecordList(this.filterData)
       } else {
         this.getRecordList()
       }
@@ -651,19 +635,15 @@ export default {
       localStorage.setItem("pageSize", size)
       this.$store.commit("changePageSize", size)
       if (this.isFilter == true) {
-        this.getRecordList("", this.filterData)
+        this.getRecordList(this.filterData)
       } else {
         this.getRecordList()
       }
     },
     // 获取运行记录列表
-    async getRecordList(search, filter) {
+    async getRecordList(filter) {
       const self = this
-      let searchKey = ""
       self.showLoading = true
-      if (search) {
-        searchKey = search
-      }
       try {
         let res = {}
         if (self.queryID != "") {
@@ -674,7 +654,7 @@ export default {
               params: {
                 p: self.current,
                 psize: self.pageSize,
-                search_key: searchKey,
+                search_key: self.search,
                 job_id: self.queryID,
                 ...filter
               }
@@ -686,7 +666,7 @@ export default {
               params: {
                 p: self.current,
                 psize: self.pageSize,
-                search_key: searchKey,
+                search_key: self.search,
                 service_id: self.queryID,
                 ...filter
               }
@@ -699,7 +679,7 @@ export default {
             params: {
               p: self.current,
               psize: self.pageSize,
-              search_key: searchKey,
+              search_key: self.search,
               ...filter
             }
           })
@@ -721,7 +701,7 @@ export default {
     // 搜索运行记录
     searchRecord() {
       this.current = 1
-      this.getRecordList(this.search)
+      this.getRecordList()
     },
     // 筛选时间
     TimeChange(daterange) {
@@ -733,7 +713,7 @@ export default {
           end_time: this.$moment(new Date(daterange[1])).format('YYYY-MM-DD HH:mm:ss')
         }
         this.filterData = data
-        this.getRecordList("", data)
+        this.getRecordList(data)
       } else {
         this.isFilter = false
         this.getRecordList()
@@ -756,7 +736,7 @@ export default {
             data[`status-${i}`] = col._filterChecked[i]
           }
           self.filterData = data
-          self.getRecordList("", data)
+          self.getRecordList(data)
         }
       } else if (col.title == "运行结果") {
         self.current = 1
@@ -772,7 +752,7 @@ export default {
             data[`result-${i}`] = col._filterChecked[i]
           }
           self.filterData = data
-          self.getRecordList("", data)
+          self.getRecordList(data)
         }
       } else if (col.title == "类型") {
         self.current = 1
@@ -787,7 +767,7 @@ export default {
             data["category"] = "SERVICE"
           }
           self.filterData = data
-          self.getRecordList("", data)
+          self.getRecordList(data)
         }
       }
     },
@@ -946,9 +926,6 @@ export default {
 .record-top {
   margin-top: 10px;
   margin-bottom: 10px;
-}
-.record-button {
-  margin-right: 5px;
 }
 .search {
   margin-left: 20px;

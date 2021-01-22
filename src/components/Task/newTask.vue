@@ -44,7 +44,7 @@
                 <i-vueJsonEditor
                   name="jsonData"
                   v-model="spec"
-                  :mode="'text'"
+                  :mode="'view'"
                   lang="zh"
                   class="vueJsonEditor"
                 >
@@ -728,7 +728,7 @@ export default {
   color: white;
   opacity: 0.8;
   top: 7px;
-  right: 10%;
+  right: 50%;
   z-index: 999;
 }
 </style>

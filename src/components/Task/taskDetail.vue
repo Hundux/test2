@@ -48,7 +48,7 @@
                 >复制结果配置</p>
                 <i-vueJsonEditor
                   name="jsonData"
-                  :mode="'text'"
+                  :mode="'view'"
                   lang="zh"
                   v-model="spec"
                   class="vueJsonEditor"
@@ -214,11 +214,11 @@
                 /></i-col>
               <i-col span="5"><input
                   style="width:68px"
-                  v-model="updateTask.month"
+                  v-model="updateTask.week"
                 /></i-col>
               <i-col span="3"><input
                   style="width:40px"
-                  v-model="updateTask.week"
+                  v-model="updateTask.month"
                 /></i-col>
             </i-row>
             <i-formItem
@@ -310,14 +310,14 @@ export default {
       serverDetail: false,
       updateTask: {
         plan: "",
-        date: "",
-        time: "",
-        second: "",
-        minute: "",
-        hour: "",
-        day: "",
-        month: "",
-        week: "",
+        date: "0",
+        time: "0",
+        second: "0",
+        minute: "0",
+        hour: "0",
+        day: "0",
+        month: "0",
+        week: "0",
       },
       serverTaskDetail: {},
       serveDetailData: {},
@@ -430,6 +430,13 @@ export default {
     // 修改任务
     async undateTask() {
       const self = this
+      // try {
+      //   const l = self.$cronParser.parseExpression(`${self.updateTask.second} ${self.updateTask.minute} ${self.updateTask.hour} ${self.updateTask.day} ${self.updateTask.month} ${self.updateTask.week}`);
+      //   console.log(l);
+
+      // } catch (err) {
+      //   self.$Message.error(err.message)
+      // }
       let xData = {
         id: self.task.id,
         title: self.task.title,
@@ -450,18 +457,23 @@ export default {
             }
           }
         } else if (self.updateTask.plan == "定期") {
-          xData = {
-            id: self.task.id,
-            title: self.task.title,
-            category: self.task.category,
-            spec: self.task.content.spec,
-            schedule_cron_second: self.updateTask.second,
-            schedule_cron_minute: self.updateTask.minute,
-            schedule_cron_hour: self.updateTask.hour,
-            schedule_cron_day_of_month: self.updateTask.day,
-            schedule_cron_month: self.updateTask.day,
-            schedule_cron_day_of_week: self.updateTask.week,
-            crawler_count: self.task.crawler_count
+          try {
+            // self.$cronParser.parseExpression(`${self.updateTask.second} ${self.updateTask.minute} ${self.updateTask.hour} ${self.updateTask.day} ${self.updateTask.month} ${self.updateTask.week}`);
+            xData = {
+              id: self.task.id,
+              title: self.task.title,
+              category: self.task.category,
+              spec: self.task.content.spec,
+              schedule_cron_second: self.updateTask.second,
+              schedule_cron_minute: self.updateTask.minute,
+              schedule_cron_hour: self.updateTask.hour,
+              schedule_cron_day_of_month: self.updateTask.day,
+              schedule_cron_month: self.updateTask.month,
+              schedule_cron_day_of_week: self.updateTask.week,
+              crawler_count: self.task.crawler_count
+            }
+          } catch (err) {
+            self.$Message.error(err.message)
           }
         }
         console.log(xData);
@@ -638,7 +650,7 @@ export default {
   color: white;
   opacity: 0.8;
   top: 7px;
-  right: 10%;
+  right: 50%;
   z-index: 999;
 }
 </style>
