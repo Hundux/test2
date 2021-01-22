@@ -6,11 +6,17 @@ import VueAxios from 'vue-axios'
 import axios from 'axios'
 import moment from "moment"
 import 'element-ui/lib/theme-chalk/icon.css';
+<<<<<<< HEAD
 import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup, Tooltip, InputNumber} from 'view-design'
+=======
+import { Drawer, Button, Form, FormItem, Input, Icon, Select, Option, Message, Menu, MenuItem, Submenu, Tabs, TabPane, Row, Col, Table, Modal, Card, Page, Layout, Sider, Header, Content, Poptip, Upload, Dropdown, DropdownMenu, DropdownItem, DatePicker, RadioGroup, Radio, Spin, BackTop, TimePicker, ButtonGroup, Tooltip } from 'view-design'
+>>>>>>> main
 
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 import 'view-design/dist/styles/iview.css'
 import vueJsonEditor from 'vue-json-editor'
-
+import VueClipboard from 'vue-clipboard2'
 
 Vue.component('i-vueJsonEditor', vueJsonEditor)
 Vue.component('i-button', Button)
@@ -49,7 +55,10 @@ Vue.component('i-spin', Spin)
 Vue.component('i-drawer', Drawer)
 Vue.component('i-backTop', BackTop)
 Vue.component('i-tooltip', Tooltip)
+<<<<<<< HEAD
 Vue.component('i-inputNumber', InputNumber)
+=======
+>>>>>>> main
 
 moment.locale('zh-cn', {
   longDateFormat: {
@@ -63,8 +72,27 @@ Vue.prototype.$Message.config({
   duration: 2
 });
 
+// axios 请求拦截器
+axios.interceptors.request.use((config) => {
+  NProgress.start()
+  return config
+}, function (error) {
+  return Promise.reject(error)
+})
+
+// axios响应拦截器
+axios.interceptors.response.use(
+  (response) => {
+    NProgress.done()
+    return response
+  },
+  function (error) {
+    return Promise.reject(error)
+  })
+
 Vue.prototype.$Modal = Modal
 Vue.use(VueAxios, axios)
+Vue.use(VueClipboard)
 Vue.config.productionTip = false;
 
 new Vue({

@@ -10,11 +10,14 @@
     >
       <i-row class="taskDetail-wrap">
         <i-col
-          span="10"
+          span="18"
           class="taskDetail-configure"
-          style="height:100%"
+          style="height:98%"
         >
-          <div class="configure">
+          <div
+            class="configure"
+            v-if="task.category=='TASK'"
+          >
             <div
               v-if="task.content"
               style="height:100%"
@@ -27,23 +30,86 @@
                 v-model="task.content.spec"
                 class="vueJsonEditor"
               ></i-vueJsonEditor>
-              <i-vueJsonEditor
-                name="jsonData"
-                :mode="'code'"
-                lang="zh"
-                v-model="spec"
-                v-else-if="spec"
-                class="vueJsonEditor"
-              ></i-vueJsonEditor>
             </div>
-            <p
-              class="noConfigure"
-              v-else
-            >填写配置</p>
           </div>
+          <i-row
+            v-else
+            style="height:98%"
+          >
+            <i-col
+              span="12"
+              class="service_configure"
+            >
+              <div style="height:100%;position:relative">
+                <p
+                  class="copy_btn"
+                  v-clipboard:copy="copy_spec"
+                  v-clipboard:success="onCopy"
+                >复制结果配置</p>
+                <i-vueJsonEditor
+                  name="jsonData"
+                  :mode="'code'"
+                  lang="zh"
+                  v-model="spec"
+                  class="vueJsonEditor"
+                >
+                </i-vueJsonEditor>
+              </div>
+            </i-col>
+            <i-col
+              span="12"
+              style="height:100%"
+            >
+              <div
+                v-if="task.category=='SERVICE'"
+                style="width:100%"
+                class="params"
+              >
+                <div v-if="task.content.service_inst.params">
+                  <i-row
+                    class="configure-top"
+                    style="width:100%;marginBottom:10px"
+                  >
+                    <i-col
+                      span="4"
+                      class="configure-top-one"
+                    ><span>参数名</span></i-col>
+                    <i-col span="8">参数值</i-col>
+                    <i-col span="8">描述</i-col>
+                    <i-col span="4">默认值</i-col>
+                  </i-row>
+                  <i-row
+                    class="configure-body"
+                    style="marginBottom:10px"
+                    :key="index"
+                    v-for="(item,index) in task.content.service_inst.service.params"
+                  >
+                    <i-col
+                      span="4"
+                      class="configure-body-one"
+                      style="marginTop:8px"
+                    ><span>{{item.name}}</span>
+                    </i-col>
+                    <i-col span="8">
+                      <i-input
+                        style="width:85%"
+                        v-model="task.content.service_inst.params[item.name]"
+                      ></i-input>
+                    </i-col>
+                    <i-col span="8">
+                      <div class="description">{{item.description}}</div>
+                    </i-col>
+                    <i-col span="4">
+                      <div class="description">{{item.default}}</div>
+                    </i-col>
+                  </i-row>
+                </div>
+              </div>
+            </i-col>
+          </i-row>
         </i-col>
         <i-col
-          span="7"
+          span="6"
           class="taskDetail-task"
         >
           <i-form
@@ -210,17 +276,18 @@
               type="success"
               icon="md-play"
               @click="runTask"
+              :loading="isPress"
             >立即执行</i-button>
             <i-button
               type="success"
               iicon="md-checkmark"
               v-if="task.enabled === false"
-              @click="handBanClick(1)"
+              @click="handBanClick('yes')"
             >启用</i-button>
             <i-button
               type="error"
               icon="md-trash"
-              @click="handBanClick()"
+              @click="handBanClick('no')"
               v-else
             >禁用</i-button>
             <i-button
@@ -229,49 +296,6 @@
               @click="handleCopy(task)"
             >复制</i-button>
           </i-buttongroup>
-        </i-col>
-        <i-col
-          span="7"
-          style="height:100%"
-          v-if="task.id"
-        >
-          <div
-            v-if="task.category=='SERVICE'"
-            style="width:100%"
-            class="params"
-          >
-            <div v-if="task.content.service_inst.params">
-              <i-row
-                class="configure-top"
-                style="width:100%;marginBottom:10px"
-              >
-                <i-col
-                  span="6"
-                  class="configure-top-one"
-                ><span>参数</span></i-col>
-                <i-col span="6">参数值</i-col>
-              </i-row>
-              <i-row
-                class="configure-body"
-                style="marginBottom:10px"
-                :key="index"
-                v-for="(item,key,index) in task.content.service_inst.params"
-              >
-                <i-col
-                  span="6"
-                  class="configure-body-one"
-                  style="marginTop:8px"
-                ><span>{{key}}:</span>
-                </i-col>
-                <i-col span="6">
-                  <i-input
-                    style="width:85%"
-                    v-model="task.content.service_inst.params[key]"
-                  ></i-input>
-                </i-col>
-              </i-row>
-            </div>
-          </div>
         </i-col>
       </i-row>
     </i-modal>
@@ -297,7 +321,9 @@ export default {
       },
       serverTaskDetail: {},
       serveDetailData: {},
-      spec: {}
+      spec: {},
+      copy_spec: "",
+      isPress: false
     }
   },
   props: {
@@ -314,17 +340,26 @@ export default {
       deep: true,
       handler: function (newValue) {
         console.log(newValue)
-        let spec = JSON.stringify(newValue.content.service_inst.service.spec)
-        let params = newValue.content.service_inst.params
-        console.log(params);
-        if (params !== null) {
-          for (const key in params) {
-            while (spec.indexOf(key) != -1) {
-              spec = spec.replace(key, params[key])
+        if (newValue.content.service_inst != null) {
+          let spec = JSON.stringify(newValue.content.service_inst.service.spec)
+          let copy_spec = spec
+          let params = newValue.content.service_inst.params
+          console.log(params);
+          if (params !== null) {
+            for (const key in params) {
+              spec = spec.replace(`$${key}$`, `$${key}:${params[key]}$`)
+              copy_spec = copy_spec.replace(`$${key}$`, params[key])
+              while (copy_spec.indexOf(`$${key}$`) != -1) {
+                copy_spec = copy_spec.replace(`$${key}$`, params[key])
+              }
+              while (spec.indexOf(`$${key}$`) != -1) {
+                spec = spec.replace(`$${key}$`, `$${key}:${params[key]}$`)
+              }
             }
           }
+          this.copy_spec = copy_spec
+          this.spec = JSON.parse(spec)
         }
-        this.spec = JSON.parse(spec)
       }
     }
   },
@@ -345,18 +380,19 @@ export default {
       this.$emit("cancleTaskDetailModal", isOperation, task)
     },
     handleServerDetail() {
-      this.serveDetailData = this.task.content.service_inst.service
+      if (this.task.content.service_inst != null) {
+        this.serveDetailData = this.task.content.service_inst.service
+      }
       this.serverDetail = true
     },
     handleCancleServerDetailModal() {
       this.serverDetail = false
     },
     async runTask() {
-      console.log(this.task)
       const self = this
+      self.isPress = true
       let xData = {
         id: self.task.id,
-        crawler_count: 1
       }
       try {
         const res = await self.axios({
@@ -365,6 +401,7 @@ export default {
           params: xData
         })
         if (res.data.code === 0) {
+          self.isPress = false
           self.cancle(true)
         }
       } catch (err) {
@@ -374,8 +411,8 @@ export default {
     async handBanClick(isBan) {
       const self = this
       let xData = {
-        id: self.task.id,
-        enabled: isBan
+        "ids-0": self.task.id,
+        enable: isBan
       }
       try {
         const res = await self.axios({
@@ -432,11 +469,13 @@ export default {
           self.$Message.error("请输入任务名称")
         } else {
           let service_params = {}
-          let i = 0
-          for (let key in self.task.content.service_inst.params) {
-            service_params[`service_params-${i}-name`] = key
-            service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
-            i = i + 1
+          if (self.task.category == "SERVICE") {
+            let i = 0
+            for (let key in self.task.content.service_inst.params) {
+              service_params[`service_params-${i}-name`] = key
+              service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
+              i = i + 1
+            }
           }
           console.log(service_params);
           const res = await self.axios({
@@ -456,6 +495,7 @@ export default {
           }
         }
       } catch (error) {
+        console.log(error);
         self.$Message.error("修改任务错误")
       }
     },
@@ -484,6 +524,9 @@ export default {
     },
     timeChange(time) {
       this.updateTask.time = time
+    },
+    onCopy() {
+      this.$Message.success("配置内容已复制到剪切板！")
     }
   },
   components: {
@@ -537,10 +580,14 @@ export default {
   margin: 0 auto;
   position: relative;
 }
+.service_configure {
+  border: 1px solid black;
+  height: 98%;
+}
 .params {
   width: 98%;
-  height: 94%;
-  border: 1px solid black;
+  height: 98%;
+  border-right: 1px solid black;
   position: relative;
   padding: 20px 0 0 20px;
 }
@@ -577,5 +624,21 @@ export default {
 }
 >>> textarea.ivu-input {
   height: 32px;
+}
+.description {
+  width: 80%;
+  height: 32px;
+  line-height: 32px;
+  word-break: break-all;
+  overflow-y: auto;
+}
+.copy_btn {
+  position: absolute;
+  cursor: pointer;
+  color: white;
+  opacity: 0.8;
+  top: 7px;
+  right: 10%;
+  z-index: 999;
 }
 </style>

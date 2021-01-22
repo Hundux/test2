@@ -111,8 +111,22 @@
             style="width:80%"
           >
             <i-button
+              type="success"
+              icon="md-play"
+              @click="callService"
+              :loading="isPress"
+            >立即调用</i-button>
+            <i-button
+              type="success"
+              iicon="md-checkmark"
+              v-if="serveDetailData.enabled === false"
+              @click="handBanClick('yes')"
+            >启用</i-button>
+            <i-button
               type="error"
               icon="md-trash"
+              v-else
+              @click="handBanClick('no')"
             >禁用</i-button>
             <i-button
               type="primary"
@@ -130,7 +144,8 @@
 export default {
   data() {
     return {
-      serveDetailDataParams: []
+      serveDetailDataParams: [],
+      isPress: false
     }
   },
   props: {
@@ -183,12 +198,14 @@ export default {
           self.$Message.error("请输入服务名称")
         } else {
           console.log(self.serveDetailData)
-          const l = self.serveDetailDataParams.length
           let service_params = {}
-          for (let i = 0; i < l; i++) {
-            service_params[`service_params_spec-${i}-name`] = self.serveDetailDataParams[i].name
-            service_params[`service_params_spec-${i}-default`] = self.serveDetailDataParams[i].default
-            service_params[`service_params_spec-${i}-desc`] = self.serveDetailDataParams[i].description
+          if (self.serveDetailDataParams) {
+            const l = self.serveDetailDataParams.length
+            for (let i = 0; i < l; i++) {
+              service_params[`service_params_spec-${i}-name`] = self.serveDetailDataParams[i].name
+              service_params[`service_params_spec-${i}-default`] = self.serveDetailDataParams[i].default
+              service_params[`service_params_spec-${i}-desc`] = self.serveDetailDataParams[i].description
+            }
           }
           const res = await self.axios({
             method: "patch",
@@ -211,11 +228,51 @@ export default {
           }
         }
       } catch (error) {
+        console.log(error);
         self.$Message.error("创建任务错误")
       }
     },
     handleCopyServer() {
       this.$emit("handleCopy", this.serveDetailData)
+    },
+    async handBanClick(isBan) {
+      const self = this
+      let xData = {
+        "ids-0": self.serveDetailData.id,
+        enable: isBan
+      }
+      try {
+        const res = await self.axios({
+          method: "post",
+          url: self.$store.state.baseurl + "api/service/enable",
+          params: xData
+        })
+        if (res.data.code == 0) {
+          self.cancle()
+        }
+      } catch (err) {
+        self.$Message.error("启用或禁用任务错误")
+      }
+    },
+    async callService() {
+      const self = this
+      self.isPress = true
+      let xData = {
+        id: self.serveDetailData.id,
+      }
+      try {
+        const res = await self.axios({
+          method: "get",
+          url: self.$store.state.baseurl + "api/service/call",
+          params: xData
+        })
+        if (res.data.code === 0) {
+          self.isPress = false
+          self.cancle()
+        }
+      } catch (err) {
+        self.$Message.error("运行任务错误")
+      }
     }
   },
 }

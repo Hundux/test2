@@ -68,6 +68,7 @@
         stripe
         border
         @on-filter-change="filter"
+        @on-selection-change="selection_change"
       >
         <template
           slot="configuration"
@@ -88,49 +89,70 @@
         >
           <div>
             <!-- 提交 -->
-            <i-button
-              type="success"
-              size="small"
-              icon="md-arrow-round-up"
+            <i-poptip
+              confirm
+              :title="`确定启动${row.crawler_count}个爬虫立即运行`"
+              @on-ok="handRunClick(row)"
               style="margin-right: 20px"
-              @click="handRunClick(row)"
-            ></i-button>
+              placement="right"
+            >
+              <i-button
+                type="success"
+                size="small"
+                icon="md-arrow-round-up"
+              >
+              </i-button>
+            </i-poptip>
             <!-- 启用 -->
-            <i-button
-              type="success"
-              size="small"
-               style="margin-right: 20px"
+            <i-tooltip
+              content="启用任务"
+              style="margin-right: 20px"
               v-if="row.enabled === false"
-              icon="md-checkmark"
-              @click="handBanClick(row,'yes')"
-            ></i-button>
+            >
+              <i-button
+                type="success"
+                size="small"
+                icon="md-checkmark"
+                @click="handBanClick(row,'yes')"
+              >
+              </i-button>
+            </i-tooltip>
             <!-- 禁止 -->
-            <i-button
-              type="error"
-              size="small"
-              icon="md-remove"
+            <i-tooltip
+              content="禁用任务"
               style="margin-right: 20px"
               v-else
-              @click="handBanClick(row,'no')"
-            ></i-button>
+            >
+              <i-button
+                type="error"
+                size="small"
+                icon="md-remove"
+                @click="handBanClick(row,'no')"
+              >
+              </i-button>
+            </i-tooltip>
             <!-- 复制 -->
-            <i-button
-              type="primary"
-              size="small"
-              icon="md-copy"
-              style="margin-right: 20px"
-              @click="handleCopyTask(row)"
-            ></i-button>
+            <i-tooltip content="复制任务">
+              <i-button
+                type="primary"
+                size="small"
+                icon="md-copy"
+                @click="handleCopyTask(row)"
+              ></i-button>
+            </i-tooltip>
           </div>
         </template>
-        <template slot="log">
+        <template
+          slot="log"
+          slot-scope="{ row }"
+        >
           <div>
             <i-button
               type="primary"
               size="small"
               style="margin-right: 5px"
-              @click="handleLog"
-            >查看任务日志</i-button>
+              @click="toRecord(row)"
+            >查看</i-button>
           </div>
         </template>
       </i-table>
@@ -157,15 +179,25 @@
         :task.sync="task"
         @cancleTaskDetailModal="handleCancleTaskDetailModal"
       ></i-taskdetail>
-      <i-log
-        :log="log"
-        @cancleLogModal="cancleLogModal"
-      ></i-log>
     </div>
 
     <!-- loading-->
     <div
       v-if="showLoading"
+      class="demo-spin-col"
+      span="8"
+    >
+      <i-spin fix>
+        <i-icon
+          type="ios-loading"
+          size=18
+          class="demo-spin-icon-load"
+        ></i-icon>
+        <div>Loading</div>
+      </i-spin>
+    </div>
+    <div
+      v-if="isPress"
       class="demo-spin-col"
       span="8"
     >
@@ -184,7 +216,6 @@
 <script>
 import NewTask from './Task/newTask'
 import TaskDetail from './Task/taskDetail'
-import Log from './Log'
 export default {
   name: "Task",
   data() {
@@ -347,55 +378,36 @@ export default {
         },
         {
           title: "状态",
-          key: 'status',
+          key: 'enabled',
           width: 100,
           align: 'center',
           resizable: true,
           filters: [
             {
-              label: '运行中',
-              value: "运行中"
-            },
-            {
-              label: "暂停中",
-              value: "暂停中"
-            },
-            {
-              label: '准备就绪',
-              value: "准备就绪"
+              label: '启用',
+              value: "启用"
             },
             {
               label: '禁用',
               value: "禁用"
             }
           ],
-          filterMultiple: true,
+          filterMultiple: false,
           filterMethod(value, row) {
-            if (value === "运行中") {
-              return row.status == "RUNNING"
-            } else if (value === "暂停中") {
-              return row.status == "PAUSED"
-            } else if (value === "准备就绪") {
-              return row.status == "READY"
+            if (value === "启用") {
+              return row.enabled == true
             } else if (value === "禁用") {
-              return row.status == "unenabled"
+              return row.enabled == false
             }
           },
           render: (h, params) => {
-            if (params.row.status === "READY") {
-              return h('span', "准备就绪")
-            } else if (params.row.status === "PAUSED") {
-              return h("span", "暂停中")
-            } else if (params.row.status === "unenabled") {
-              return h("span", "禁用")
-            } else if (params.row.status === "RUNNING") {
-              return h("span", "运行中")
-            } else {
-              return h("span", params.row.status)
+            if (params.row.enabled === true) {
+              return h('span', "启用")
+            } else if (params.row.enabled === false) {
+              return h('span', "禁用")
             }
           },
           renderHeader(h, params) {
-            global.columns3 = params.column._filterChecked
             if (params.index === 4) {
               if (params.column._filterChecked.length != 0) {
                 let column_Ck = params.column._filterChecked
@@ -445,7 +457,7 @@ export default {
           resizable: true,
         },
         {
-          title: '日志',
+          title: '运行记录',
           key: 'log',
           slot: 'log',
           align: 'center',
@@ -458,7 +470,6 @@ export default {
       newTask: false,
       taskDetail: false,
       task: {},
-      log: false,
       columns2: [],
       columns3: [],
       columns4: [],
@@ -466,13 +477,14 @@ export default {
       isFilter: false,
       fData: {},
       showLoading: false,
-      pageSize: null
+      pageSize: null,
+      setTitle: "",
+      isPress: false
     }
   },
   components: {
     "i-newtask": NewTask,
     "i-taskdetail": TaskDetail,
-    "i-log": Log
   },
   computed: {
     pageSizeC() {
@@ -515,9 +527,6 @@ export default {
             } else {
               item.plan = "未计划"
             }
-            if (item.enabled == false) {
-              item.status = "unenabled"
-            }
           })
           self.showLoading = false
         }
@@ -540,31 +549,41 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
-          this.getTASKList()
+          if (isBan == "yes") {
+            row.enabled = true
+          } else {
+            row.enabled = false
+          }
         }
       } catch (err) {
         self.$Message.error("启用或禁用任务错误")
       }
     },
-    // 运行 恢复任务
+    // 运行任务
     async handRunClick(row) {
-
       const self = this
-      let xData = {
-        id: row.id,
-        crawler_count: 1
-      }
-      try {
-        const res = await self.axios({
-          method: "post",
-          url: self.$store.state.baseurl + "api/job/run",
-          params: xData
-        })
-        if (res.data.code === 0) {
-          this.getTASKList()
+      if (self.isPress == false) {
+        self.isPress = true
+        let xData = {
+          id: row.id,
         }
-      } catch (err) {
-        self.$Message.error("运行任务错误")
+        try {
+          const res = await self.axios({
+            method: "post",
+            url: self.$store.state.baseurl + "api/job/run",
+            params: xData
+          })
+          console.log(res);
+          if (res.data.code == 0) {
+            this.getTASKList()
+            self.isPress = false
+          } else {
+            self.$Message.error(res.data.error_message)
+          }
+        } catch (err) {
+          console.log(err);
+          self.$Message.error("运行任务错误")
+        }
       }
     },
     // 搜索任务
@@ -575,7 +594,7 @@ export default {
     filter(col) {
       const self = this
       self.isFilter = true
-      console.log(col);
+      // console.log(col);
       if (col.title == "类型") {
         self.current = 1
         if (col._filterChecked.length == 2 || col._filterChecked.length == 0) {
@@ -632,40 +651,28 @@ export default {
         }
       } else if (col.title == "状态") {
         self.current = 1
-        if (col._filterChecked.length == 0 || col._filterChecked.length == 5) {
-          self.getTASKList()
+        console.log(col._filterChecked);
+        if (col._filterChecked.length == 0) {
           self.isFilter = false
-        } else {
-          const l = col._filterChecked.length
-          let paramsF = {}
-          const ban = col._filterChecked.indexOf("禁用")
-          if (ban !== -1) {
-            paramsF["enabled"] = "no"
-          }
-          let j = 0
-          for (let i = 0; i < l; i++) {
-            if (col._filterChecked[i] == "运行中") {
-              paramsF[`status-${j}`] = "RUNNING"
-              j++
-            } else if (col._filterChecked[i] == "准备就绪") {
-              paramsF[`status-${j}`] = "READY"
-              j++
-            } else if (col._filterChecked[i] == "已终止") {
-              paramsF[`status-${j}`] = "STOPPED"
-              j++
-            } else if (col._filterChecked[i] == "暂停中") {
-              paramsF[`status-${j}`] = "PAUSED"
-              j++
-            }
-          }
+          self.getTASKList()
+        } else if (col._filterChecked[0] == "启用") {
           let xData = {
             p: self.current,
             psize: self.pageSize,
-            ...paramsF
+            enabled: "yes"
+          }
+          self.fData = xData
+          self.filterTASKList(xData)
+        } else {
+          let xData = {
+            p: self.current,
+            psize: self.pageSize,
+            enabled: "no"
           }
           self.fData = xData
           self.filterTASKList(xData)
         }
+
       }
     },
     // 筛选任务列表
@@ -678,7 +685,6 @@ export default {
           url: self.$store.state.baseurl + "api/job/list",
           params: xData
         })
-        console.log(xData)
         console.log(res);
         if (res.data.code == 0) {
           self.TaskData = res.data.data.page
@@ -693,9 +699,6 @@ export default {
               item.date = "定期:" + item.schedule.cron.month + "月" + item.schedule.cron.day_of_month + "日" + item.schedule.cron.hour + "时" + item.schedule.cron.minute + "分" + item.schedule.cron.second + "秒" + "  星期" + item.schedule.cron.day_of_week
             } else {
               item.plan = "未计划"
-            }
-            if (item.enabled == false) {
-              item.status = "unenabled"
             }
           })
         }
@@ -728,6 +731,13 @@ export default {
         this.getTASKList()
       }
     },
+    // 列表选中
+    selection_change(selection) {
+      console.log(selection);
+    },
+    toRecord(row) {
+      this.$router.push({ path: "/record", query: { id: row.id, category: "job_id", name: row.title } })
+    },
     // 模态框相关
     handleNewTask() {
       this.newTask = true
@@ -756,16 +766,17 @@ export default {
         this.handleCopyTask(copyTask)
       }
     },
-    handleLog() {
-      this.log = true
-    },
-    cancleLogModal() {
-      this.log = false
-    },
   },
   mounted() {
     const self = this
     self.pageSize = self.pageSizeC
+    const item = document.getElementsByClassName("ivu-table-filter-select-item")
+    if (item[1] != undefined) {
+      item[1].innerHTML = "<i-icon class='ivu-icon ivu-icon-md-list' style='font-size:20px'></i-icon>普通任务"
+    }
+    if (item[2] != undefined) {
+      item[2].innerHTML = "<i-icon class='ivu-icon ivu-icon-md-cloud' style='font-size:20px'></i-icon>服务任务"
+    }
     self.getTASKList()
   },
 }
@@ -800,5 +811,8 @@ export default {
 .task-table {
   font-weight: 450;
   overflow: auto !important;
+}
+>>> .ivu-icon-ios-help-circle {
+  display: none !important;
 }
 </style>
