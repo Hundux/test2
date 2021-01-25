@@ -386,8 +386,31 @@ export default {
       }
       this.serverDetail = true
     },
-    handleCancleServerDetailModal() {
-      this.serverDetail = false
+    async handleCancleServerDetailModal() {
+      const self = this
+      try {
+        const res = await self.axios({
+          method: "get",
+          url: self.$store.state.baseurl + "api/service/list",
+          params: {
+            search_key: self.task.content.service_inst.service.title
+          }
+        })
+        console.log(res)
+        if (res.data.code == 0) {
+          if (res.data.data.page.length > 0) {
+            self.task.content.service_inst.service = res.data.data.page[0]
+          }else{
+             self.$Message.error("更新服务数据出现错误")
+          }
+          self.serverDetail = false
+        } else {
+          this.serverDetail = false
+          self.$Message.error(res.data.error_message)
+        }
+      } catch (error) {
+        self.$Message.error("获取服务列表错误")
+      }
     },
     async runTask() {
       const self = this
