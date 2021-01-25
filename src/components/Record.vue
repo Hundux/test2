@@ -44,7 +44,7 @@
         @on-page-size-change="pageSizeChange"
       />
       <i-table
-        class="task-table"
+        class="record-table"
         :columns="columns1"
         :data="RecordData"
         stripe
@@ -567,7 +567,19 @@ export default {
                 return h('span', params.column.title)
               }
             }
-          }
+          },
+          render: (h, params) => {
+            if (params.row.result === "FAILURE") {
+              return h("i-tooltip", { props: { content: params.row.error_message, "max-width": 200 } }, [
+                h("span", "FAILURE"),
+                h("i-icon", { props: { type: "md-warning", size: "20" } })
+              ])
+            } else if (params.row.result === "UNKNOWN") {
+              return h("span", "UNKNOWN")
+            } else if (params.row.result === "SUCCESS") {
+              return h("span", "SUCCESS")
+            }
+          },
         },
         {
           title: "日志",
@@ -949,5 +961,8 @@ export default {
 }
 >>> .ivu-icon-ios-help-circle {
   display: none !important;
+}
+.record-table{
+  overflow: visible !important;
 }
 </style>

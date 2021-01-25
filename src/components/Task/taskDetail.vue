@@ -48,9 +48,10 @@
                 >复制结果配置</p>
                 <i-vueJsonEditor
                   name="jsonData"
-                  :mode="'view'"
+                  :mode="'code'"
                   lang="zh"
                   v-model="spec"
+                  @json-change="onJsonChange"
                   class="vueJsonEditor"
                 >
                 </i-vueJsonEditor>
@@ -511,22 +512,6 @@ export default {
         self.$Message.error("修改任务错误")
       }
     },
-    // 通过id获取服务
-    async getServeByID(ID) {
-      const self = this
-      try {
-        const res = await self.axios({
-          method: "get",
-          url: self.$store.state.baseurl + "api/service/list",
-          params: {
-            search_key: ID
-          }
-        })
-        console.log(res)
-      } catch (error) {
-        self.$Message.error("获取服务列表错误")
-      }
-    },
     handleCopy(task) {
       // console.log(task);
       this.cancle("copy", task)
@@ -539,6 +524,12 @@ export default {
     },
     onCopy() {
       this.$Message.success("配置内容已复制到剪切板！")
+    },
+    onJsonChange() {
+      this.$Message.warning("不可修改")
+      this.$nextTick(() => {
+        this.spec = this.task.content.service_inst.service.spec
+      })
     }
   },
   components: {
@@ -650,7 +641,7 @@ export default {
   color: white;
   opacity: 0.8;
   top: 7px;
-  right: 50%;
+  right: 10%;
   z-index: 999;
 }
 </style>

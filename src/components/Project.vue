@@ -2,7 +2,10 @@
   <div class="project">
     <i-myHead></i-myHead>
     <div class="Management-projects-i-layout layout">
-      <i-layout :default-collapsed="false">
+      <i-layout
+        :default-collapsed="false"
+        class="layout_wrap"
+      >
         <i-sider
           class="layout-sider"
           hide-trigger
@@ -62,7 +65,7 @@
               to="/record"
             >
               <i-icon
-                type="md-cloud"
+                type="md-recording"
                 name="icon"
                 size="22"
                 v-show="!collpsed"
@@ -162,7 +165,7 @@
           </i-menu>
         </i-sider>
         <i-layout>
-          <i-content class="layout-content">
+          <i-content class="layout-content" :class="{'collpsed':!collpsed}">
             <router-view></router-view>
           </i-content>
         </i-layout>
@@ -223,6 +226,9 @@ export default {
   min-width: 0px !important;
   flex: 0 0 150px !important;
   font-weight: bold;
+  position: fixed;
+  top: 60px;
+  left: 0;
 }
 .sidebar-item {
   color: #212990;
@@ -282,7 +288,11 @@ li.sidebar-item.ivu-menu-item:hover span {
   font-size: 16px;
 }
 .layout-content {
+  margin-left: 150px;
   padding-top: 5px;
+}
+.layout-content.collpsed{
+   margin-left: 75px;
 }
 >>> .ivu-menu {
   color: #212990;

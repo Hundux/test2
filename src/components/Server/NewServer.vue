@@ -1,7 +1,7 @@
 <template>
   <div class="task-newtask">
     <i-modal
-      title="新建服务"
+      :title="titleModal"
       :value="newServer"
       @on-cancel="cancle"
       width="100%"
@@ -115,7 +115,8 @@ export default {
         // "url": "$参数3$",
         // "spiderid": "$参数1$",
       },
-      paramsData: []
+      paramsData: [],
+      titleModal:"新建服务"
     }
   },
   props: {
@@ -130,6 +131,7 @@ export default {
   watch: {
     copyServe(newValue) {
       if (newValue.id) {
+        this.titleModal = "复制"
         this.newServe.title = newValue.title + "(copy)"
         this.jsonData = newValue.spec
         this.paramsData = newValue.params
@@ -138,6 +140,7 @@ export default {
   },
   methods: {
     cancle() {
+      this.titleModal = "新建服务"
       this.$emit("cancleNewServerModal")
     },
     async creatServer() {

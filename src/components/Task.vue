@@ -96,7 +96,7 @@
               :title="`确定启动${row.crawler_count}个爬虫立即运行`"
               @on-ok="handRunClick(row)"
               style="margin-right: 20px"
-              placement="right"
+              placement="bottom"
             >
               <i-button
                 type="success"
@@ -518,7 +518,7 @@ export default {
           self.TaskData.forEach(item => {
             if (item.schedule.at) {
               item.plan = "定点"
-              item.date = item.schedule.at.$date
+              item.date = item.schedule.at
               item.date = "定点:" + self.$moment(item.date).format("llll")
             } else if (item.schedule.cron) {
               item.plan = "定期"
@@ -528,6 +528,9 @@ export default {
             }
           })
           self.showLoading = false
+        } else {
+          self.showLoading = false
+          self.$Message.error(res.data.error_message)
         }
       } catch (err) {
         self.$Message.error("获取任务列表错误")
@@ -553,6 +556,8 @@ export default {
           } else {
             row.enabled = false
           }
+        } else {
+          self.$Message.error(res.data.error_message)
         }
       } catch (err) {
         self.$Message.error("启用或禁用任务错误")
@@ -578,6 +583,8 @@ export default {
           })
           if (res.data.code == 0) {
             self.getTASKList()
+          } else {
+            self.$Message.error(res.data.error_message)
           }
         } catch (err) {
           self.$Message.error("启用或禁用任务错误")
@@ -603,6 +610,7 @@ export default {
             this.getTASKList()
             self.isPress = false
           } else {
+            self.isPress = false
             self.$Message.error(res.data.error_message)
           }
         } catch (err) {
@@ -844,8 +852,7 @@ export default {
   overflow-x: auto !important;
 }
 .task-table {
-  font-weight: 450;
-  overflow: auto !important;
+  overflow: visible;
 }
 >>> .ivu-icon-ios-help-circle {
   display: none !important;

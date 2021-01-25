@@ -250,6 +250,8 @@ export default {
         })
         if (res.data.code == 0) {
           self.cancle()
+        } else {
+          self.$Message.error(res.data.error_message)
         }
       } catch (err) {
         self.$Message.error("启用或禁用任务错误")
@@ -270,6 +272,9 @@ export default {
         if (res.data.code === 0) {
           self.isPress = false
           self.cancle()
+        } else {
+          self.isPress = false
+          self.$Message.error(res.data.error_message)
         }
       } catch (err) {
         self.$Message.error("运行任务错误")
@@ -368,7 +373,7 @@ export default {
 >>> textarea.ivu-input {
   height: 32px;
 }
-.params_name{
+.params_name {
   cursor: pointer;
 }
 </style>
