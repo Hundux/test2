@@ -1,7 +1,7 @@
 <template>
   <div class="task-newtask">
     <i-modal
-      title="新建任务"
+      :title="titleModal"
       :value="newTask"
       @on-cancel="cancle(true)"
       width="100%"
@@ -44,8 +44,9 @@
                 <i-vueJsonEditor
                   name="jsonData"
                   v-model="spec"
-                  :mode="'view'"
+                  :mode="'code'"
                   lang="zh"
+                  @json-change="onJsonChange"
                   class="vueJsonEditor"
                 >
                 </i-vueJsonEditor>
@@ -315,7 +316,7 @@ export default {
         },
         date: "",
         time: "",
-        crawler_count: 1
+        crawler_count: 1,
       },
       ruleValidate: {
         second: [{ required: false, message: 'The name cannot be empty', trigger: 'blur' }]
@@ -324,7 +325,8 @@ export default {
       server: {},
       serverList: [],
       copy_spec: "",
-      spec: {}
+      spec: {},
+      titleModal: "新建任务"
     }
   },
   props: {
@@ -342,6 +344,7 @@ export default {
       if (newValue) {
         if (newValue.id) {
           this.taskForm = newValue
+          this.titleModal = "复制"
           if (newValue.content.service_inst != null) {
             this.server = newValue.content.service_inst.service
           }
@@ -402,6 +405,7 @@ export default {
         date: "",
         time: "",
       }
+      this.titleModal = "新建服务"
       this.searchServiceKey = ""
       this.server = {}
       this.$emit("cancleNewTaskModal", isCreate)
@@ -580,6 +584,8 @@ export default {
         console.log(res)
         if (res.data.code == 0) {
           self.serverList = res.data.data.page
+        } else {
+          self.$Message.error(res.data.error_message)
         }
       } catch (error) {
         self.$Message.error("获取服务列表错误")
@@ -606,10 +612,17 @@ export default {
     },
     onCopy() {
       this.$Message.success("配置内容已复制到剪切板！")
+    },
+    onJsonChange() {
+      this.$Message.warning("不可修改")
+      this.$nextTick(() => {
+        this.spec = this.server.spec
+      })
     }
-
   },
-
+  mounted() {
+    console.log(this.vueJsonEditor)
+  },
 }
 </script>
 
@@ -728,7 +741,7 @@ export default {
   color: white;
   opacity: 0.8;
   top: 7px;
-  right: 50%;
+  right: 10%;
   z-index: 999;
 }
 </style>

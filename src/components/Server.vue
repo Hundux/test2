@@ -87,14 +87,16 @@
           slot-scope="{ row }"
         >
           <div>
-            <div
-              v-for="(item,index) in row.params"
-              :key="index"
-              class="params"
-            >
-              <span class="params_name">{{item.name}}</span>
-              <span class="params_desc">：{{item.description}}</span>
-            </div>
+            <table class="paramsTable">
+              <tr
+                v-for="(item,index) in row.params"
+                :key="index"
+                class="params"
+              >
+                <td class="params_name">{{item.name}}</td>
+                <td>：{{item.description}}</td>
+              </tr>
+            </table>
           </div>
         </template>
         <template
@@ -107,7 +109,7 @@
               confirm
               :title="`确定启动${row.crawler_count}个爬虫立即调用`"
               @on-ok="callServer(row)"
-              placement="right"
+              placement="bottom"
               style="margin-right: 20px"
             >
               <i-button
@@ -249,7 +251,7 @@ export default {
         {
           title: '名称',
           key: 'title',
-          minWidth: 400,
+          minWidth: 300,
           align: 'center',
           resizable: true,
         },
@@ -257,7 +259,7 @@ export default {
           title: '参数',
           key: 'params',
           slot: 'params',
-          minWidth: 385,
+          minWidth: 450,
           align: 'center',
           resizable: true,
         },
@@ -282,7 +284,7 @@ export default {
             if (value === "启用") {
               return row.enabled == true
             } else if (value === "禁用") {
-              return row.status == false
+              return row.enabled == false
             }
           },
           render: (h, params) => {
@@ -415,6 +417,10 @@ export default {
           self.ServeData = res.data.data.page
           self.showLoading = false
         }
+        else {
+          self.showLoading = false
+          self.$Message.error(res.data.error_message)
+        }
       } catch (error) {
         self.$Message.error("获取服务列表错误")
       }
@@ -457,9 +463,9 @@ export default {
       } else {
         let filterChecked = col._filterChecked[0]
         if (filterChecked == "启用") {
-          self.getServe( "yes")
+          self.getServe("yes")
         } else {
-          self.getServe( "no")
+          self.getServe("no")
         }
       }
     },
@@ -487,6 +493,7 @@ export default {
             self.getServe()
             self.isPress = false
           } else {
+            self.isPress = false
             self.$Message.error(res.data.error_message)
           }
         } catch (err) {
@@ -514,6 +521,8 @@ export default {
           })
           if (res.data.code == 0) {
             self.getServe()
+          } else {
+            self.$Message.error(res.data.error_message)
           }
         } catch (err) {
           self.$Message.error("启用或禁用服务错误")
@@ -540,6 +549,9 @@ export default {
           } else {
             row.enabled = false
           }
+        }
+        else {
+          self.$Message.error(res.data.error_message)
         }
       } catch (err) {
         self.$Message.error("启用或禁用任务错误")
@@ -596,22 +608,14 @@ export default {
 }
 .Servel-table {
   font-weight: 450;
-  overflow: auto;
+  overflow: visible !important;
 }
-.params {
-  text-align: left;
-  padding-left: 20px;
-  position: relative;
+.params_name {
+  max-width: 375px;
 }
-/* .params_name{
-  display: inline-block;
-  width: 20px;
-} */
-.params_desc {
-  position: absolute;
-  left: 80px;
-  /* display: inline-block;
-  margin-left: 5px; */
+.paramsTable td {
+  border: none !important;
+  background: unset !important;
 }
 >>> .ivu-icon-ios-help-circle {
   display: none !important;
