@@ -501,44 +501,14 @@ export default {
           }
         }
         console.log(xData);
-        let check = true
-        let sArr = self.updateTask.second.split(",")
-        sArr.forEach(item => {
-          // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
-          let res = item.match(/^[1-5]?\d([/-][1-5]?\d)?|\*$/)
-          if (res == null) {
-            check = false
-            self.$Message.warning(`${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
-              check = false
-              self.$Message.warning(`${item}不符合周期输入规范`)
-            }
-          }
-        })
-        let mArr = self.updateTask.minute.split(",")
-        mArr.forEach(item => {
-          // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
-          let res = item.match(/^[1-5]?\d([/-][1-5]?\d)?|\*$/)
-          if (res == null) {
-            check = false
-            self.$Message.warning(`${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
-              check = false
-              self.$Message.warning(`${item}不符合周期输入规范`)
-            }
-          }
-        })
-        let hArr = self.updateTask.hour.split(",")
-        hArr.forEach(item => {
-          let res = item.match(/^(2[0-3]|[0-1]?\d)([/-](2[0-3]|[0-1]?\d))?|\*$/)
-          console.log(res);
-          if (res == null) {
-            check = false
-            self.$Message.warning(`${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
+        let check
+        if (self.updateTask.plan == "定期") {
+          check = true
+          let sArr = self.updateTask.second.split(",")
+          sArr.forEach(item => {
+            // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
+            let res = item.match(/^[1-5]?\d([/-][1-5]?\d)?|\*$/)
+            if (res == null) {
               check = false
               self.$Message.warning(`${item}不符合周期输入规范`)
             } else {
@@ -547,48 +517,84 @@ export default {
                 self.$Message.warning(`${item}不符合周期输入规范`)
               }
             }
-          }
-        })
-        let dArr = self.updateTask.day.split(",")
-        dArr.forEach(item => {
-          let res = item.match(/^(3[0-1]|[0-2]?\d)([/-](3[0-1]|[0-2]?\d))?|\*$/)
-          console.log(res);
-          if (res == null) {
-            check = false
-            self.$Message.warning(`${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
+          })
+          let mArr = self.updateTask.minute.split(",")
+          mArr.forEach(item => {
+            // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
+            let res = item.match(/^[1-5]?\d([/-][1-5]?\d)?|\*$/)
+            if (res == null) {
               check = false
               self.$Message.warning(`${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`${item}不符合周期输入规范`)
+              }
             }
-          }
-        })
-        let monArr = self.updateTask.month.split(",")
-        monArr.forEach(item => {
-          let res = item.match(/^(1[0-2]|[0-9])([/-](1[0-1]|[0]?\d))?|\*$/)
-          if (res == null) {
-            check = false
-            self.$Message.warning(`${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
+          })
+          let hArr = self.updateTask.hour.split(",")
+          hArr.forEach(item => {
+            let res = item.match(/^(2[0-3]|[0-1]?\d)([/-](2[0-3]|[0-1]?\d))?|\*$/)
+            console.log(res);
+            if (res == null) {
               check = false
               self.$Message.warning(`${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`${item}不符合周期输入规范`)
+                }
+              }
             }
-          }
-        })
-        let wArr = self.updateTask.week.split(",")
-        wArr.forEach(item => {
-          let res = item.match(/^([1-7])([/-]([1-7]))?|\*$/)
-          if (res == null) {
-            check = false
-            self.$Message.warning(`${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
+          })
+          let dArr = self.updateTask.day.split(",")
+          dArr.forEach(item => {
+            let res = item.match(/^(3[0-1]|[0-2]?\d)([/-](3[0-1]|[0-2]?\d))?|\*$/)
+            console.log(res);
+            if (res == null) {
               check = false
               self.$Message.warning(`${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`${item}不符合周期输入规范`)
+              }
             }
-          }
-        })
+          })
+          let monArr = self.updateTask.month.split(",")
+          monArr.forEach(item => {
+            let res = item.match(/^(1[0-2]|[0-9])([/-](1[0-1]|[0]?\d))?|\*$/)
+            if (res == null) {
+              check = false
+              self.$Message.warning(`${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`${item}不符合周期输入规范`)
+              }
+            }
+          })
+          let wArr = self.updateTask.week.split(",")
+          wArr.forEach(item => {
+            let res = item.match(/^([1-7])([/-]([1-7]))?|\*$/)
+            if (res == null) {
+              check = false
+              self.$Message.warning(`${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`${item}不符合周期输入规范`)
+              }
+            }
+          })
+
+        } else {
+          check = true
+        }
         console.log(check);
         if (check == true) {
           if (xData.title == "") {
