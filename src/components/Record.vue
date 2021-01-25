@@ -79,7 +79,7 @@
                 type="error"
                 size="small"
                 icon="md-pause"
-                :disabled="!(row.result=='UNKNOWN'&&(row.status=='RUNNING'||row.status=='STOPPED'))"
+                :disabled="!(row.result=='UNKNOWN'&&(row.status=='RUNNING'||row.status=='STOPPED'))||paused_loading"
                 @click="pause(row)"
               ></i-button>
             </i-tooltip>
@@ -92,8 +92,8 @@
               <i-button
                 type="success"
                 size="small"
-                icon="md-checkmark"
-                :disabled="!(row.result=='UNKNOWN'&&row.status=='PAUSED')"
+                icon="md-play"
+                :disabled="!(row.result=='UNKNOWN'&&row.status=='PAUSED')||resume_loading"
                 @click="resume(row)"
               ></i-button>
             </i-tooltip>
@@ -108,7 +108,7 @@
                 type="error"
                 size="small"
                 icon="md-close"
-                :disabled="!(row.result=='UNKNOWN'&&(row.status!='CANCELED'&&row.status!='DONE'))"
+                :disabled="!(row.result=='UNKNOWN'&&(row.status!='CANCELED'&&row.status!='DONE'))||cancel_loading"
               ></i-button>
             </i-poptip>
           </div>
@@ -141,7 +141,7 @@
                 type="success"
                 size="small"
                 icon="md-power"
-                :disabled="!(row.result=='UNKNOWN'&&row.status=='STOPPED')"
+                :disabled="!(row.result=='UNKNOWN'&&row.status=='STOPPED')||start_loading"
                 @click="start(row)"
               ></i-button>
             </i-tooltip>
@@ -157,7 +157,7 @@
                 type="error"
                 size="small"
                 icon="md-radio-button-on"
-                :disabled="!(row.result=='UNKNOWN'&&(row.status=='RUNNING'||row.status=='PAUSED'))"
+                :disabled="!(row.result=='UNKNOWN'&&(row.status=='RUNNING'||row.status=='PAUSED'))||stop_loading"
               ></i-button>
             </i-poptip>
           </div>
@@ -612,7 +612,12 @@ export default {
       filterData: {},
       queryID: "",
       queryCategory: "",
-      taskTitle: ""
+      taskTitle: "",
+      paused_loading: false,
+      resume_loading: false,
+      cancel_loading: false,
+      start_loading: false,
+      stop_loading: false
     }
   },
   computed: {
@@ -787,6 +792,7 @@ export default {
     async resume(col) {
       // console.log(col);
       const self = this
+      self.resume_loading = true
       let xData = {
         id: col.id
       }
@@ -798,10 +804,13 @@ export default {
         })
         // console.log(res);
         if (res.data.code == 0) {
+          self.resume_loading = false
           self.getRecordList()
         } else if (res.data.data == -2) {
+          self.resume_loading = false
           self.$Message.error(res.data.code)
         } else {
+          self.resume_loading = false
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -812,6 +821,7 @@ export default {
     async pause(col) {
       // console.log(col);
       const self = this
+      self.paused_loading = true
       let xData = {
         id: col.id
       }
@@ -823,10 +833,13 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
+          self.paused_loading = false
           self.getRecordList()
         } else if (res.data.data == -2) {
+          self.paused_loading = false
           self.$Message.error(res.data.code)
         } else {
+          self.paused_loading = false
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -837,6 +850,7 @@ export default {
     async cancel(col) {
       // console.log(col);
       const self = this
+      self.cancel_loading = true
       let xData = {
         id: col.id
       }
@@ -848,10 +862,13 @@ export default {
         })
         console.log(res)
         if (res.data.code == 0) {
+          self.cancel_loading = false
           self.getRecordList()
         } else if (res.data.data == -2) {
+          self.cancel_loading = false
           self.$Message.error(res.data.code)
         } else {
+          self.cancel_loading = false
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -862,6 +879,7 @@ export default {
     async start(col) {
       // console.log(col);
       const self = this
+      self.start_loading = true
       let xData = {
         id: col.id
       }
@@ -873,11 +891,14 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
+          self.start_loading = false
           self.getRecordList()
         } else if (res.data.data == -2) {
+          self.start_loading = false
           self.$Message.error(res.data.code)
         }
         else {
+          self.start_loading = false
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -888,6 +909,7 @@ export default {
     async stop(col) {
       // console.log(col);
       const self = this
+      self.stop_loading = true
       let xData = {
         id: col.id
       }
@@ -899,11 +921,14 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
+          self.stop_loading = false
           self.getRecordList()
         } else if (res.data.data == -2) {
+          self.stop_loading = false
           self.$Message.error(res.data.code)
         }
         else {
+          self.stop_loading = false
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -962,7 +987,7 @@ export default {
 >>> .ivu-icon-ios-help-circle {
   display: none !important;
 }
-.record-table{
+.record-table {
   overflow: visible !important;
 }
 </style>
