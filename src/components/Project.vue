@@ -165,7 +165,10 @@
           </i-menu>
         </i-sider>
         <i-layout>
-          <i-content class="layout-content" :class="{'collpsed':!collpsed}">
+          <i-content
+            class="layout-content"
+            :class="{'collpsed':!collpsed}"
+          >
             <router-view></router-view>
           </i-content>
         </i-layout>
@@ -290,9 +293,10 @@ li.sidebar-item.ivu-menu-item:hover span {
 .layout-content {
   margin-left: 150px;
   padding-top: 5px;
+  height: calc(100vh - 60px);
 }
-.layout-content.collpsed{
-   margin-left: 75px;
+.layout-content.collpsed {
+  margin-left: 75px;
 }
 >>> .ivu-menu {
   color: #212990;
