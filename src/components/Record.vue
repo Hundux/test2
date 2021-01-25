@@ -79,7 +79,7 @@
                 type="error"
                 size="small"
                 icon="md-pause"
-                :disabled="!(row.result=='UNKNOWN'&&(row.status=='RUNNING'||row.status=='STOPPED'))||paused_loading"
+                :disabled="!(row.result=='UNKNOWN'&&(row.status=='RUNNING'||row.status=='STOPPED'))"
                 @click="pause(row)"
               ></i-button>
             </i-tooltip>
@@ -93,7 +93,7 @@
                 type="success"
                 size="small"
                 icon="md-play"
-                :disabled="!(row.result=='UNKNOWN'&&row.status=='PAUSED')||resume_loading"
+                :disabled="!(row.result=='UNKNOWN'&&row.status=='PAUSED')"
                 @click="resume(row)"
               ></i-button>
             </i-tooltip>
@@ -108,7 +108,7 @@
                 type="error"
                 size="small"
                 icon="md-close"
-                :disabled="!(row.result=='UNKNOWN'&&(row.status!='CANCELED'&&row.status!='DONE'))||cancel_loading"
+                :disabled="!(row.result=='UNKNOWN'&&(row.status!='CANCELED'&&row.status!='DONE'))"
               ></i-button>
             </i-poptip>
           </div>
@@ -141,7 +141,7 @@
                 type="success"
                 size="small"
                 icon="md-power"
-                :disabled="!(row.result=='UNKNOWN'&&row.status=='STOPPED')||start_loading"
+                :disabled="!(row.result=='UNKNOWN'&&row.status=='STOPPED')"
                 @click="start(row)"
               ></i-button>
             </i-tooltip>
@@ -157,7 +157,7 @@
                 type="error"
                 size="small"
                 icon="md-radio-button-on"
-                :disabled="!(row.result=='UNKNOWN'&&(row.status=='RUNNING'||row.status=='PAUSED'))||stop_loading"
+                :disabled="!(row.result=='UNKNOWN'&&(row.status=='RUNNING'||row.status=='PAUSED'))"
               ></i-button>
             </i-poptip>
           </div>
@@ -186,6 +186,21 @@
     <!-- loading-->
     <div
       v-if="showLoading"
+      class="demo-spin-col"
+      span="8"
+    >
+      <i-spin fix>
+        <i-icon
+          type="ios-loading"
+          size=18
+          class="demo-spin-icon-load"
+        ></i-icon>
+        <div>Loading</div>
+      </i-spin>
+    </div>
+
+    <div
+      v-if="isPress"
       class="demo-spin-col"
       span="8"
     >
@@ -613,11 +628,7 @@ export default {
       queryID: "",
       queryCategory: "",
       taskTitle: "",
-      paused_loading: false,
-      resume_loading: false,
-      cancel_loading: false,
-      start_loading: false,
-      stop_loading: false
+      isPress: false
     }
   },
   computed: {
@@ -792,7 +803,7 @@ export default {
     async resume(col) {
       // console.log(col);
       const self = this
-      self.resume_loading = true
+      self.isPress = true
       let xData = {
         id: col.id
       }
@@ -804,13 +815,13 @@ export default {
         })
         // console.log(res);
         if (res.data.code == 0) {
-          self.resume_loading = false
+          self.isPress = false
           self.getRecordList()
         } else if (res.data.data == -2) {
-          self.resume_loading = false
+          self.isPress = false
           self.$Message.error(res.data.code)
         } else {
-          self.resume_loading = false
+          self.isPress = false
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -821,7 +832,7 @@ export default {
     async pause(col) {
       // console.log(col);
       const self = this
-      self.paused_loading = true
+      self.isPress = true
       let xData = {
         id: col.id
       }
@@ -833,13 +844,13 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
-          self.paused_loading = false
+          self.isPress = false
           self.getRecordList()
         } else if (res.data.data == -2) {
-          self.paused_loading = false
+          self.isPress = false
           self.$Message.error(res.data.code)
         } else {
-          self.paused_loading = false
+          self.isPress = false
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -850,7 +861,7 @@ export default {
     async cancel(col) {
       // console.log(col);
       const self = this
-      self.cancel_loading = true
+      self.isPress = true
       let xData = {
         id: col.id
       }
@@ -862,13 +873,13 @@ export default {
         })
         console.log(res)
         if (res.data.code == 0) {
-          self.cancel_loading = false
+          self.isPress = false
           self.getRecordList()
         } else if (res.data.data == -2) {
-          self.cancel_loading = false
+          self.isPress = false
           self.$Message.error(res.data.code)
         } else {
-          self.cancel_loading = false
+          self.isPress = false
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -879,7 +890,7 @@ export default {
     async start(col) {
       // console.log(col);
       const self = this
-      self.start_loading = true
+      self.isPress = true
       let xData = {
         id: col.id
       }
@@ -891,14 +902,14 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
-          self.start_loading = false
+          self.isPress = false
           self.getRecordList()
         } else if (res.data.data == -2) {
-          self.start_loading = false
+          self.isPress = false
           self.$Message.error(res.data.code)
         }
         else {
-          self.start_loading = false
+          self.isPress = false
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {
@@ -909,7 +920,7 @@ export default {
     async stop(col) {
       // console.log(col);
       const self = this
-      self.stop_loading = true
+      self.isPress = true
       let xData = {
         id: col.id
       }
@@ -921,14 +932,14 @@ export default {
         })
         console.log(res);
         if (res.data.code == 0) {
-          self.stop_loading = false
+          self.isPress = false
           self.getRecordList()
         } else if (res.data.data == -2) {
-          self.stop_loading = false
+          self.isPress = false
           self.$Message.error(res.data.code)
         }
         else {
-          self.stop_loading = false
+          self.isPress = false
           self.$Message.error(res.data.error_message)
         }
       } catch (err) {

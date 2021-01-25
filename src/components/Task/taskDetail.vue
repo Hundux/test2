@@ -400,8 +400,8 @@ export default {
         if (res.data.code == 0) {
           if (res.data.data.page.length > 0) {
             self.task.content.service_inst.service = res.data.data.page[0]
-          }else{
-             self.$Message.error("更新服务数据出现错误")
+          } else {
+            self.$Message.error("更新服务数据出现错误")
           }
           self.serverDetail = false
         } else {
@@ -501,33 +501,124 @@ export default {
           }
         }
         console.log(xData);
-        if (xData.title == "") {
-          self.$Message.error("请输入任务名称")
-        } else {
-          let service_params = {}
-          if (self.task.category == "SERVICE") {
-            let i = 0
-            for (let key in self.task.content.service_inst.params) {
-              service_params[`service_params-${i}-name`] = key
-              service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
-              i = i + 1
+        let check = true
+        let sArr = self.updateTask.second.split(",")
+        sArr.forEach(item => {
+          // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
+          let res = item.match(/^[1-5]?\d([/-][1-5]?\d)?|\*$/)
+          if (res == null) {
+            check = false
+            self.$Message.warning(`${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
+              check = false
+              self.$Message.warning(`${item}不符合周期输入规范`)
             }
           }
-          console.log(service_params);
-          const res = await self.axios({
-            method: "patch",
-            url: self.$store.state.baseurl + "api/job/update",
-            params: { ...xData, ...service_params }
-          })
-          console.log(res)
-          if (res.data.code !== 0) {
-            if (res.data.data == -2) {
-              self.$Message.error("任务名不可重复。有相同名称的任务已存在")
-            } else {
-              self.$Message.error(res.data.error_message)
-            }
+        })
+        let mArr = self.updateTask.minute.split(",")
+        mArr.forEach(item => {
+          // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
+          let res = item.match(/^[1-5]?\d([/-][1-5]?\d)?|\*$/)
+          if (res == null) {
+            check = false
+            self.$Message.warning(`${item}不符合周期输入规范`)
           } else {
-            self.cancle(true)
+            if (res[0] != item) {
+              check = false
+              self.$Message.warning(`${item}不符合周期输入规范`)
+            }
+          }
+        })
+        let hArr = self.updateTask.hour.split(",")
+        hArr.forEach(item => {
+          let res = item.match(/^(2[0-3]|[0-1]?\d)([/-](2[0-3]|[0-1]?\d))?|\*$/)
+          console.log(res);
+          if (res == null) {
+            check = false
+            self.$Message.warning(`${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
+              check = false
+              self.$Message.warning(`${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`${item}不符合周期输入规范`)
+              }
+            }
+          }
+        })
+        let dArr = self.updateTask.day.split(",")
+        dArr.forEach(item => {
+          let res = item.match(/^(3[0-1]|[0-2]?\d)([/-](3[0-1]|[0-2]?\d))?|\*$/)
+          console.log(res);
+          if (res == null) {
+            check = false
+            self.$Message.warning(`${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
+              check = false
+              self.$Message.warning(`${item}不符合周期输入规范`)
+            }
+          }
+        })
+        let monArr = self.updateTask.month.split(",")
+        monArr.forEach(item => {
+          let res = item.match(/^(1[0-2]|[0-9])([/-](1[0-1]|[0]?\d))?|\*$/)
+          if (res == null) {
+            check = false
+            self.$Message.warning(`${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
+              check = false
+              self.$Message.warning(`${item}不符合周期输入规范`)
+            }
+          }
+        })
+        let wArr = self.updateTask.week.split(",")
+        wArr.forEach(item => {
+          let res = item.match(/^([1-7])([/-]([1-7]))?|\*$/)
+          if (res == null) {
+            check = false
+            self.$Message.warning(`${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
+              check = false
+              self.$Message.warning(`${item}不符合周期输入规范`)
+            }
+          }
+        })
+        console.log(check);
+        if (check == true) {
+          if (xData.title == "") {
+            self.$Message.error("请输入任务名称")
+          } else {
+            let service_params = {}
+            if (self.task.category == "SERVICE") {
+              let i = 0
+              for (let key in self.task.content.service_inst.params) {
+                service_params[`service_params-${i}-name`] = key
+                service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
+                i = i + 1
+              }
+            }
+            console.log(service_params);
+            const res = await self.axios({
+              method: "patch",
+              url: self.$store.state.baseurl + "api/job/update",
+              params: { ...xData, ...service_params }
+            })
+            console.log(res)
+            if (res.data.code !== 0) {
+              if (res.data.data == -2) {
+                self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+              } else {
+                self.$Message.error(res.data.error_message)
+              }
+            } else {
+              self.cancle(true)
+            }
           }
         }
       } catch (error) {
