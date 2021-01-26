@@ -616,6 +616,7 @@ export default {
 .paramsTable td {
   border: none !important;
   background: unset !important;
+  height: auto !important;
 }
 >>> .ivu-icon-ios-help-circle {
   display: none !important;

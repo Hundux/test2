@@ -447,6 +447,7 @@ export default {
                 }
               } else {
                 const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+                console.log(scheduleAt)
                 xData = {
                   title: self.taskForm.title,
                   category: self.taskForm.category,

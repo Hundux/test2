@@ -113,11 +113,15 @@
             </i-poptip>
           </div>
         </template>
-        <template slot="log">
+        <template
+          slot="log"
+          slot-scope="{ row }"
+        >
           <div>
             <i-button
               type="primary"
               size="small"
+              @click="handleShowLog(row)"
             >日志</i-button>
           </div>
         </template>
@@ -183,6 +187,11 @@
       :detail="detail"
       @cancleRecordDetailModal="handleCancleRecordDetail"
     ></i-recordDetail>
+    <i-log
+      :log="showLog"
+      :logDetail="logDetail"
+      @cancleLogModal="cancleLog"
+    ></i-log>
     <!-- loading-->
     <div
       v-if="showLoading"
@@ -218,6 +227,7 @@
 
 <script>
 import recordDetail from './Record/RecordDetail'
+import Log from './Log'
 export default {
   name: "Record",
   data() {
@@ -628,7 +638,9 @@ export default {
       queryID: "",
       queryCategory: "",
       taskTitle: "",
-      isPress: false
+      isPress: false,
+      showLog: false,
+      logDetail: {}
     }
   },
   computed: {
@@ -638,6 +650,7 @@ export default {
   },
   components: {
     "i-recordDetail": recordDetail,
+    "i-log": Log
   },
   methods: {
     // 模态框
@@ -945,6 +958,15 @@ export default {
       } catch (err) {
         self.$Message.error("启用或禁用任务错误")
       }
+    },
+    // 日志
+    handleShowLog(row) {
+      this.showLog = true
+      this.logDetail = row
+    },
+    cancleLog() {
+      this.showLog = false
+      this.logDetail = {}
     }
   },
   mounted() {

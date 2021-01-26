@@ -144,6 +144,7 @@
               <i-col>
                 <i-datePicker
                   type="date"
+                  formate="date"
                   placeholder="Select date"
                   @on-change="dataChange"
                   v-model="updateTask.date"
@@ -363,6 +364,7 @@ export default {
       handler: function (newValue) {
         console.log(newValue)
         if (newValue.plan == "定期") {
+          this.updateTask.plan = "定期"
           this.updateTask.second = newValue.schedule.cron.second
           this.updateTask.minute = newValue.schedule.cron.minute
           this.updateTask.hour = newValue.schedule.cron.hour
@@ -370,7 +372,8 @@ export default {
           this.updateTask.week = newValue.schedule.cron.day_of_week
           this.updateTask.month = newValue.schedule.cron.month
         } else if (newValue.plan == "定点") {
-          this.updateTask.date = newValue.schedule.at
+          this.updateTask.plan = "定点"
+          this.updateTask.date = this.$moment(new Date(newValue.schedule.at)).format("YYYY-MM-DD")
           this.updateTask.time = this.$moment(newValue.schedule.at).format("HH:mm:ss")
         }
         if (newValue.content.service_inst != null) {
@@ -495,15 +498,18 @@ export default {
       try {
         if (self.updateTask.plan == "定点") {
           if (self.updateTask.date !== "" && self.updateTask.time !== "") {
+            self.updateTask.date = self.$moment(new Date(self.updateTask.date)).format("YYYY-MM-DD")
             const scheduleAt = self.updateTask.date + " " + self.updateTask.time
+            console.log(scheduleAt)
             xData = {
               id: self.task.id,
               title: self.task.title,
               spec: self.task.content.spec,
               category: self.task.category,
-              schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
+              schedule_at: self.$moment(new Date(scheduleAt)).format("YYYY-MM-DD HH:mm:ss"),
               crawler_count: self.task.crawler_count
             }
+            console.log(xData);
           }
         } else if (self.updateTask.plan == "定期") {
           try {
@@ -524,7 +530,6 @@ export default {
             self.$Message.error(err.message)
           }
         }
-        console.log(xData);
         let check
         if (self.updateTask.plan == "定期") {
           check = true
@@ -613,7 +618,6 @@ export default {
         } else {
           check = true
         }
-        console.log(check);
         if (check == true) {
           if (xData.title == "") {
             self.$Message.error("请输入任务名称")
@@ -627,13 +631,12 @@ export default {
                 i = i + 1
               }
             }
-            console.log(service_params);
             const res = await self.axios({
               method: "patch",
               url: self.$store.state.baseurl + "api/job/update",
               params: { ...xData, ...service_params }
             })
-            console.log(res)
+            // console.log(res)
             if (res.data.code !== 0) {
               if (res.data.data == -2) {
                 self.$Message.error("任务名不可重复。有相同名称的任务已存在")
@@ -655,6 +658,7 @@ export default {
       this.cancle("copy", task)
     },
     dataChange(date) {
+      console.log("sss");
       this.updateTask.date = date
     },
     timeChange(time) {
