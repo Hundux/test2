@@ -6,21 +6,23 @@
       width="100%"
       class="logModal"
       footer-hide
-      @on-visible-change="modalShow()"
     >
       <i-row style="margin:15px 0 30px 0">
-        <i-col span="4" style="marginTop:-8px">
-          <span class="title">任务名/爬虫名</span>
+        <i-col
+          span="4"
+          style="marginTop:-8px"
+        >
+          <span class="title">{{logDetail.title}}</span>
         </i-col>
         <i-col span="8">
           <i-datePicker
-            type="date"
-            placeholder="Select date"
+            type="datetimerange"
+            placeholder="Select date and time"
+            style="width: 320px"
+            v-model="date"
+            @on-change="dateChange"
+            @on-clear="dateClear"
           ></i-datePicker>
-          <i-timePicker
-            type="time"
-            placeholder="Select time"
-          ></i-timePicker>
         </i-col>
         <i-col
           span="7"
@@ -29,27 +31,45 @@
           <i-input
             placeholder="关键词搜索"
             style="width: 200px"
+            v-model="search"
+            clearable
+            @on-clear="getLogList()"
           />
           <i-button
             type="info"
             icon="md-search"
             class="search"
+            @click="getLogList()"
           >搜索</i-button>
         </i-col>
         <i-col span="2">
           <i-select
             style="width:100px"
             placeholder="爬虫序号"
-            :value="reptile"
+            v-model="reptile"
+            @on-change="indexChange"
+            clearable
           >
+            <i-option
+              :value="item"
+              :key="index"
+              v-for="(item,index) in reptileArr"
+            >{{item}}</i-option>
           </i-select>
         </i-col>
         <i-col span="3">
           <i-select
             style="width:100px"
             placeholder="级别筛选"
-            :value="level"
+            v-model="level"
+            @on-change="levelChange"
+            clearable
           >
+            <i-option :value="'DEBUG'">DEBUG</i-option>
+            <i-option :value="'INFO'">INFO</i-option>
+            <i-option :value="'WARNING'">WARNING</i-option>
+            <i-option :value="'ERROR'">ERROR</i-option>
+            <i-option :value="'CRITICAL'">CRITICAL</i-option>
           </i-select>
         </i-col>
       </i-row>
@@ -80,8 +100,8 @@
       </i-table>
       <div class="page">
         <i-page
-          :total="LogData.length"
-          :page-size-opts=[10,20,30,40,50,100]
+          :total="total"
+          :page-size-opts=[50,100]
           size="small"
           show-elevator
           show-sizer
@@ -89,6 +109,8 @@
           placement="top"
           :current="current"
           :page-size="pageSize"
+          @on-change="pageChange"
+          @on-page-size-change="pageSizeChange"
         />
       </div>
     </i-modal>
@@ -107,9 +129,9 @@ export default {
           align: 'center',
           resizable: true,
           render: (h, params) => {
-            if (params.row.level === "WARNING") {
+            if (params.row.level == "WARNING") {
               return h("span", { class: ["waring"] }, params.row.level)
-            } else if (params.row.level === "ERROR") {
+            } else if (params.row.level == "ERROR") {
               return h("span", { class: ["error"] }, params.row.level)
             } else {
               return h("span", params.row.level)
@@ -118,7 +140,7 @@ export default {
         },
         {
           title: "时间",
-          key: "时间",
+          key: "add_time",
           width: "300",
           align: 'center',
           resizable: true,
@@ -140,48 +162,19 @@ export default {
         }
       ],
       LogData: [
-        {
-          "level": "INFO",
-          "时间": "2021年1月12日10:35:29",
-          "message": "这是一条日志",
-          "screenshot": "截图名称点击可查看"
-        },
-        {
-          "level": "WARNING",
-          "时间": "2021年1月12日10:35:29",
-          "message": "这是一条日志",
-          "screenshot": "截图名称点击可查看"
-        },
-        {
-          "level": "ERROR",
-          "时间": "2021年1月12日10:35:29",
-          "message": "这是一条日志",
-          "screenshot": "截图名称点击可查看"
-        },
-        {
-          "level": "INFO",
-          "时间": "2021年1月12日10:35:29",
-          "message": "这是一条日志",
-          "screenshot": "截图名称点击可查看"
-        },
-        {
-          "level": "WARNING",
-          "时间": "2021年1月12日10:35:29",
-          "message": "这是一条日志",
-          "screenshot": "截图名称点击可查看"
-        },
-        {
-          "level": "ERROR",
-          "时间": "2021年1月12日10:35:29",
-          "message": "这是一条日志",
-          "screenshot": "截图名称点击可查看"
-        }
       ],
-      time: "",
-      reptile: "",
+      reptile: 0,
+      reptileArr: [],
       level: "",
       current: 1,
-      pageSize: 10
+      pageSize: 50,
+      total: 0,
+      search: "",
+      isfilter: false,
+      filterData: {},
+      logDataIO: [],
+      id: "",
+      date: ""
     }
   },
   props: {
@@ -189,29 +182,141 @@ export default {
       type: Boolean,
       default: false
     },
+    logDetail: {
+      type: Object
+    }
   },
-  methods: {
-    cancle() {
-      this.$emit('cancleLogModal')
-    },
-    modalShow() {
-      if (this.log == true) {
-        let waringList = document.getElementsByClassName("waring")
-        for (let i = 0; i < waringList.length; i++) {
-          waringList[i].parentNode.parentNode.parentNode.childNodes.forEach((item) => {
-            item.style.background = "yellow"
-          })
+  watch: {
+    logDetail(newValue) {
+      if (newValue.id != null) {
+        if (newValue.crawler_count > 0) {
+          for (let i = 0; i < newValue.crawler_count; i++) {
+            this.reptileArr[i] = i + 1
+          }
         }
-        let errorList = document.getElementsByClassName("error")
-        for (let i = 0; i < errorList.length; i++) {
-          errorList[i].parentNode.parentNode.parentNode.childNodes.forEach((item) => {
-            item.style.background = "red"
-          })
-        }
-
+        this.id = newValue.id
+        this.getLogList()
       }
     }
   },
+  methods: {
+    cancle() {
+      this.reptile = 0
+      this.search = ""
+      this.level = ""
+      this.date = ""
+      this.$emit('cancleLogModal')
+    },
+    // 获取log列表
+    async getLogList(data) {
+      setTimeout(() => {
+        let waringList = document.getElementsByClassName("waring")
+        let errorList = document.getElementsByClassName("error")
+        for (let i = 0; i < waringList.length; i++) {
+          waringList[i].parentNode.parentNode.parentNode.childNodes.forEach((item) => {
+            item.style.background = "#fff"
+          })
+        }
+        for (let i = 0; i < errorList.length; i++) {
+          errorList[i].parentNode.parentNode.parentNode.childNodes.forEach((item) => {
+            item.style.background = "#fff"
+          })
+        }
+      }, 0)
+      const self = this
+      const xData = {
+        p: self.current,
+        psize: self.pageSize,
+        run_log_id: self.id,
+        search_key: self.search,
+        level: self.level,
+        index: self.reptile,
+        ...data
+      }
+      const res = await self.axios({
+        method: "get",
+        url: self.$store.state.baseurl + "api/log/list",
+        params: xData
+      })
+      console.log(xData)
+      console.log(res.data)
+      if (res.data.code == 0) {
+        this.LogData = res.data.data.page
+        this.total = res.data.data.total
+        this.LogData.forEach(item => {
+          item.add_time = self.$moment(new Date(item.add_time * 1000)).format("llll")
+        })
+        setTimeout(() => {
+          let waringList = document.getElementsByClassName("waring")
+          let errorList = document.getElementsByClassName("error")
+          for (let i = 0; i < waringList.length; i++) {
+            waringList[i].parentNode.parentNode.parentNode.childNodes.forEach((item) => {
+              item.style.background = "yellow"
+            })
+          }
+          for (let i = 0; i < errorList.length; i++) {
+            errorList[i].parentNode.parentNode.parentNode.childNodes.forEach((item) => {
+              item.style.background = "red"
+            })
+          }
+        }, 0)
+      } else {
+        self.$Message.error(res.data.error_message)
+      }
+    },
+    // page改变
+    pageChange(index) {
+      this.current = index
+      if (this.isfilter) {
+        this.getLogList(this.filterData)
+      } else {
+        this.getLogList()
+      }
+    },
+    pageSizeChange(size) {
+      this.pageSize = size
+      if (this.isfilter) {
+        this.getLogList(this.filterData)
+      } else {
+        this.getLogList()
+      }
+    },
+    dateChange(value) {
+      console.log(value);
+      if (value.length > 0) {
+        if (value[0] != "") {
+          this.isfilter = true
+          const data = {
+            start_time: value[0],
+            end_time: value[1]
+          }
+          this.filterData = data
+          this.getLogList(data)
+        }
+      }
+    },
+    dateClear() {
+      this.isfilter = false
+      this.getLogList()
+    },
+    levelChange() {
+      this.getLogList()
+    },
+    indexChange(value) {
+      if (value == undefined) {
+        this.reptile = 0
+      }
+      this.getLogList()
+    }
+  },
+  // sockets: {
+  //   connect: function () {
+  //     console.log("connect");
+  //   },
+  //   "streaming-log": function (res) {
+  //     console.log(res)
+  //   }
+  // }
 }
 </script>
 
