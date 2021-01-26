@@ -173,6 +173,7 @@
               <i-col span="3">
                 <i-formItem prop="second">
                   <i-input
+                    size="large"
                     style="width:40px"
                     v-model="taskForm.schedule.cron.second"
                   ></i-input>
@@ -182,6 +183,7 @@
                 <i-formItem>
                   <i-input
                     style="width:50px"
+                    size="large"
                     v-model="taskForm.schedule.cron.minute"
                   ></i-input>
                 </i-formItem>
@@ -190,6 +192,7 @@
                 <i-formItem>
                   <i-input
                     style="width:50px"
+                    size="large"
                     v-model="taskForm.schedule.cron.hour"
                   ></i-input>
                 </i-formItem>
@@ -198,6 +201,7 @@
                 <i-formItem>
                   <i-input
                     style="width:40px"
+                    size="large"
                     v-model="taskForm.schedule.cron.day_of_month"
                   ></i-input>
                 </i-formItem>
@@ -206,6 +210,7 @@
                 <i-formItem>
                   <i-input
                     style="width:70px"
+                    size="large"
                     v-model="taskForm.schedule.cron.day_of_week"
                   ></i-input>
                 </i-formItem>
@@ -214,6 +219,7 @@
                 <i-formItem>
                   <i-input
                     style="width:40px"
+                    size="large"
                     v-model="taskForm.schedule.cron.month"
                   ></i-input>
                 </i-formItem>
@@ -465,23 +471,112 @@ export default {
             }
           }
           console.log(xData);
+          let check
+          if (self.taskForm.plan == "定期") {
+            check = true
+            let sArr = self.taskForm.schedule.cron.second.split(",")
+            sArr.forEach(item => {
+              let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
+              if (res == null) {
+                check = false
+                self.$Message.warning(`秒${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`秒${item}不符合周期输入规范`)
+                }
+              }
+            })
+            let mArr = self.taskForm.schedule.cron.minute.split(",")
+            mArr.forEach(item => {
+              // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
+              let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
+              if (res == null) {
+                check = false
+                self.$Message.warning(`分${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`分${item}不符合周期输入规范`)
+                }
+              }
+            })
+            let hArr = self.taskForm.schedule.cron.hour.split(",")
+            hArr.forEach(item => {
+              let res = item.match(/^(2[0-3]|[0-1]?\d)|\*([/-](2[0-3]|[0-1]?\d))?|\*$/)
+              console.log(res);
+              if (res == null) {
+                check = false
+                self.$Message.warning(`时${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`时${item}不符合周期输入规范`)
+                }
+              }
+            })
+            let dArr = self.taskForm.schedule.cron.day_of_month.split(",")
+            dArr.forEach(item => {
+              let res = item.match(/^(3[0-1]|[0-2]?\d)|\*([/-](3[0-1]|[0-2]?\d))?|\*$/)
+              console.log(res);
+              if (res == null) {
+                check = false
+                self.$Message.warning(`天${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`天${item}不符合周期输入规范`)
+                }
+              }
+            })
+            let monArr = self.taskForm.schedule.cron.month.split(",")
+            monArr.forEach(item => {
+              let res = item.match(/^(1[0-2]|[0-9])|\*([/-](1[0-1]|[0]?\d))?|\*$/)
+              if (res == null) {
+                check = false
+                self.$Message.warning(`月${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`月${item}不符合周期输入规范`)
+                }
+              }
+            })
+            let wArr = self.taskForm.schedule.cron.day_of_week.split(",")
+            wArr.forEach(item => {
+              let res = item.match(/^([1-7])|\*([/-]([1-7]))?|\*$/)
+              if (res == null) {
+                check = false
+                self.$Message.warning(`星期几${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`星期几${item}不符合周期输入规范`)
+                }
+              }
+            })
+          } else {
+            check = true
+          }
           if (xData.title == "") {
             self.$Message.error("请输入任务名称")
           } else {
-            const res = await self.axios({
-              method: "post",
-              url: self.$store.state.baseurl + "api/job/create",
-              params: xData
-            })
-            console.log(res);
-            if (res.data.code !== 0) {
-              if (res.data.data == -2) {
-                self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+            if (check == true) {
+              const res = await self.axios({
+                method: "post",
+                url: self.$store.state.baseurl + "api/job/create",
+                params: xData
+              })
+              console.log(res);
+              if (res.data.code !== 0) {
+                if (res.data.data == -2) {
+                  self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+                } else {
+                  self.$Message.error(res.data.error_message)
+                }
               } else {
-                self.$Message.error(res.data.error_message)
+                self.cancle(true)
               }
-            } else {
-              self.cancle(true)
             }
           }
         } else if (self.taskForm.category == "SERVICE") {
@@ -537,23 +632,112 @@ export default {
               }
             }
             console.log(xData);
+            let check
+            if (self.taskForm.plan == "定期") {
+              check = true
+              let sArr = self.taskForm.schedule.cron.second.split(",")
+              sArr.forEach(item => {
+                let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`秒${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`秒${item}不符合周期输入规范`)
+                  }
+                }
+              })
+              let mArr = self.taskForm.schedule.cron.minute.split(",")
+              mArr.forEach(item => {
+                // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
+                let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`分${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`分${item}不符合周期输入规范`)
+                  }
+                }
+              })
+              let hArr = self.taskForm.schedule.cron.hour.split(",")
+              hArr.forEach(item => {
+                let res = item.match(/^(2[0-3]|[0-1]?\d)|\*([/-](2[0-3]|[0-1]?\d))?|\*$/)
+                console.log(res);
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`时${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`时${item}不符合周期输入规范`)
+                  }
+                }
+              })
+              let dArr = self.taskForm.schedule.cron.day_of_month.split(",")
+              dArr.forEach(item => {
+                let res = item.match(/^(3[0-1]|[0-2]?\d)|\*([/-](3[0-1]|[0-2]?\d))?|\*$/)
+                console.log(res);
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`天${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`天${item}不符合周期输入规范`)
+                  }
+                }
+              })
+              let monArr = self.taskForm.schedule.cron.month.split(",")
+              monArr.forEach(item => {
+                let res = item.match(/^(1[0-2]|[0-9])|\*([/-](1[0-1]|[0]?\d))?|\*$/)
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`月${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`月${item}不符合周期输入规范`)
+                  }
+                }
+              })
+              let wArr = self.taskForm.schedule.cron.day_of_week.split(",")
+              wArr.forEach(item => {
+                let res = item.match(/^([1-7])|\*([/-]([1-7]))?|\*$/)
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`星期几${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`星期几${item}不符合周期输入规范`)
+                  }
+                }
+              })
+            } else {
+              check = true
+            }
             if (xData.title == "") {
               self.$Message.error("请输入任务名称")
             } else {
-              const res = await self.axios({
-                method: "post",
-                url: self.$store.state.baseurl + "api/job/create",
-                params: { ...xData, ...service_params }
-              })
-              console.log(res);
-              if (res.data.code !== 0) {
-                if (res.data.data == -2) {
-                  self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+              if (check == true) {
+                const res = await self.axios({
+                  method: "post",
+                  url: self.$store.state.baseurl + "api/job/create",
+                  params: { ...xData, ...service_params }
+                })
+                console.log(res);
+                if (res.data.code !== 0) {
+                  if (res.data.data == -2) {
+                    self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+                  } else {
+                    self.$Message.error(res.data.error_message)
+                  }
                 } else {
-                  self.$Message.error(res.data.error_message)
+                  self.cancle(true)
                 }
-              } else {
-                self.cancle(true)
               }
             }
           } else {
@@ -561,6 +745,7 @@ export default {
           }
         }
       } catch (err) {
+        console.log(err);
         self.$Message.error("新建任务失败")
       }
     },

@@ -171,7 +171,7 @@ export default {
       let jsonData = value
       jsonData = JSON.stringify(jsonData)
       // let res = jsonData.match(/\$\w+?\$/g)
-      let res = jsonData.match(/\$.*?\$/g)
+      let res = jsonData.match(/\$\w+?\$/g)
       let params = Array.from(new Set(res))
       let paramsDefault = this.serveDetailData.params
       for (let i = 0; i < params.length; i++) {
