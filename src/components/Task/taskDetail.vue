@@ -146,6 +146,7 @@
                   type="date"
                   placeholder="Select date"
                   @on-change="dataChange"
+                  v-model="updateTask.date"
                 ></i-datePicker>
               </i-col>
             </i-row>
@@ -159,6 +160,7 @@
                   type="time"
                   placeholder="Select time"
                   @on-change="timeChange"
+                  v-model="updateTask.time"
                 ></i-timePicker>
               </i-col>
             </i-row>
@@ -197,30 +199,49 @@
               class="form-item"
               style="margin-bottom:10px;margin-left:20px"
             >
-              <i-col span="3"><input
-                  style="width:40px"
+              <i-col span="3">
+                <i-input
+                  size="large"
+                  style="width:40px;"
                   v-model="updateTask.second"
-                /></i-col>
-              <i-col span="3"><input
-                  style="width:40px"
+                ></i-input>
+              </i-col>
+              <i-col span="3">
+                <i-input
+                  size="large"
+                  style="width:40px;"
                   v-model="updateTask.minute"
-                /></i-col>
-              <i-col span="3"><input
-                  style="width:40px"
+                >
+                </i-input>
+              </i-col>
+              <i-col span="3">
+                <i-input
+                  size="large"
+                  style="width:40px;"
                   v-model="updateTask.hour"
-                /></i-col>
-              <i-col span="3"><input
-                  style="width:40px"
+                ></i-input>
+              </i-col>
+              <i-col span="3">
+                <i-input
+                  size="large"
+                  style="width:40px;"
                   v-model="updateTask.day"
-                /></i-col>
-              <i-col span="5"><input
-                  style="width:68px"
+                ></i-input>
+              </i-col>
+              <i-col span="5">
+                <i-input
+                  size="large"
+                  style="width:68px;"
                   v-model="updateTask.week"
-                /></i-col>
-              <i-col span="3"><input
-                  style="width:40px"
+                ></i-input>
+              </i-col>
+              <i-col span="3">
+                <i-input
+                  size="large"
+                  style="width:40px;s"
                   v-model="updateTask.month"
-                /></i-col>
+                ></i-input>
+              </i-col>
             </i-row>
             <i-formItem
               label="所需爬虫数："
@@ -311,20 +332,20 @@ export default {
       serverDetail: false,
       updateTask: {
         plan: "",
-        date: "0",
-        time: "0",
-        second: "0",
-        minute: "0",
-        hour: "0",
-        day: "0",
-        month: "0",
-        week: "0",
+        date: "",
+        time: "",
+        second: "",
+        minute: "",
+        hour: "",
+        day: "",
+        month: "",
+        week: "",
       },
       serverTaskDetail: {},
       serveDetailData: {},
       spec: {},
       copy_spec: "",
-      isPress: false
+      isPress: false,
     }
   },
   props: {
@@ -341,6 +362,17 @@ export default {
       deep: true,
       handler: function (newValue) {
         console.log(newValue)
+        if (newValue.plan == "定期") {
+          this.updateTask.second = newValue.schedule.cron.second
+          this.updateTask.minute = newValue.schedule.cron.minute
+          this.updateTask.hour = newValue.schedule.cron.hour
+          this.updateTask.day = newValue.schedule.cron.day_of_month
+          this.updateTask.week = newValue.schedule.cron.day_of_week
+          this.updateTask.month = newValue.schedule.cron.month
+        } else if (newValue.plan == "定点") {
+          this.updateTask.date = newValue.schedule.at
+          this.updateTask.time = this.$moment(newValue.schedule.at).format("HH:mm:ss")
+        }
         if (newValue.content.service_inst != null) {
           let spec = JSON.stringify(newValue.content.service_inst.service.spec)
           let copy_spec = spec
@@ -454,13 +486,6 @@ export default {
     // 修改任务
     async undateTask() {
       const self = this
-      // try {
-      //   const l = self.$cronParser.parseExpression(`${self.updateTask.second} ${self.updateTask.minute} ${self.updateTask.hour} ${self.updateTask.day} ${self.updateTask.month} ${self.updateTask.week}`);
-      //   console.log(l);
-
-      // } catch (err) {
-      //   self.$Message.error(err.message)
-      // }
       let xData = {
         id: self.task.id,
         title: self.task.title,
@@ -482,7 +507,6 @@ export default {
           }
         } else if (self.updateTask.plan == "定期") {
           try {
-            // self.$cronParser.parseExpression(`${self.updateTask.second} ${self.updateTask.minute} ${self.updateTask.hour} ${self.updateTask.day} ${self.updateTask.month} ${self.updateTask.week}`);
             xData = {
               id: self.task.id,
               title: self.task.title,
@@ -506,88 +530,82 @@ export default {
           check = true
           let sArr = self.updateTask.second.split(",")
           sArr.forEach(item => {
-            // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
-            let res = item.match(/^[1-5]?\d([/-][1-5]?\d)?|\*$/)
+            let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
             if (res == null) {
               check = false
-              self.$Message.warning(`${item}不符合周期输入规范`)
+              self.$Message.warning(`秒${item}不符合周期输入规范`)
             } else {
               if (res[0] != item) {
                 check = false
-                self.$Message.warning(`${item}不符合周期输入规范`)
+                self.$Message.warning(`秒${item}不符合周期输入规范`)
               }
             }
           })
           let mArr = self.updateTask.minute.split(",")
           mArr.forEach(item => {
             // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
-            let res = item.match(/^[1-5]?\d([/-][1-5]?\d)?|\*$/)
+            let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
             if (res == null) {
               check = false
-              self.$Message.warning(`${item}不符合周期输入规范`)
+              self.$Message.warning(`分${item}不符合周期输入规范`)
             } else {
               if (res[0] != item) {
                 check = false
-                self.$Message.warning(`${item}不符合周期输入规范`)
+                self.$Message.warning(`分${item}不符合周期输入规范`)
               }
             }
           })
           let hArr = self.updateTask.hour.split(",")
           hArr.forEach(item => {
-            let res = item.match(/^(2[0-3]|[0-1]?\d)([/-](2[0-3]|[0-1]?\d))?|\*$/)
+            let res = item.match(/^(2[0-3]|[0-1]?\d)|\*([/-](2[0-3]|[0-1]?\d))?|\*$/)
             console.log(res);
             if (res == null) {
               check = false
-              self.$Message.warning(`${item}不符合周期输入规范`)
+              self.$Message.warning(`时${item}不符合周期输入规范`)
             } else {
               if (res[0] != item) {
                 check = false
-                self.$Message.warning(`${item}不符合周期输入规范`)
-              } else {
-                if (res[0] != item) {
-                  check = false
-                  self.$Message.warning(`${item}不符合周期输入规范`)
-                }
+                self.$Message.warning(`时${item}不符合周期输入规范`)
               }
             }
           })
           let dArr = self.updateTask.day.split(",")
           dArr.forEach(item => {
-            let res = item.match(/^(3[0-1]|[0-2]?\d)([/-](3[0-1]|[0-2]?\d))?|\*$/)
+            let res = item.match(/^(3[0-1]|[0-2]?\d)|\*([/-](3[0-1]|[0-2]?\d))?|\*$/)
             console.log(res);
             if (res == null) {
               check = false
-              self.$Message.warning(`${item}不符合周期输入规范`)
+              self.$Message.warning(`天${item}不符合周期输入规范`)
             } else {
               if (res[0] != item) {
                 check = false
-                self.$Message.warning(`${item}不符合周期输入规范`)
+                self.$Message.warning(`天${item}不符合周期输入规范`)
               }
             }
           })
           let monArr = self.updateTask.month.split(",")
           monArr.forEach(item => {
-            let res = item.match(/^(1[0-2]|[0-9])([/-](1[0-1]|[0]?\d))?|\*$/)
+            let res = item.match(/^(1[0-2]|[0-9])|\*([/-](1[0-1]|[0]?\d))?|\*$/)
             if (res == null) {
               check = false
-              self.$Message.warning(`${item}不符合周期输入规范`)
+              self.$Message.warning(`月${item}不符合周期输入规范`)
             } else {
               if (res[0] != item) {
                 check = false
-                self.$Message.warning(`${item}不符合周期输入规范`)
+                self.$Message.warning(`月${item}不符合周期输入规范`)
               }
             }
           })
           let wArr = self.updateTask.week.split(",")
           wArr.forEach(item => {
-            let res = item.match(/^([1-7])([/-]([1-7]))?|\*$/)
+            let res = item.match(/^([1-7])|\*([/-]([1-7]))?|\*$/)
             if (res == null) {
               check = false
-              self.$Message.warning(`${item}不符合周期输入规范`)
+              self.$Message.warning(`星期几${item}不符合周期输入规范`)
             } else {
               if (res[0] != item) {
                 check = false
-                self.$Message.warning(`${item}不符合周期输入规范`)
+                self.$Message.warning(`星期几${item}不符合周期输入规范`)
               }
             }
           })
