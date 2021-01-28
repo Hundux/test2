@@ -489,136 +489,143 @@ export default {
     // 修改任务
     async undateTask() {
       const self = this
-      let xData = {
-        id: self.task.id,
-        title: self.task.title,
-        spec: self.task.content.spec,
-        crawler_count: self.task.crawler_count
-      }
-      try {
-        if (self.updateTask.plan == "定点") {
-          if (self.updateTask.date !== "" && self.updateTask.time !== "") {
-            self.updateTask.date = self.$moment(new Date(self.updateTask.date)).format("YYYY-MM-DD")
-            const scheduleAt = self.updateTask.date + " " + self.updateTask.time
-            console.log(scheduleAt)
-            xData = {
-              id: self.task.id,
-              title: self.task.title,
-              spec: self.task.content.spec,
-              category: self.task.category,
-              schedule_at: self.$moment(new Date(scheduleAt)).format("YYYY-MM-DD HH:mm:ss"),
-              crawler_count: self.task.crawler_count
-            }
-            console.log(xData);
-          }
-        } else if (self.updateTask.plan == "定期") {
-          try {
-            xData = {
-              id: self.task.id,
-              title: self.task.title,
-              category: self.task.category,
-              spec: self.task.content.spec,
-              schedule_cron_second: self.updateTask.second,
-              schedule_cron_minute: self.updateTask.minute,
-              schedule_cron_hour: self.updateTask.hour,
-              schedule_cron_day_of_month: self.updateTask.day,
-              schedule_cron_month: self.updateTask.month,
-              schedule_cron_day_of_week: self.updateTask.week,
-              crawler_count: self.task.crawler_count
-            }
-          } catch (err) {
-            self.$Message.error(err.message)
-          }
-        }
-        let check
-        if (self.updateTask.plan == "定期") {
-          check = true
-          let sArr = self.updateTask.second.split(",")
-          sArr.forEach(item => {
-            let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
-            if (res == null) {
+      let check
+      if (self.updateTask.plan == "定期") {
+        check = true
+        let sArr = self.updateTask.second.split(",")
+        sArr.forEach(item => {
+          let res = item.match(/^\*$|^([1-5]?\d)([-][1-5]?\d[/][1-5]?\d)$|^([1-5]?\d)$|^\*[/][1-5]?\d$|^([1-5]?\d)([-][1-5]?\d)$/)
+          if (res == null) {
+            check = false
+            self.$Message.warning(`秒${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
               check = false
               self.$Message.warning(`秒${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`秒${item}不符合周期输入规范`)
-              }
             }
-          })
-          let mArr = self.updateTask.minute.split(",")
-          mArr.forEach(item => {
-            // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
-            let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
-            if (res == null) {
+          }
+        })
+        // ^\*$|^([1-5]?\d)([-][1-5]?\d[/][1-5]?\d)$|^([1-5]?\d)$|^\*[/][1-5]?\d$|^([1-5]?\d)([-][1-5]?\d)$
+        let mArr = self.updateTask.minute.split(",")
+        mArr.forEach(item => {
+          let res = item.match(/^\*$|^([1-5]?\d)([-][1-5]?\d[/][1-5]?\d)$|^([1-5]?\d)$|^\*[/][1-5]?\d$|^([1-5]?\d)([-][1-5]?\d)$/)
+          if (res == null) {
+            check = false
+            self.$Message.warning(`分${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
               check = false
               self.$Message.warning(`分${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`分${item}不符合周期输入规范`)
-              }
             }
-          })
-          let hArr = self.updateTask.hour.split(",")
-          hArr.forEach(item => {
-            let res = item.match(/^(2[0-3]|[0-1]?\d)|\*([/-](2[0-3]|[0-1]?\d))?|\*$/)
-            console.log(res);
-            if (res == null) {
+          }
+        })
+        let hArr = self.updateTask.hour.split(",")
+        hArr.forEach(item => {
+          let res = item.match(/^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$/)
+          console.log(res);
+          if (res == null) {
+            check = false
+            self.$Message.warning(`时${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
               check = false
               self.$Message.warning(`时${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`时${item}不符合周期输入规范`)
-              }
             }
-          })
-          let dArr = self.updateTask.day.split(",")
-          dArr.forEach(item => {
-            let res = item.match(/^(3[0-1]|[0-2]?\d)|\*([/-](3[0-1]|[0-2]?\d))?|\*$/)
-            console.log(res);
-            if (res == null) {
+          }
+        })
+        let dArr = self.updateTask.day.split(",")
+        dArr.forEach(item => {
+          // ^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$
+          let res = item.match(/^\*$|^\*[/]3[0-1]|\*[/]([0-2]?\d)$|^((3[0-1])|([0-2]?\d))$|^((3[0-1])|([0-2]?\d))([-](3[0-1])|[-]([0-2]?\d))$|^((3[0-1])|([0-2]?\d))([-](3[0-1])|[-]([0-2]?\d))(([/]3[0-1])|[/]([0-2]?\d))$/)
+          console.log(res);
+          if (res == null) {
+            check = false
+            self.$Message.warning(`天${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
               check = false
               self.$Message.warning(`天${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`天${item}不符合周期输入规范`)
-              }
             }
-          })
-          let monArr = self.updateTask.month.split(",")
-          monArr.forEach(item => {
-            let res = item.match(/^(1[0-2]|[0-9])|\*([/-](1[0-1]|[0]?\d))?|\*$/)
-            if (res == null) {
+          }
+        })
+        let monArr = self.updateTask.month.split(",")
+        monArr.forEach(item => {
+          // ^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$
+          let res = item.match(/^\*$|^\*[/]1[0-2]|\*[/][1-9]$|^((1[0-2])|[1-9])$|^((1[0-2])|([1-9]))([-](1[0-2])|[-]([19]))$|^((1[0-2])|([1-9]))([-](1[0-2])|[-]([1-9]))(([/]1[0-2])|[/]([1-9]))$/)
+          if (res == null) {
+            check = false
+            self.$Message.warning(`月${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
               check = false
               self.$Message.warning(`月${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`月${item}不符合周期输入规范`)
-              }
             }
-          })
-          let wArr = self.updateTask.week.split(",")
-          wArr.forEach(item => {
-            let res = item.match(/^([1-7])|\*([/-]([1-7]))?|\*$/)
-            if (res == null) {
+          }
+        })
+        let wArr = self.updateTask.week.split(",")
+        wArr.forEach(item => {
+          // ^([1-7]|\*)([/-]([1-7]))?|\*$
+          // ^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$
+          let res = item.match(/^\*$|^\*[/][1-7]$|^([1-7])$|^([1-7])[-][1-7]$|^[1-7][-][1-7][/][1-7]$/)
+          if (res == null) {
+            check = false
+            self.$Message.warning(`星期几${item}不符合周期输入规范`)
+          } else {
+            if (res[0] != item) {
               check = false
               self.$Message.warning(`星期几${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`星期几${item}不符合周期输入规范`)
-              }
             }
-          })
+          }
+        })
 
-        } else {
-          check = true
-        }
+      } else {
+        check = true
+      }
+
+
+      
+      try {
         if (check == true) {
+          let xData = {
+            id: self.task.id,
+            title: self.task.title,
+            spec: self.task.content.spec,
+            crawler_count: self.task.crawler_count
+          }
+          if (self.updateTask.plan == "定点") {
+            if (self.updateTask.date !== "" && self.updateTask.time !== "") {
+              self.updateTask.date = self.$moment(new Date(self.updateTask.date)).format("YYYY-MM-DD")
+              const scheduleAt = self.updateTask.date + " " + self.updateTask.time
+              console.log(scheduleAt)
+              xData = {
+                id: self.task.id,
+                title: self.task.title,
+                spec: self.task.content.spec,
+                category: self.task.category,
+                schedule_at: self.$moment(new Date(scheduleAt)).format("YYYY-MM-DD HH:mm:ss"),
+                crawler_count: self.task.crawler_count
+              }
+              console.log(xData);
+            }
+          } else if (self.updateTask.plan == "定期") {
+            try {
+              xData = {
+                id: self.task.id,
+                title: self.task.title,
+                category: self.task.category,
+                spec: self.task.content.spec,
+                schedule_cron_second: self.updateTask.second,
+                schedule_cron_minute: self.updateTask.minute,
+                schedule_cron_hour: self.updateTask.hour,
+                schedule_cron_day_of_month: self.updateTask.day,
+                schedule_cron_month: self.updateTask.month,
+                schedule_cron_day_of_week: self.updateTask.week,
+                crawler_count: self.task.crawler_count
+              }
+            } catch (err) {
+              self.$Message.error(err.message)
+            }
+          }
           if (xData.title == "") {
             self.$Message.error("请输入任务名称")
           } else {
