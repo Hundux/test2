@@ -112,18 +112,19 @@
           >
             <i-button
               type="success"
-              icon="md-open"
+              icon="md-play"
               @click="callService"
+              :loading="isPress"
             >立即调用</i-button>
             <i-button
               type="success"
-              icon="md-checkmark"
+              iicon="md-checkmark"
               v-if="serveDetailData.enabled === false"
               @click="handBanClick('yes')"
             >启用</i-button>
             <i-button
               type="error"
-              icon="md-remove"
+              icon="md-trash"
               v-else
               @click="handBanClick('no')"
             >禁用</i-button>
@@ -144,6 +145,7 @@ export default {
   data() {
     return {
       serveDetailDataParams: [],
+      isPress: false
     }
   },
   props: {
@@ -255,9 +257,28 @@ export default {
         self.$Message.error("启用或禁用任务错误")
       }
     },
-    callService() {
-      this.cancle()
-      this.$emit("callServe", this.serveDetailData)
+    async callService() {
+      const self = this
+      self.isPress = true
+      let xData = {
+        id: self.serveDetailData.id,
+      }
+      try {
+        const res = await self.axios({
+          method: "get",
+          url: self.$store.state.baseurl + "api/service/call",
+          params: xData
+        })
+        if (res.data.code === 0) {
+          self.isPress = false
+          self.cancle()
+        } else {
+          self.isPress = false
+          self.$Message.error(res.data.error_message)
+        }
+      } catch (err) {
+        self.$Message.error("运行任务错误")
+      }
     }
   },
 }

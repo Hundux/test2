@@ -297,19 +297,19 @@
           >
             <i-button
               type="success"
-              icon="md-arrow-round-up"
+              icon="md-play"
               @click="runTask"
               :loading="isPress"
-            >立即运行</i-button>
+            >立即执行</i-button>
             <i-button
               type="success"
-              icon="md-checkmark"
+              iicon="md-checkmark"
               v-if="task.enabled === false"
               @click="handBanClick('yes')"
             >启用</i-button>
             <i-button
               type="error"
-              icon="md-remove"
+              icon="md-trash"
               @click="handBanClick('no')"
               v-else
             >禁用</i-button>
@@ -321,13 +321,6 @@
           </i-buttongroup>
         </i-col>
       </i-row>
-    </i-modal>
-
-    <i-modal
-      v-model="checkSecond"
-      @on-ok="ok"
-    >
-      <p>当前秒为*,请确认</p>
     </i-modal>
   </div>
 </template>
@@ -354,8 +347,6 @@ export default {
       spec: {},
       copy_spec: "",
       isPress: false,
-      checkSecond: false,
-      firstWatch: false
     }
   },
   props: {
@@ -372,24 +363,19 @@ export default {
       deep: true,
       handler: function (newValue) {
         console.log(newValue)
-        if (this.firstWatch == false) {
-          if (newValue.plan == "定期") {
-            this.firstWatch = true
-            this.updateTask.plan = "定期"
-            this.updateTask.second = newValue.schedule.cron.second
-            this.updateTask.minute = newValue.schedule.cron.minute
-            this.updateTask.hour = newValue.schedule.cron.hour
-            this.updateTask.day = newValue.schedule.cron.day_of_month
-            this.updateTask.week = newValue.schedule.cron.day_of_week
-            this.updateTask.month = newValue.schedule.cron.month
-          } else if (newValue.plan == "定点") {
-            this.firstWatch = true
-            this.updateTask.plan = "定点"
-            this.updateTask.date = this.$moment(new Date(newValue.schedule.at)).format("YYYY-MM-DD")
-            this.updateTask.time = this.$moment(newValue.schedule.at).format("HH:mm:ss")
-          }
+        if (newValue.plan == "定期") {
+          this.updateTask.plan = "定期"
+          this.updateTask.second = newValue.schedule.cron.second
+          this.updateTask.minute = newValue.schedule.cron.minute
+          this.updateTask.hour = newValue.schedule.cron.hour
+          this.updateTask.day = newValue.schedule.cron.day_of_month
+          this.updateTask.week = newValue.schedule.cron.day_of_week
+          this.updateTask.month = newValue.schedule.cron.month
+        } else if (newValue.plan == "定点") {
+          this.updateTask.plan = "定点"
+          this.updateTask.date = this.$moment(new Date(newValue.schedule.at)).format("YYYY-MM-DD")
+          this.updateTask.time = this.$moment(newValue.schedule.at).format("HH:mm:ss")
         }
-
         if (newValue.content.service_inst != null) {
           let spec = JSON.stringify(newValue.content.service_inst.service.spec)
           let copy_spec = spec
@@ -426,7 +412,6 @@ export default {
         month: "",
         week: "",
       }
-      this.firstWatch = false
       this.serverTaskDetail = {}
       this.$emit("cancleTaskDetailModal", isOperation, task)
     },
@@ -504,205 +489,13 @@ export default {
     // 修改任务
     async undateTask() {
       const self = this
-      let check
-      if (self.updateTask.plan == "定期") {
-        check = true
-        let sArr = self.updateTask.second.split(",")
-        sArr.forEach(item => {
-          let res = item.match(/^\*$|^([1-5]?\d)([-][1-5]?\d[/][1-5]?\d)$|^([1-5]?\d)$|^\*[/][1-5]?\d$|^([1-5]?\d)([-][1-5]?\d)$/)
-          if (res == null) {
-            check = false
-            self.$Message.warning(`秒${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
-              check = false
-              self.$Message.warning(`秒${item}不符合周期输入规范`)
-            }
-          }
-        })
-        // ^\*$|^([1-5]?\d)([-][1-5]?\d[/][1-5]?\d)$|^([1-5]?\d)$|^\*[/][1-5]?\d$|^([1-5]?\d)([-][1-5]?\d)$
-        let mArr = self.updateTask.minute.split(",")
-        mArr.forEach(item => {
-          let res = item.match(/^\*$|^([1-5]?\d)([-][1-5]?\d[/][1-5]?\d)$|^([1-5]?\d)$|^\*[/][1-5]?\d$|^([1-5]?\d)([-][1-5]?\d)$/)
-          if (res == null) {
-            check = false
-            self.$Message.warning(`分${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
-              check = false
-              self.$Message.warning(`分${item}不符合周期输入规范`)
-            }
-          }
-        })
-        let hArr = self.updateTask.hour.split(",")
-        hArr.forEach(item => {
-          let res = item.match(/^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$/)
-          if (res == null) {
-            check = false
-            self.$Message.warning(`时${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
-              check = false
-              self.$Message.warning(`时${item}不符合周期输入规范`)
-            }
-          }
-        })
-        let dArr = self.updateTask.day.split(",")
-        dArr.forEach(item => {
-          // ^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$
-          let res = item.match(/^\*$|^\*[/]3[0-1]|\*[/]([0-2]?\d)$|^((3[0-1])|([0-2]?\d))$|^((3[0-1])|([0-2]?\d))([-](3[0-1])|[-]([0-2]?\d))$|^((3[0-1])|([0-2]?\d))([-](3[0-1])|[-]([0-2]?\d))(([/]3[0-1])|[/]([0-2]?\d))$/)
-          if (res == null) {
-            check = false
-            self.$Message.warning(`天${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
-              check = false
-              self.$Message.warning(`天${item}不符合周期输入规范`)
-            }
-          }
-        })
-        let monArr = self.updateTask.month.split(",")
-        monArr.forEach(item => {
-          // ^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$
-          let res = item.match(/^\*$|^\*[/]1[0-2]|\*[/][1-9]$|^((1[0-2])|[1-9])$|^((1[0-2])|([1-9]))([-](1[0-2])|[-]([19]))$|^((1[0-2])|([1-9]))([-](1[0-2])|[-]([1-9]))(([/]1[0-2])|[/]([1-9]))$/)
-          if (res == null) {
-            check = false
-            self.$Message.warning(`月${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
-              check = false
-              self.$Message.warning(`月${item}不符合周期输入规范`)
-            }
-          }
-        })
-        let wArr = self.updateTask.week.split(",")
-        wArr.forEach(item => {
-          // ^([1-7]|\*)([/-]([1-7]))?|\*$
-          // ^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$
-          let res = item.match(/^\*$|^\*[/][1-7]$|^([1-7])$|^([1-7])[-][1-7]$|^[1-7][-][1-7][/][1-7]$/)
-          if (res == null) {
-            check = false
-            self.$Message.warning(`星期几${item}不符合周期输入规范`)
-          } else {
-            if (res[0] != item) {
-              check = false
-              self.$Message.warning(`星期几${item}不符合周期输入规范`)
-            }
-          }
-        })
-      } else {
-        check = true
+      let xData = {
+        id: self.task.id,
+        title: self.task.title,
+        spec: self.task.content.spec,
+        crawler_count: self.task.crawler_count
       }
-
       try {
-        if (check == true) {
-          if (self.updateTask.second == "*") {
-            self.checkSecond = true
-          }
-          else {
-            let xData = {
-              id: self.task.id,
-              title: self.task.title,
-              spec: self.task.content.spec,
-              crawler_count: self.task.crawler_count
-            }
-            if (self.updateTask.plan == "定点") {
-              if (self.updateTask.date !== "" && self.updateTask.time !== "") {
-                self.updateTask.date = self.$moment(new Date(self.updateTask.date)).format("YYYY-MM-DD")
-                const scheduleAt = self.updateTask.date + " " + self.updateTask.time
-                xData = {
-                  id: self.task.id,
-                  title: self.task.title,
-                  spec: self.task.content.spec,
-                  category: self.task.category,
-                  schedule_at: self.$moment(new Date(scheduleAt)).format("YYYY-MM-DD HH:mm:ss"),
-                  crawler_count: self.task.crawler_count
-                }
-                console.log(xData);
-              }
-            } else if (self.updateTask.plan == "定期") {
-              try {
-                xData = {
-                  id: self.task.id,
-                  title: self.task.title,
-                  category: self.task.category,
-                  spec: self.task.content.spec,
-                  schedule_cron_second: self.updateTask.second,
-                  schedule_cron_minute: self.updateTask.minute,
-                  schedule_cron_hour: self.updateTask.hour,
-                  schedule_cron_day_of_month: self.updateTask.day,
-                  schedule_cron_month: self.updateTask.month,
-                  schedule_cron_day_of_week: self.updateTask.week,
-                  crawler_count: self.task.crawler_count
-                }
-              } catch (err) {
-                self.$Message.error(err.message)
-              }
-            }
-            if (xData.title == "") {
-              self.$Message.error("请输入任务名称")
-            } else {
-              let service_params = {}
-              if (self.task.category == "SERVICE") {
-                let i = 0
-                for (let key in self.task.content.service_inst.params) {
-                  service_params[`service_params-${i}-name`] = key
-                  service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
-                  i = i + 1
-                }
-              }
-              const res = await self.axios({
-                method: "patch",
-                url: self.$store.state.baseurl + "api/job/update",
-                params: { ...xData, ...service_params }
-              })
-              // console.log(res)
-              if (res.data.code !== 0) {
-                if (res.data.data == -2) {
-                  self.$Message.error("任务名不可重复。有相同名称的任务已存在")
-                } else {
-                  self.$Message.error(res.data.error_message)
-                }
-              } else {
-                self.cancle(true)
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.log(error);
-        self.$Message.error("修改任务错误")
-      }
-    },
-    handleCopy(task) {
-      // console.log(task);
-      this.cancle("copy", task)
-    },
-    dataChange(date) {
-      console.log("sss");
-      this.updateTask.date = date
-    },
-    timeChange(time) {
-      this.updateTask.time = time
-    },
-    onCopy() {
-      this.$Message.success("配置内容已复制到剪切板！")
-    },
-    onJsonChange() {
-      this.$Message.warning("不可修改")
-      this.$nextTick(() => {
-        this.spec = this.task.content.service_inst.service.spec
-      })
-    },
-    async ok() {
-      const self = this
-      try {
-        let xData = {
-          id: self.task.id,
-          title: self.task.title,
-          spec: self.task.content.spec,
-          crawler_count: self.task.crawler_count
-        }
         if (self.updateTask.plan == "定点") {
           if (self.updateTask.date !== "" && self.updateTask.time !== "") {
             self.updateTask.date = self.$moment(new Date(self.updateTask.date)).format("YYYY-MM-DD")
@@ -737,38 +530,148 @@ export default {
             self.$Message.error(err.message)
           }
         }
-        if (xData.title == "") {
-          self.$Message.error("请输入任务名称")
-        } else {
-          let service_params = {}
-          if (self.task.category == "SERVICE") {
-            let i = 0
-            for (let key in self.task.content.service_inst.params) {
-              service_params[`service_params-${i}-name`] = key
-              service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
-              i = i + 1
-            }
-          }
-          const res = await self.axios({
-            method: "patch",
-            url: self.$store.state.baseurl + "api/job/update",
-            params: { ...xData, ...service_params }
-          })
-          // console.log(res)
-          if (res.data.code !== 0) {
-            if (res.data.data == -2) {
-              self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+        let check
+        if (self.updateTask.plan == "定期") {
+          check = true
+          let sArr = self.updateTask.second.split(",")
+          sArr.forEach(item => {
+            let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
+            if (res == null) {
+              check = false
+              self.$Message.warning(`秒${item}不符合周期输入规范`)
             } else {
-              self.$Message.error(res.data.error_message)
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`秒${item}不符合周期输入规范`)
+              }
             }
+          })
+          let mArr = self.updateTask.minute.split(",")
+          mArr.forEach(item => {
+            // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
+            let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
+            if (res == null) {
+              check = false
+              self.$Message.warning(`分${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`分${item}不符合周期输入规范`)
+              }
+            }
+          })
+          let hArr = self.updateTask.hour.split(",")
+          hArr.forEach(item => {
+            let res = item.match(/^(2[0-3]|[0-1]?\d)|\*([/-](2[0-3]|[0-1]?\d))?|\*$/)
+            console.log(res);
+            if (res == null) {
+              check = false
+              self.$Message.warning(`时${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`时${item}不符合周期输入规范`)
+              }
+            }
+          })
+          let dArr = self.updateTask.day.split(",")
+          dArr.forEach(item => {
+            let res = item.match(/^(3[0-1]|[0-2]?\d)|\*([/-](3[0-1]|[0-2]?\d))?|\*$/)
+            console.log(res);
+            if (res == null) {
+              check = false
+              self.$Message.warning(`天${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`天${item}不符合周期输入规范`)
+              }
+            }
+          })
+          let monArr = self.updateTask.month.split(",")
+          monArr.forEach(item => {
+            let res = item.match(/^(1[0-2]|[0-9])|\*([/-](1[0-1]|[0]?\d))?|\*$/)
+            if (res == null) {
+              check = false
+              self.$Message.warning(`月${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`月${item}不符合周期输入规范`)
+              }
+            }
+          })
+          let wArr = self.updateTask.week.split(",")
+          wArr.forEach(item => {
+            let res = item.match(/^([1-7])|\*([/-]([1-7]))?|\*$/)
+            if (res == null) {
+              check = false
+              self.$Message.warning(`星期几${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`星期几${item}不符合周期输入规范`)
+              }
+            }
+          })
+
+        } else {
+          check = true
+        }
+        if (check == true) {
+          if (xData.title == "") {
+            self.$Message.error("请输入任务名称")
           } else {
-            self.cancle(true)
+            let service_params = {}
+            if (self.task.category == "SERVICE") {
+              let i = 0
+              for (let key in self.task.content.service_inst.params) {
+                service_params[`service_params-${i}-name`] = key
+                service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
+                i = i + 1
+              }
+            }
+            const res = await self.axios({
+              method: "patch",
+              url: self.$store.state.baseurl + "api/job/update",
+              params: { ...xData, ...service_params }
+            })
+            // console.log(res)
+            if (res.data.code !== 0) {
+              if (res.data.data == -2) {
+                self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+              } else {
+                self.$Message.error(res.data.error_message)
+              }
+            } else {
+              self.cancle(true)
+            }
           }
         }
       } catch (error) {
         console.log(error);
         self.$Message.error("修改任务错误")
       }
+    },
+    handleCopy(task) {
+      // console.log(task);
+      this.cancle("copy", task)
+    },
+    dataChange(date) {
+      console.log("sss");
+      this.updateTask.date = date
+    },
+    timeChange(time) {
+      this.updateTask.time = time
+    },
+    onCopy() {
+      this.$Message.success("配置内容已复制到剪切板！")
+    },
+    onJsonChange() {
+      this.$Message.warning("不可修改")
+      this.$nextTick(() => {
+        this.spec = this.task.content.service_inst.service.spec
+      })
     }
   },
   components: {
@@ -778,18 +681,18 @@ export default {
 </script>
 
 <style  scoped>
-.taskDetailModal >>> .ivu-modal-header {
+>>> .ivu-modal-header {
   text-align: center;
 }
-.taskDetailModal >>> .ivu-modal {
+>>> .ivu-modal {
   top: 0px !important;
   height: 100%;
   overflow: hidden;
 }
-.taskDetailModal >>> .ivu-modal-content {
+>>> .ivu-modal-content {
   height: 100%;
 }
-.taskDetailModal >>> .ivu-modal-body {
+>>> .ivu-modal-body {
   height: 100%;
 }
 .taskDetail-task {
@@ -809,7 +712,7 @@ export default {
   height: 100%;
 }
 .taskDetail-wrap-operation {
-  margin-top: 60px;
+  margin-top: 100px;
   margin-bottom: 10px;
 }
 .taskDetail-configure-plan {

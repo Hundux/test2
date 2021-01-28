@@ -105,18 +105,20 @@
         >
           <div>
             <!-- 调用 -->
-            <i-tooltip
-              content="测试调用"
+            <i-poptip
+              confirm
+              :title="`确定启动${row.crawler_count}个爬虫立即调用`"
+              @on-ok="callServer(row)"
+              placement="bottom"
               style="margin-right: 20px"
             >
               <i-button
                 type="success"
                 size="small"
                 icon="md-open"
-                @click="handleTestServer(row)"
               >
               </i-button>
-            </i-tooltip>
+            </i-poptip>
             <!-- 启用 -->
             <i-tooltip
               content="启用服务"
@@ -191,13 +193,11 @@
     <i-serverDetail
       :serverDetail="serverDetail"
       :serveDetailData="serveDetailData"
-      @callServe="callServe"
       @handleCopy="handCopyClick"
       @cancleServerDetailModal="handleCancleServerDetailModal"
     ></i-serverDetail>
     <i-testServer
       :testServer="testServer"
-      :params="params"
       @cancleTestServerModal="cancleTestServerModal"
     ></i-testServer>
 
@@ -366,8 +366,7 @@ export default {
       pageSize: null,
       copyServer: {},
       isPress: false,
-      selection_id: [],
-      params: {}
+      selection_id: []
     }
   },
   methods: {
@@ -387,8 +386,10 @@ export default {
       this.getServe()
       this.serverDetail = false
     },
+    handleTestServer() {
+      this.testServer = true
+    },
     cancleTestServerModal() {
-      this.getServe()
       this.testServer = false
     },
     // 获取服务列表
@@ -473,12 +474,33 @@ export default {
       this.copyServer = row
       this.newServer = true
     },
-    handleTestServer(row) {
-      this.testServer = true
-      this.params = row
-    },
-    callServe(row) {
-      this.handleTestServer(row)
+    // 调用服务
+    async callServer(row) {
+      const self = this
+      if (self.isPress == false) {
+        self.isPress = true
+        let xData = {
+          id: row.id,
+        }
+        try {
+          const res = await self.axios({
+            method: "get",
+            url: self.$store.state.baseurl + "api/service/call",
+            params: xData
+          })
+          console.log(res);
+          if (res.data.code == 0) {
+            self.getServe()
+            self.isPress = false
+          } else {
+            self.isPress = false
+            self.$Message.error(res.data.error_message)
+          }
+        } catch (err) {
+          console.log(err);
+          self.$Message.error("运行任务错误")
+        }
+      }
     },
     async batchCall(isban) {
       const self = this

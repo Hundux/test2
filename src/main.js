@@ -15,7 +15,6 @@ import 'view-design/dist/styles/iview.css'
 import vueJsonEditor from 'vue-json-editor'
 import VueClipboard from 'vue-clipboard2'
 // import VueSocketio from 'vue-socket.io'
-// import io from 'socket.io-client';
 
 Vue.component('i-vueJsonEditor', vueJsonEditor)
 Vue.component('i-button', Button)
@@ -87,19 +86,10 @@ axios.interceptors.response.use(
     return Promise.reject(error)
   })
 
-// const socketInstance = io('http://106.12.94.159:8082', {
-//   transports: ['websocket'],
-// });
-// // Vue.use(new VueSocketio({
-// //   debug: true,
-// //   connection: 'http://106.12.94.159:8082',
-// // }))
-// Vue.use(new VueSocketio(
-//   {
-//     debug: true,
-//     connection: 'http://106.12.94.159:8082',
-//   }
-// ), socketInstance);
+// Vue.use(new VueSocketio({
+//   debug: true,
+//   connection: 'http://106.12.94.159:8082',
+// }))
 
 Vue.prototype.$Modal = Modal
 Vue.use(VueAxios, axios)

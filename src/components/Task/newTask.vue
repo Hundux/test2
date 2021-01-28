@@ -6,7 +6,6 @@
       @on-cancel="cancle(true)"
       width="100%"
       footer-hide
-      class="newTaskModal"
     >
       <i-row style="height:100%">
         <i-col
@@ -295,13 +294,6 @@
         </i-col>
       </i-row>
     </i-modal>
-
-    <i-modal
-      v-model="checkSecond"
-      @on-ok="ok"
-    >
-      <p>当前秒为*,请确认</p>
-    </i-modal>
   </div>
 </template>
 
@@ -340,8 +332,7 @@ export default {
       serverList: [],
       copy_spec: "",
       spec: {},
-      titleModal: "新建任务",
-      checkSecond: false
+      titleModal: "新建任务"
     }
   },
   props: {
@@ -429,155 +420,314 @@ export default {
     async createTask() {
       const self = this
       try {
-        let check
-        if (self.taskForm.plan == "定期") {
-          check = true
-          let sArr = self.taskForm.schedule.cron.second.split(",")
-          sArr.forEach(item => {
-            let res = item.match(/^\*$|^([1-5]?\d)([-][1-5]?\d[/][1-5]?\d)$|^([1-5]?\d)$|^\*[/][1-5]?\d$|^([1-5]?\d)([-][1-5]?\d)$/)
-            if (res == null) {
-              check = false
-              self.$Message.warning(`秒${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`秒${item}不符合周期输入规范`)
-              }
-            }
-          })
-          let mArr = self.taskForm.schedule.cron.minute.split(",")
-          mArr.forEach(item => {
-            // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
-            let res = item.match(/^\*$|^([1-5]?\d)([-][1-5]?\d[/][1-5]?\d)$|^([1-5]?\d)$|^\*[/][1-5]?\d$|^([1-5]?\d)([-][1-5]?\d)$/)
-            if (res == null) {
-              check = false
-              self.$Message.warning(`分${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`分${item}不符合周期输入规范`)
-              }
-            }
-          })
-          let hArr = self.taskForm.schedule.cron.hour.split(",")
-          hArr.forEach(item => {
-            let res = item.match(/^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$/)
-            if (res == null) {
-              check = false
-              self.$Message.warning(`时${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`时${item}不符合周期输入规范`)
-              }
-            }
-          })
-          let dArr = self.taskForm.schedule.cron.day_of_month.split(",")
-          dArr.forEach(item => {
-            let res = item.match(/^\*$|^\*[/]3[0-1]|\*[/]([0-2]?\d)$|^((3[0-1])|([0-2]?\d))$|^((3[0-1])|([0-2]?\d))([-](3[0-1])|[-]([0-2]?\d))$|^((3[0-1])|([0-2]?\d))([-](3[0-1])|[-]([0-2]?\d))(([/]3[0-1])|[/]([0-2]?\d))$/)
-            if (res == null) {
-              check = false
-              self.$Message.warning(`天${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`天${item}不符合周期输入规范`)
-              }
-            }
-          })
-          let monArr = self.taskForm.schedule.cron.month.split(",")
-          monArr.forEach(item => {
-            let res = item.match(/^\*$|^\*[/]1[0-2]|\*[/][1-9]$|^((1[0-2])|[1-9])$|^((1[0-2])|([1-9]))([-](1[0-2])|[-]([19]))$|^((1[0-2])|([1-9]))([-](1[0-2])|[-]([1-9]))(([/]1[0-2])|[/]([1-9]))$/)
-            if (res == null) {
-              check = false
-              self.$Message.warning(`月${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`月${item}不符合周期输入规范`)
-              }
-            }
-          })
-          let wArr = self.taskForm.schedule.cron.day_of_week.split(",")
-          wArr.forEach(item => {
-            let res = item.match(/^\*$|^\*[/][1-7]$|^([1-7])$|^([1-7])[-][1-7]$|^[1-7][-][1-7][/][1-7]$/)
-            if (res == null) {
-              check = false
-              self.$Message.warning(`星期几${item}不符合周期输入规范`)
-            } else {
-              if (res[0] != item) {
-                check = false
-                self.$Message.warning(`星期几${item}不符合周期输入规范`)
-              }
-            }
-          })
-        } else {
-          check = true
-        }
-
-        if (check == true) {
-          if (self.taskForm.schedule.cron.second == "*") {
-            self.checkSecond = true
-          } else {
-            if (self.taskForm.category == "TASK") {
-              let xData = {
-                title: self.taskForm.title,
-                category: self.taskForm.category,
-                spec: self.taskForm.content.spec,
-                crawler_count: self.taskForm.crawler_count
-              }
-              if (self.taskForm.plan == "定点") {
-                if (self.taskForm.date !== "" && self.taskForm.time !== "") {
-                  if (self.copyTask.id) {
-                    // console.log(self.taskForm.date)
-                    // console.log(self.taskForm.time)
-                    // console.log('copy');
-                    let schedule_at = null
-                    if (self.taskForm.date != undefined && self.taskForm.time != undefined) {
-                      const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-                      schedule_at = self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
-                    }
-                    xData = {
-                      title: self.taskForm.title,
-                      category: self.taskForm.category,
-                      spec: self.taskForm.content.spec,
-                      schedule_at: schedule_at,
-                      crawler_count: self.taskForm.crawler_count
-                    }
-                  } else {
-                    const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-                    console.log(scheduleAt)
-                    xData = {
-                      title: self.taskForm.title,
-                      category: self.taskForm.category,
-                      spec: self.taskForm.content.spec,
-                      schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
-                      crawler_count: self.taskForm.crawler_count
-                    }
-                  }
+        if (self.taskForm.category == "TASK") {
+          let xData = {
+            title: self.taskForm.title,
+            category: self.taskForm.category,
+            spec: self.taskForm.content.spec,
+            crawler_count: self.taskForm.crawler_count
+          }
+          if (self.taskForm.plan == "定点") {
+            if (self.taskForm.date !== "" && self.taskForm.time !== "") {
+              if (self.copyTask.id) {
+                // console.log(self.taskForm.date)
+                // console.log(self.taskForm.time)
+                // console.log('copy');
+                let schedule_at = null
+                if (self.taskForm.date != undefined && self.taskForm.time != undefined) {
+                  const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+                  schedule_at = self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
                 }
-              } else if (self.taskForm.plan == "定期") {
                 xData = {
                   title: self.taskForm.title,
                   category: self.taskForm.category,
                   spec: self.taskForm.content.spec,
-                  schedule_cron_second: self.taskForm.schedule.cron.second,
-                  schedule_cron_minute: self.taskForm.schedule.cron.minute,
-                  schedule_cron_hour: self.taskForm.schedule.cron.hour,
-                  schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
-                  schedule_cron_month: self.taskForm.schedule.cron.month,
-                  schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
+                  schedule_at: schedule_at,
+                  crawler_count: self.taskForm.crawler_count
+                }
+              } else {
+                const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+                console.log(scheduleAt)
+                xData = {
+                  title: self.taskForm.title,
+                  category: self.taskForm.category,
+                  spec: self.taskForm.content.spec,
+                  schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
                   crawler_count: self.taskForm.crawler_count
                 }
               }
-              console.log(xData);
-              if (xData.title == "") {
-                self.$Message.error("请输入任务名称")
+            }
+          } else if (self.taskForm.plan == "定期") {
+            xData = {
+              title: self.taskForm.title,
+              category: self.taskForm.category,
+              spec: self.taskForm.content.spec,
+              schedule_cron_second: self.taskForm.schedule.cron.second,
+              schedule_cron_minute: self.taskForm.schedule.cron.minute,
+              schedule_cron_hour: self.taskForm.schedule.cron.hour,
+              schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
+              schedule_cron_month: self.taskForm.schedule.cron.month,
+              schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
+              crawler_count: self.taskForm.crawler_count
+            }
+          }
+          console.log(xData);
+          let check
+          if (self.taskForm.plan == "定期") {
+            check = true
+            let sArr = self.taskForm.schedule.cron.second.split(",")
+            sArr.forEach(item => {
+              let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
+              if (res == null) {
+                check = false
+                self.$Message.warning(`秒${item}不符合周期输入规范`)
               } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`秒${item}不符合周期输入规范`)
+                }
+              }
+            })
+            let mArr = self.taskForm.schedule.cron.minute.split(",")
+            mArr.forEach(item => {
+              // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
+              let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
+              if (res == null) {
+                check = false
+                self.$Message.warning(`分${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`分${item}不符合周期输入规范`)
+                }
+              }
+            })
+            let hArr = self.taskForm.schedule.cron.hour.split(",")
+            hArr.forEach(item => {
+              let res = item.match(/^(2[0-3]|[0-1]?\d)|\*([/-](2[0-3]|[0-1]?\d))?|\*$/)
+              console.log(res);
+              if (res == null) {
+                check = false
+                self.$Message.warning(`时${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`时${item}不符合周期输入规范`)
+                }
+              }
+            })
+            let dArr = self.taskForm.schedule.cron.day_of_month.split(",")
+            dArr.forEach(item => {
+              let res = item.match(/^(3[0-1]|[0-2]?\d)|\*([/-](3[0-1]|[0-2]?\d))?|\*$/)
+              console.log(res);
+              if (res == null) {
+                check = false
+                self.$Message.warning(`天${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`天${item}不符合周期输入规范`)
+                }
+              }
+            })
+            let monArr = self.taskForm.schedule.cron.month.split(",")
+            monArr.forEach(item => {
+              let res = item.match(/^(1[0-2]|[0-9])|\*([/-](1[0-1]|[0]?\d))?|\*$/)
+              if (res == null) {
+                check = false
+                self.$Message.warning(`月${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`月${item}不符合周期输入规范`)
+                }
+              }
+            })
+            let wArr = self.taskForm.schedule.cron.day_of_week.split(",")
+            wArr.forEach(item => {
+              let res = item.match(/^([1-7])|\*([/-]([1-7]))?|\*$/)
+              if (res == null) {
+                check = false
+                self.$Message.warning(`星期几${item}不符合周期输入规范`)
+              } else {
+                if (res[0] != item) {
+                  check = false
+                  self.$Message.warning(`星期几${item}不符合周期输入规范`)
+                }
+              }
+            })
+          } else {
+            check = true
+          }
+          if (xData.title == "") {
+            self.$Message.error("请输入任务名称")
+          } else {
+            if (check == true) {
+              const res = await self.axios({
+                method: "post",
+                url: self.$store.state.baseurl + "api/job/create",
+                params: xData
+              })
+              console.log(res);
+              if (res.data.code !== 0) {
+                if (res.data.data == -2) {
+                  self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+                } else {
+                  self.$Message.error(res.data.error_message)
+                }
+              } else {
+                self.cancle(true)
+              }
+            }
+          }
+        } else if (self.taskForm.category == "SERVICE") {
+          if (self.server.id) {
+            let service_params = {}
+            if (self.server.params != null) {
+              const l = self.server.params.length
+              for (let i = 0; i < l; i++) {
+                service_params[`service_params-${i}-name`] = self.server.params[i].name
+                service_params[`service_params-${i}-value`] = self.server.params[i].input
+              }
+            }
+            let xData = {
+              title: self.taskForm.title,
+              category: self.taskForm.category,
+              service_id: self.server.id
+            }
+            if (self.taskForm.plan == "定点") {
+              if (self.taskForm.date !== "" && self.taskForm.time !== "") {
+                if (self.copyTask.id) {
+                  let schedule_at = null
+                  if (self.taskForm.date != undefined && self.taskForm.time != undefined) {
+                    const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+                    schedule_at = self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
+                  }
+                  xData = {
+                    title: self.taskForm.title,
+                    category: self.taskForm.category,
+                    schedule_at: schedule_at,
+                    service_id: self.server.id
+                  }
+                } else {
+                  const scheduleAt = self.taskForm.date + " " + self.taskForm.time
+                  xData = {
+                    title: self.taskForm.title,
+                    category: self.taskForm.category,
+                    schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
+                    service_id: self.server.id
+                  }
+                }
+              }
+            } else if (self.taskForm.plan == "定期") {
+              xData = {
+                title: self.taskForm.title,
+                category: self.taskForm.category,
+                service_id: self.server.id,
+                schedule_cron_second: self.taskForm.schedule.cron.second,
+                schedule_cron_minute: self.taskForm.schedule.cron.minute,
+                schedule_cron_hour: self.taskForm.schedule.cron.hour,
+                schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
+                schedule_cron_month: self.taskForm.schedule.cron.month,
+                schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
+              }
+            }
+            console.log(xData);
+            let check
+            if (self.taskForm.plan == "定期") {
+              check = true
+              let sArr = self.taskForm.schedule.cron.second.split(",")
+              sArr.forEach(item => {
+                let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`秒${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`秒${item}不符合周期输入规范`)
+                  }
+                }
+              })
+              let mArr = self.taskForm.schedule.cron.minute.split(",")
+              mArr.forEach(item => {
+                // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
+                let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`分${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`分${item}不符合周期输入规范`)
+                  }
+                }
+              })
+              let hArr = self.taskForm.schedule.cron.hour.split(",")
+              hArr.forEach(item => {
+                let res = item.match(/^(2[0-3]|[0-1]?\d)|\*([/-](2[0-3]|[0-1]?\d))?|\*$/)
+                console.log(res);
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`时${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`时${item}不符合周期输入规范`)
+                  }
+                }
+              })
+              let dArr = self.taskForm.schedule.cron.day_of_month.split(",")
+              dArr.forEach(item => {
+                let res = item.match(/^(3[0-1]|[0-2]?\d)|\*([/-](3[0-1]|[0-2]?\d))?|\*$/)
+                console.log(res);
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`天${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`天${item}不符合周期输入规范`)
+                  }
+                }
+              })
+              let monArr = self.taskForm.schedule.cron.month.split(",")
+              monArr.forEach(item => {
+                let res = item.match(/^(1[0-2]|[0-9])|\*([/-](1[0-1]|[0]?\d))?|\*$/)
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`月${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`月${item}不符合周期输入规范`)
+                  }
+                }
+              })
+              let wArr = self.taskForm.schedule.cron.day_of_week.split(",")
+              wArr.forEach(item => {
+                let res = item.match(/^([1-7])|\*([/-]([1-7]))?|\*$/)
+                if (res == null) {
+                  check = false
+                  self.$Message.warning(`星期几${item}不符合周期输入规范`)
+                } else {
+                  if (res[0] != item) {
+                    check = false
+                    self.$Message.warning(`星期几${item}不符合周期输入规范`)
+                  }
+                }
+              })
+            } else {
+              check = true
+            }
+            if (xData.title == "") {
+              self.$Message.error("请输入任务名称")
+            } else {
+              if (check == true) {
                 const res = await self.axios({
                   method: "post",
                   url: self.$store.state.baseurl + "api/job/create",
-                  params: xData
+                  params: { ...xData, ...service_params }
                 })
                 console.log(res);
                 if (res.data.code !== 0) {
@@ -590,86 +740,11 @@ export default {
                   self.cancle(true)
                 }
               }
-            } else if (self.taskForm.category == "SERVICE") {
-              if (self.server.id) {
-                let service_params = {}
-                if (self.server.params != null) {
-                  const l = self.server.params.length
-                  for (let i = 0; i < l; i++) {
-                    service_params[`service_params-${i}-name`] = self.server.params[i].name
-                    service_params[`service_params-${i}-value`] = self.server.params[i].input
-                  }
-                }
-                let xData = {
-                  title: self.taskForm.title,
-                  category: self.taskForm.category,
-                  service_id: self.server.id
-                }
-                if (self.taskForm.plan == "定点") {
-                  if (self.taskForm.date !== "" && self.taskForm.time !== "") {
-                    if (self.copyTask.id) {
-                      let schedule_at = null
-                      if (self.taskForm.date != undefined && self.taskForm.time != undefined) {
-                        const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-                        schedule_at = self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
-                      }
-                      xData = {
-                        title: self.taskForm.title,
-                        category: self.taskForm.category,
-                        schedule_at: schedule_at,
-                        service_id: self.server.id
-                      }
-                    } else {
-                      const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-                      xData = {
-                        title: self.taskForm.title,
-                        category: self.taskForm.category,
-                        schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
-                        service_id: self.server.id
-                      }
-                    }
-                  }
-                } else if (self.taskForm.plan == "定期") {
-                  xData = {
-                    title: self.taskForm.title,
-                    category: self.taskForm.category,
-                    service_id: self.server.id,
-                    schedule_cron_second: self.taskForm.schedule.cron.second,
-                    schedule_cron_minute: self.taskForm.schedule.cron.minute,
-                    schedule_cron_hour: self.taskForm.schedule.cron.hour,
-                    schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
-                    schedule_cron_month: self.taskForm.schedule.cron.month,
-                    schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
-                  }
-                }
-                console.log(xData);
-                if (xData.title == "") {
-                  self.$Message.error("请输入任务名称")
-                } else {
-                  const res = await self.axios({
-                    method: "post",
-                    url: self.$store.state.baseurl + "api/job/create",
-                    params: { ...xData, ...service_params }
-                  })
-                  console.log(res);
-                  if (res.data.code !== 0) {
-                    if (res.data.data == -2) {
-                      self.$Message.error("任务名不可重复。有相同名称的任务已存在")
-                    } else {
-                      self.$Message.error(res.data.error_message)
-                    }
-                  } else {
-                    self.cancle(true)
-                  }
-                }
-              } else {
-                self.$Message.warning("请选择服务")
-              }
             }
+          } else {
+            self.$Message.warning("请选择服务")
           }
         }
-
-
       } catch (err) {
         console.log(err);
         self.$Message.error("新建任务失败")
@@ -729,156 +804,6 @@ export default {
       this.$nextTick(() => {
         this.spec = this.server.spec
       })
-    },
-    async ok() {
-      const self = this
-      if (self.taskForm.category == "TASK") {
-        let xData = {
-          title: self.taskForm.title,
-          category: self.taskForm.category,
-          spec: self.taskForm.content.spec,
-          crawler_count: self.taskForm.crawler_count
-        }
-        if (self.taskForm.plan == "定点") {
-          if (self.taskForm.date !== "" && self.taskForm.time !== "") {
-            if (self.copyTask.id) {
-              // console.log(self.taskForm.date)
-              // console.log(self.taskForm.time)
-              // console.log('copy');
-              let schedule_at = null
-              if (self.taskForm.date != undefined && self.taskForm.time != undefined) {
-                const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-                schedule_at = self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
-              }
-              xData = {
-                title: self.taskForm.title,
-                category: self.taskForm.category,
-                spec: self.taskForm.content.spec,
-                schedule_at: schedule_at,
-                crawler_count: self.taskForm.crawler_count
-              }
-            } else {
-              const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-              console.log(scheduleAt)
-              xData = {
-                title: self.taskForm.title,
-                category: self.taskForm.category,
-                spec: self.taskForm.content.spec,
-                schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
-                crawler_count: self.taskForm.crawler_count
-              }
-            }
-          }
-        } else if (self.taskForm.plan == "定期") {
-          xData = {
-            title: self.taskForm.title,
-            category: self.taskForm.category,
-            spec: self.taskForm.content.spec,
-            schedule_cron_second: self.taskForm.schedule.cron.second,
-            schedule_cron_minute: self.taskForm.schedule.cron.minute,
-            schedule_cron_hour: self.taskForm.schedule.cron.hour,
-            schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
-            schedule_cron_month: self.taskForm.schedule.cron.month,
-            schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
-            crawler_count: self.taskForm.crawler_count
-          }
-        }
-        console.log(xData);
-        if (xData.title == "") {
-          self.$Message.error("请输入任务名称")
-        } else {
-          const res = await self.axios({
-            method: "post",
-            url: self.$store.state.baseurl + "api/job/create",
-            params: xData
-          })
-          console.log(res);
-          if (res.data.code !== 0) {
-            if (res.data.data == -2) {
-              self.$Message.error("任务名不可重复。有相同名称的任务已存在")
-            } else {
-              self.$Message.error(res.data.error_message)
-            }
-          } else {
-            self.cancle(true)
-          }
-        }
-      } else if (self.taskForm.category == "SERVICE") {
-        if (self.server.id) {
-          let service_params = {}
-          if (self.server.params != null) {
-            const l = self.server.params.length
-            for (let i = 0; i < l; i++) {
-              service_params[`service_params-${i}-name`] = self.server.params[i].name
-              service_params[`service_params-${i}-value`] = self.server.params[i].input
-            }
-          }
-          let xData = {
-            title: self.taskForm.title,
-            category: self.taskForm.category,
-            service_id: self.server.id
-          }
-          if (self.taskForm.plan == "定点") {
-            if (self.taskForm.date !== "" && self.taskForm.time !== "") {
-              if (self.copyTask.id) {
-                let schedule_at = null
-                if (self.taskForm.date != undefined && self.taskForm.time != undefined) {
-                  const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-                  schedule_at = self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss')
-                }
-                xData = {
-                  title: self.taskForm.title,
-                  category: self.taskForm.category,
-                  schedule_at: schedule_at,
-                  service_id: self.server.id
-                }
-              } else {
-                const scheduleAt = self.taskForm.date + " " + self.taskForm.time
-                xData = {
-                  title: self.taskForm.title,
-                  category: self.taskForm.category,
-                  schedule_at: self.$moment(new Date(scheduleAt)).format('YYYY-MM-DD HH:mm:ss'),
-                  service_id: self.server.id
-                }
-              }
-            }
-          } else if (self.taskForm.plan == "定期") {
-            xData = {
-              title: self.taskForm.title,
-              category: self.taskForm.category,
-              service_id: self.server.id,
-              schedule_cron_second: self.taskForm.schedule.cron.second,
-              schedule_cron_minute: self.taskForm.schedule.cron.minute,
-              schedule_cron_hour: self.taskForm.schedule.cron.hour,
-              schedule_cron_day_of_month: self.taskForm.schedule.cron.day_of_month,
-              schedule_cron_month: self.taskForm.schedule.cron.month,
-              schedule_cron_day_of_week: self.taskForm.schedule.cron.day_of_week,
-            }
-          }
-          console.log(xData);
-          if (xData.title == "") {
-            self.$Message.error("请输入任务名称")
-          } else {
-            const res = await self.axios({
-              method: "post",
-              url: self.$store.state.baseurl + "api/job/create",
-              params: { ...xData, ...service_params }
-            })
-            console.log(res);
-            if (res.data.code !== 0) {
-              if (res.data.data == -2) {
-                self.$Message.error("任务名不可重复。有相同名称的任务已存在")
-              } else {
-                self.$Message.error(res.data.error_message)
-              }
-            } else {
-              self.cancle(true)
-            }
-          }
-        } else {
-          self.$Message.warning("请选择服务")
-        }
-      }
     }
   },
   mounted() {
@@ -888,16 +813,16 @@ export default {
 </script>
 
 <style scoped>
-.newTaskModal >>> .ivu-modal-header {
+>>> .ivu-modal-header {
   text-align: center;
 }
-.newTaskModal >>> .ivu-modal-footer {
+>>> .ivu-modal-footer {
   text-align: center;
 }
-.newTaskModal >>> .ivu-form-item-content {
+>>> .ivu-form-item-content {
   margin-left: 0 !important;
 }
-.newTaskModal >>> .ivu-modal {
+>>> .ivu-modal {
   top: 0px !important;
   height: 100%;
   overflow: hidden;

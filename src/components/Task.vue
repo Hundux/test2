@@ -308,7 +308,7 @@ export default {
         {
           title: '执行计划',
           key: 'plan',
-          width: 280,
+          width: 200,
           align: 'center',
           resizable: true,
           filters: [
@@ -344,6 +344,39 @@ export default {
               return h("span", "未计划")
             }
           },
+          // renderHeader(h, params) {
+          //   global.columns2 = params.column._filterChecked
+          //   if (params.index === 4) {
+          //     if (params.column._filterChecked.length != 0) {
+          //       let column_Ck = params.column._filterChecked
+          //       let words = ''
+          //       let line = 0
+          //       for (let i = 0; i < column_Ck.length; i++) {
+          //         words += column_Ck[i] + ',' + '\xa0\xa0'
+          //         if ((i + 1) % 3 == 0 && i != 8) {
+          //           words += '\n'
+          //           line = line + 1
+          //         } else if (line == 2 && i == 8) {
+          //           words = words + '...'
+          //           break
+          //         }
+          //       }
+          //       words = words.trim()
+          //       return h('span', [
+          //         h('span', params.column.title),
+          //         h('span', {
+          //           style: {
+          //             'white-space': 'pre-line',
+          //             'font-size': '10px',
+          //             'color': 'black'
+          //           }
+          //         }, '\n' + words + '\n')
+          //       ])
+          //     } else {
+          //       return h('span', params.column.title)
+          //     }
+          //   }
+          // }
         },
         {
           title: "状态",
