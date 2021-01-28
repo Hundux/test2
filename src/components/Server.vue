@@ -191,6 +191,7 @@
     <i-serverDetail
       :serverDetail="serverDetail"
       :serveDetailData="serveDetailData"
+      @callServe="callServe"
       @handleCopy="handCopyClick"
       @cancleServerDetailModal="handleCancleServerDetailModal"
     ></i-serverDetail>
@@ -475,6 +476,9 @@ export default {
     handleTestServer(row) {
       this.testServer = true
       this.params = row
+    },
+    callServe(row) {
+      this.handleTestServer(row)
     },
     async batchCall(isban) {
       const self = this

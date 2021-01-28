@@ -11,7 +11,7 @@
           span="6"
           class="configure-top-one"
         ><span>参数</span></i-col>
-        <i-col span="10">默认值</i-col>
+        <i-col span="10">值</i-col>
         <i-col span="8">描述</i-col>
       </i-row>
       <i-row
@@ -26,15 +26,13 @@
         <i-col span="10">
           <i-input
             style="width:80%"
-            v-model="item.default"
+            :placeholder="'默认值：'+item.default"
+            v-model="item.value"
           ></i-input>
         </i-col>
-        <i-col span="8">
-          <i-input
-            type="textarea"
-            style="width:80%"
-            v-model="item.description"
-          ></i-input>
+        <i-col span="8"  class="configure-body-two">
+          <!-- v-model="item.description" -->
+          <span class="text">{{item.description}}</span>
         </i-col>
       </i-row>
       <template slot="footer">
@@ -77,6 +75,17 @@ export default {
     params: {
       type: Object
     }
+  }, watch: {
+    params: {
+      deep: true,
+      handler: function (newValue) {
+        if (newValue.params.length > 0) {
+          for (let i = 0; i < newValue.params.length; i++) {
+            newValue.params[i].value = ""
+          }
+        }
+      }
+    }
   },
   methods: {
     cancle() {
@@ -90,7 +99,7 @@ export default {
       let data = {}
       if (row.params.length > 0) {
         for (let i = 0; i < row.params.length; i++) {
-          data[row.params[i].name] = row.params[i].default
+          data[row.params[i].name] = row.params[i].value
         }
       }
       let xData = {
@@ -140,6 +149,12 @@ export default {
   height: 32px;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+}
+.configure-body-two{
+  height: 32px;
+  display: flex;
+  justify-content: flex-start;
   align-items: center;
 }
 >>> .ivu-modal-footer {
