@@ -420,6 +420,98 @@ export default {
     async createTask() {
       const self = this
       try {
+        let check
+        if (self.taskForm.plan == "定期") {
+          check = true
+          let sArr = self.taskForm.schedule.cron.second.split(",")
+          sArr.forEach(item => {
+            let res = item.match(/^\*$|^([1-5]?\d)([-][1-5]?\d[/][1-5]?\d)$|^([1-5]?\d)$|^\*[/][1-5]?\d$|^([1-5]?\d)([-][1-5]?\d)$/)
+            if (res == null) {
+              check = false
+              self.$Message.warning(`秒${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`秒${item}不符合周期输入规范`)
+              }
+            }
+          })
+          let mArr = self.taskForm.schedule.cron.minute.split(",")
+          mArr.forEach(item => {
+            // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
+            let res = item.match(/^\*$|^([1-5]?\d)([-][1-5]?\d[/][1-5]?\d)$|^([1-5]?\d)$|^\*[/][1-5]?\d$|^([1-5]?\d)([-][1-5]?\d)$/)
+            if (res == null) {
+              check = false
+              self.$Message.warning(`分${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`分${item}不符合周期输入规范`)
+              }
+            }
+          })
+          let hArr = self.taskForm.schedule.cron.hour.split(",")
+          hArr.forEach(item => {
+            let res = item.match(/^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$/)
+            console.log(res);
+            if (res == null) {
+              check = false
+              self.$Message.warning(`时${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`时${item}不符合周期输入规范`)
+              }
+            }
+          })
+          let dArr = self.taskForm.schedule.cron.day_of_month.split(",")
+          dArr.forEach(item => {
+            let res = item.match(/^\*$|^\*[/]3[0-1]|\*[/]([0-2]?\d)$|^((3[0-1])|([0-2]?\d))$|^((3[0-1])|([0-2]?\d))([-](3[0-1])|[-]([0-2]?\d))$|^((3[0-1])|([0-2]?\d))([-](3[0-1])|[-]([0-2]?\d))(([/]3[0-1])|[/]([0-2]?\d))$/)
+            console.log(res);
+            if (res == null) {
+              check = false
+              self.$Message.warning(`天${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`天${item}不符合周期输入规范`)
+              }
+            }
+          })
+          let monArr = self.taskForm.schedule.cron.month.split(",")
+          monArr.forEach(item => {
+            let res = item.match(/^\*$|^\*[/]1[0-2]|\*[/][1-9]$|^((1[0-2])|[1-9])$|^((1[0-2])|([1-9]))([-](1[0-2])|[-]([19]))$|^((1[0-2])|([1-9]))([-](1[0-2])|[-]([1-9]))(([/]1[0-2])|[/]([1-9]))$/)
+            if (res == null) {
+              check = false
+              self.$Message.warning(`月${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`月${item}不符合周期输入规范`)
+              }
+            }
+          })
+          let wArr = self.taskForm.schedule.cron.day_of_week.split(",")
+          wArr.forEach(item => {
+            let res = item.match(/^\*$|^\*[/][1-7]$|^([1-7])$|^([1-7])[-][1-7]$|^[1-7][-][1-7][/][1-7]$/)
+            if (res == null) {
+              check = false
+              self.$Message.warning(`星期几${item}不符合周期输入规范`)
+            } else {
+              if (res[0] != item) {
+                check = false
+                self.$Message.warning(`星期几${item}不符合周期输入规范`)
+              }
+            }
+          })
+        } else {
+          check = true
+        }
+
+
+
+
+        
         if (self.taskForm.category == "TASK") {
           let xData = {
             title: self.taskForm.title,
@@ -472,93 +564,6 @@ export default {
             }
           }
           console.log(xData);
-          let check
-          if (self.taskForm.plan == "定期") {
-            check = true
-            let sArr = self.taskForm.schedule.cron.second.split(",")
-            sArr.forEach(item => {
-              let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
-              if (res == null) {
-                check = false
-                self.$Message.warning(`秒${item}不符合周期输入规范`)
-              } else {
-                if (res[0] != item) {
-                  check = false
-                  self.$Message.warning(`秒${item}不符合周期输入规范`)
-                }
-              }
-            })
-            let mArr = self.taskForm.schedule.cron.minute.split(",")
-            mArr.forEach(item => {
-              // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
-              let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
-              if (res == null) {
-                check = false
-                self.$Message.warning(`分${item}不符合周期输入规范`)
-              } else {
-                if (res[0] != item) {
-                  check = false
-                  self.$Message.warning(`分${item}不符合周期输入规范`)
-                }
-              }
-            })
-            let hArr = self.taskForm.schedule.cron.hour.split(",")
-            hArr.forEach(item => {
-              let res = item.match(/^(2[0-3]|[0-1]?\d)|\*([/-](2[0-3]|[0-1]?\d))?|\*$/)
-              console.log(res);
-              if (res == null) {
-                check = false
-                self.$Message.warning(`时${item}不符合周期输入规范`)
-              } else {
-                if (res[0] != item) {
-                  check = false
-                  self.$Message.warning(`时${item}不符合周期输入规范`)
-                }
-              }
-            })
-            let dArr = self.taskForm.schedule.cron.day_of_month.split(",")
-            dArr.forEach(item => {
-              let res = item.match(/^(3[0-1]|[0-2]?\d)|\*([/-](3[0-1]|[0-2]?\d))?|\*$/)
-              console.log(res);
-              if (res == null) {
-                check = false
-                self.$Message.warning(`天${item}不符合周期输入规范`)
-              } else {
-                if (res[0] != item) {
-                  check = false
-                  self.$Message.warning(`天${item}不符合周期输入规范`)
-                }
-              }
-            })
-            let monArr = self.taskForm.schedule.cron.month.split(",")
-            monArr.forEach(item => {
-              let res = item.match(/^(1[0-2]|[0-9])|\*([/-](1[0-1]|[0]?\d))?|\*$/)
-              if (res == null) {
-                check = false
-                self.$Message.warning(`月${item}不符合周期输入规范`)
-              } else {
-                if (res[0] != item) {
-                  check = false
-                  self.$Message.warning(`月${item}不符合周期输入规范`)
-                }
-              }
-            })
-            let wArr = self.taskForm.schedule.cron.day_of_week.split(",")
-            wArr.forEach(item => {
-              let res = item.match(/^([1-7])|\*([/-]([1-7]))?|\*$/)
-              if (res == null) {
-                check = false
-                self.$Message.warning(`星期几${item}不符合周期输入规范`)
-              } else {
-                if (res[0] != item) {
-                  check = false
-                  self.$Message.warning(`星期几${item}不符合周期输入规范`)
-                }
-              }
-            })
-          } else {
-            check = true
-          }
           if (xData.title == "") {
             self.$Message.error("请输入任务名称")
           } else {
@@ -633,93 +638,6 @@ export default {
               }
             }
             console.log(xData);
-            let check
-            if (self.taskForm.plan == "定期") {
-              check = true
-              let sArr = self.taskForm.schedule.cron.second.split(",")
-              sArr.forEach(item => {
-                let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
-                if (res == null) {
-                  check = false
-                  self.$Message.warning(`秒${item}不符合周期输入规范`)
-                } else {
-                  if (res[0] != item) {
-                    check = false
-                    self.$Message.warning(`秒${item}不符合周期输入规范`)
-                  }
-                }
-              })
-              let mArr = self.taskForm.schedule.cron.minute.split(",")
-              mArr.forEach(item => {
-                // const reg = /^(:?[1-5]?\d([\/|-][1-5]?\d)?|\*)$/
-                let res = item.match(/^([1-5]?\d)|\*([/-][1-5]?\d)?|\*$/)
-                if (res == null) {
-                  check = false
-                  self.$Message.warning(`分${item}不符合周期输入规范`)
-                } else {
-                  if (res[0] != item) {
-                    check = false
-                    self.$Message.warning(`分${item}不符合周期输入规范`)
-                  }
-                }
-              })
-              let hArr = self.taskForm.schedule.cron.hour.split(",")
-              hArr.forEach(item => {
-                let res = item.match(/^(2[0-3]|[0-1]?\d)|\*([/-](2[0-3]|[0-1]?\d))?|\*$/)
-                console.log(res);
-                if (res == null) {
-                  check = false
-                  self.$Message.warning(`时${item}不符合周期输入规范`)
-                } else {
-                  if (res[0] != item) {
-                    check = false
-                    self.$Message.warning(`时${item}不符合周期输入规范`)
-                  }
-                }
-              })
-              let dArr = self.taskForm.schedule.cron.day_of_month.split(",")
-              dArr.forEach(item => {
-                let res = item.match(/^(3[0-1]|[0-2]?\d)|\*([/-](3[0-1]|[0-2]?\d))?|\*$/)
-                console.log(res);
-                if (res == null) {
-                  check = false
-                  self.$Message.warning(`天${item}不符合周期输入规范`)
-                } else {
-                  if (res[0] != item) {
-                    check = false
-                    self.$Message.warning(`天${item}不符合周期输入规范`)
-                  }
-                }
-              })
-              let monArr = self.taskForm.schedule.cron.month.split(",")
-              monArr.forEach(item => {
-                let res = item.match(/^(1[0-2]|[0-9])|\*([/-](1[0-1]|[0]?\d))?|\*$/)
-                if (res == null) {
-                  check = false
-                  self.$Message.warning(`月${item}不符合周期输入规范`)
-                } else {
-                  if (res[0] != item) {
-                    check = false
-                    self.$Message.warning(`月${item}不符合周期输入规范`)
-                  }
-                }
-              })
-              let wArr = self.taskForm.schedule.cron.day_of_week.split(",")
-              wArr.forEach(item => {
-                let res = item.match(/^([1-7])|\*([/-]([1-7]))?|\*$/)
-                if (res == null) {
-                  check = false
-                  self.$Message.warning(`星期几${item}不符合周期输入规范`)
-                } else {
-                  if (res[0] != item) {
-                    check = false
-                    self.$Message.warning(`星期几${item}不符合周期输入规范`)
-                  }
-                }
-              })
-            } else {
-              check = true
-            }
             if (xData.title == "") {
               self.$Message.error("请输入任务名称")
             } else {
