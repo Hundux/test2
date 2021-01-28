@@ -297,19 +297,19 @@
           >
             <i-button
               type="success"
-              icon="md-play"
+              icon="md-arrow-round-up"
               @click="runTask"
               :loading="isPress"
-            >立即执行</i-button>
+            >立即运行</i-button>
             <i-button
               type="success"
-              iicon="md-checkmark"
+              icon="md-checkmark"
               v-if="task.enabled === false"
               @click="handBanClick('yes')"
             >启用</i-button>
             <i-button
               type="error"
-              icon="md-trash"
+              icon="md-remove"
               @click="handBanClick('no')"
               v-else
             >禁用</i-button>
@@ -321,6 +321,13 @@
           </i-buttongroup>
         </i-col>
       </i-row>
+    </i-modal>
+
+    <i-modal
+      v-model="checkSecond"
+      @on-ok="ok"
+    >
+      <p>当前秒为*,请确认</p>
     </i-modal>
   </div>
 </template>
@@ -347,6 +354,8 @@ export default {
       spec: {},
       copy_spec: "",
       isPress: false,
+      checkSecond: false,
+      firstWatch: false
     }
   },
   props: {
@@ -363,19 +372,24 @@ export default {
       deep: true,
       handler: function (newValue) {
         console.log(newValue)
-        if (newValue.plan == "定期") {
-          this.updateTask.plan = "定期"
-          this.updateTask.second = newValue.schedule.cron.second
-          this.updateTask.minute = newValue.schedule.cron.minute
-          this.updateTask.hour = newValue.schedule.cron.hour
-          this.updateTask.day = newValue.schedule.cron.day_of_month
-          this.updateTask.week = newValue.schedule.cron.day_of_week
-          this.updateTask.month = newValue.schedule.cron.month
-        } else if (newValue.plan == "定点") {
-          this.updateTask.plan = "定点"
-          this.updateTask.date = this.$moment(new Date(newValue.schedule.at)).format("YYYY-MM-DD")
-          this.updateTask.time = this.$moment(newValue.schedule.at).format("HH:mm:ss")
+        if (this.firstWatch == false) {
+          if (newValue.plan == "定期") {
+            this.firstWatch = true
+            this.updateTask.plan = "定期"
+            this.updateTask.second = newValue.schedule.cron.second
+            this.updateTask.minute = newValue.schedule.cron.minute
+            this.updateTask.hour = newValue.schedule.cron.hour
+            this.updateTask.day = newValue.schedule.cron.day_of_month
+            this.updateTask.week = newValue.schedule.cron.day_of_week
+            this.updateTask.month = newValue.schedule.cron.month
+          } else if (newValue.plan == "定点") {
+            this.firstWatch = true
+            this.updateTask.plan = "定点"
+            this.updateTask.date = this.$moment(new Date(newValue.schedule.at)).format("YYYY-MM-DD")
+            this.updateTask.time = this.$moment(newValue.schedule.at).format("HH:mm:ss")
+          }
         }
+
         if (newValue.content.service_inst != null) {
           let spec = JSON.stringify(newValue.content.service_inst.service.spec)
           let copy_spec = spec
@@ -412,6 +426,7 @@ export default {
         month: "",
         week: "",
       }
+      this.firstWatch = false
       this.serverTaskDetail = {}
       this.$emit("cancleTaskDetailModal", isOperation, task)
     },
@@ -522,7 +537,6 @@ export default {
         let hArr = self.updateTask.hour.split(",")
         hArr.forEach(item => {
           let res = item.match(/^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$/)
-          console.log(res);
           if (res == null) {
             check = false
             self.$Message.warning(`时${item}不符合周期输入规范`)
@@ -537,7 +551,6 @@ export default {
         dArr.forEach(item => {
           // ^\*$|^\*[/]2[0-3]|\*[/]([0-1]?\d)$|^((2[0-3])|([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))$|^((2[0-3])|([0-1]?\d))([-](2[0-3])|[-]([0-1]?\d))(([/]2[0-3])|[/]([0-1]?\d))$
           let res = item.match(/^\*$|^\*[/]3[0-1]|\*[/]([0-2]?\d)$|^((3[0-1])|([0-2]?\d))$|^((3[0-1])|([0-2]?\d))([-](3[0-1])|[-]([0-2]?\d))$|^((3[0-1])|([0-2]?\d))([-](3[0-1])|[-]([0-2]?\d))(([/]3[0-1])|[/]([0-2]?\d))$/)
-          console.log(res);
           if (res == null) {
             check = false
             self.$Message.warning(`天${item}不符合周期输入规范`)
@@ -577,81 +590,82 @@ export default {
             }
           }
         })
-
       } else {
         check = true
       }
 
-
-      
       try {
         if (check == true) {
-          let xData = {
-            id: self.task.id,
-            title: self.task.title,
-            spec: self.task.content.spec,
-            crawler_count: self.task.crawler_count
+          if (self.updateTask.second == "*") {
+            self.checkSecond = true
           }
-          if (self.updateTask.plan == "定点") {
-            if (self.updateTask.date !== "" && self.updateTask.time !== "") {
-              self.updateTask.date = self.$moment(new Date(self.updateTask.date)).format("YYYY-MM-DD")
-              const scheduleAt = self.updateTask.date + " " + self.updateTask.time
-              console.log(scheduleAt)
-              xData = {
-                id: self.task.id,
-                title: self.task.title,
-                spec: self.task.content.spec,
-                category: self.task.category,
-                schedule_at: self.$moment(new Date(scheduleAt)).format("YYYY-MM-DD HH:mm:ss"),
-                crawler_count: self.task.crawler_count
-              }
-              console.log(xData);
+          else {
+            let xData = {
+              id: self.task.id,
+              title: self.task.title,
+              spec: self.task.content.spec,
+              crawler_count: self.task.crawler_count
             }
-          } else if (self.updateTask.plan == "定期") {
-            try {
-              xData = {
-                id: self.task.id,
-                title: self.task.title,
-                category: self.task.category,
-                spec: self.task.content.spec,
-                schedule_cron_second: self.updateTask.second,
-                schedule_cron_minute: self.updateTask.minute,
-                schedule_cron_hour: self.updateTask.hour,
-                schedule_cron_day_of_month: self.updateTask.day,
-                schedule_cron_month: self.updateTask.month,
-                schedule_cron_day_of_week: self.updateTask.week,
-                crawler_count: self.task.crawler_count
+            if (self.updateTask.plan == "定点") {
+              if (self.updateTask.date !== "" && self.updateTask.time !== "") {
+                self.updateTask.date = self.$moment(new Date(self.updateTask.date)).format("YYYY-MM-DD")
+                const scheduleAt = self.updateTask.date + " " + self.updateTask.time
+                xData = {
+                  id: self.task.id,
+                  title: self.task.title,
+                  spec: self.task.content.spec,
+                  category: self.task.category,
+                  schedule_at: self.$moment(new Date(scheduleAt)).format("YYYY-MM-DD HH:mm:ss"),
+                  crawler_count: self.task.crawler_count
+                }
+                console.log(xData);
               }
-            } catch (err) {
-              self.$Message.error(err.message)
-            }
-          }
-          if (xData.title == "") {
-            self.$Message.error("请输入任务名称")
-          } else {
-            let service_params = {}
-            if (self.task.category == "SERVICE") {
-              let i = 0
-              for (let key in self.task.content.service_inst.params) {
-                service_params[`service_params-${i}-name`] = key
-                service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
-                i = i + 1
+            } else if (self.updateTask.plan == "定期") {
+              try {
+                xData = {
+                  id: self.task.id,
+                  title: self.task.title,
+                  category: self.task.category,
+                  spec: self.task.content.spec,
+                  schedule_cron_second: self.updateTask.second,
+                  schedule_cron_minute: self.updateTask.minute,
+                  schedule_cron_hour: self.updateTask.hour,
+                  schedule_cron_day_of_month: self.updateTask.day,
+                  schedule_cron_month: self.updateTask.month,
+                  schedule_cron_day_of_week: self.updateTask.week,
+                  crawler_count: self.task.crawler_count
+                }
+              } catch (err) {
+                self.$Message.error(err.message)
               }
             }
-            const res = await self.axios({
-              method: "patch",
-              url: self.$store.state.baseurl + "api/job/update",
-              params: { ...xData, ...service_params }
-            })
-            // console.log(res)
-            if (res.data.code !== 0) {
-              if (res.data.data == -2) {
-                self.$Message.error("任务名不可重复。有相同名称的任务已存在")
-              } else {
-                self.$Message.error(res.data.error_message)
-              }
+            if (xData.title == "") {
+              self.$Message.error("请输入任务名称")
             } else {
-              self.cancle(true)
+              let service_params = {}
+              if (self.task.category == "SERVICE") {
+                let i = 0
+                for (let key in self.task.content.service_inst.params) {
+                  service_params[`service_params-${i}-name`] = key
+                  service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
+                  i = i + 1
+                }
+              }
+              const res = await self.axios({
+                method: "patch",
+                url: self.$store.state.baseurl + "api/job/update",
+                params: { ...xData, ...service_params }
+              })
+              // console.log(res)
+              if (res.data.code !== 0) {
+                if (res.data.data == -2) {
+                  self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+                } else {
+                  self.$Message.error(res.data.error_message)
+                }
+              } else {
+                self.cancle(true)
+              }
             }
           }
         }
@@ -679,6 +693,82 @@ export default {
       this.$nextTick(() => {
         this.spec = this.task.content.service_inst.service.spec
       })
+    },
+    async ok() {
+      const self = this
+      try {
+        let xData = {
+          id: self.task.id,
+          title: self.task.title,
+          spec: self.task.content.spec,
+          crawler_count: self.task.crawler_count
+        }
+        if (self.updateTask.plan == "定点") {
+          if (self.updateTask.date !== "" && self.updateTask.time !== "") {
+            self.updateTask.date = self.$moment(new Date(self.updateTask.date)).format("YYYY-MM-DD")
+            const scheduleAt = self.updateTask.date + " " + self.updateTask.time
+            console.log(scheduleAt)
+            xData = {
+              id: self.task.id,
+              title: self.task.title,
+              spec: self.task.content.spec,
+              category: self.task.category,
+              schedule_at: self.$moment(new Date(scheduleAt)).format("YYYY-MM-DD HH:mm:ss"),
+              crawler_count: self.task.crawler_count
+            }
+            console.log(xData);
+          }
+        } else if (self.updateTask.plan == "定期") {
+          try {
+            xData = {
+              id: self.task.id,
+              title: self.task.title,
+              category: self.task.category,
+              spec: self.task.content.spec,
+              schedule_cron_second: self.updateTask.second,
+              schedule_cron_minute: self.updateTask.minute,
+              schedule_cron_hour: self.updateTask.hour,
+              schedule_cron_day_of_month: self.updateTask.day,
+              schedule_cron_month: self.updateTask.month,
+              schedule_cron_day_of_week: self.updateTask.week,
+              crawler_count: self.task.crawler_count
+            }
+          } catch (err) {
+            self.$Message.error(err.message)
+          }
+        }
+        if (xData.title == "") {
+          self.$Message.error("请输入任务名称")
+        } else {
+          let service_params = {}
+          if (self.task.category == "SERVICE") {
+            let i = 0
+            for (let key in self.task.content.service_inst.params) {
+              service_params[`service_params-${i}-name`] = key
+              service_params[`service_params-${i}-value`] = self.task.content.service_inst.params[key]
+              i = i + 1
+            }
+          }
+          const res = await self.axios({
+            method: "patch",
+            url: self.$store.state.baseurl + "api/job/update",
+            params: { ...xData, ...service_params }
+          })
+          // console.log(res)
+          if (res.data.code !== 0) {
+            if (res.data.data == -2) {
+              self.$Message.error("任务名不可重复。有相同名称的任务已存在")
+            } else {
+              self.$Message.error(res.data.error_message)
+            }
+          } else {
+            self.cancle(true)
+          }
+        }
+      } catch (error) {
+        console.log(error);
+        self.$Message.error("修改任务错误")
+      }
     }
   },
   components: {
@@ -688,18 +778,18 @@ export default {
 </script>
 
 <style  scoped>
->>> .ivu-modal-header {
+.taskDetailModal >>> .ivu-modal-header {
   text-align: center;
 }
->>> .ivu-modal {
+.taskDetailModal >>> .ivu-modal {
   top: 0px !important;
   height: 100%;
   overflow: hidden;
 }
->>> .ivu-modal-content {
+.taskDetailModal >>> .ivu-modal-content {
   height: 100%;
 }
->>> .ivu-modal-body {
+.taskDetailModal >>> .ivu-modal-body {
   height: 100%;
 }
 .taskDetail-task {
@@ -719,7 +809,7 @@ export default {
   height: 100%;
 }
 .taskDetail-wrap-operation {
-  margin-top: 100px;
+  margin-top: 60px;
   margin-bottom: 10px;
 }
 .taskDetail-configure-plan {
